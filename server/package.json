@@ -1,0 +1,53 @@
+{
+  "name": "mattwork-server",
+  "version": "1.0.0",
+  "description": "Mattwork backend — production-ready REST API",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only --exit-child -r tsconfig-paths/register src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "seed": "ts-node -r tsconfig-paths/register prisma/seed.ts",
+    "migrate": "npx prisma migrate dev",
+    "studio": "npx prisma studio",
+    "generate": "npx prisma generate"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "@types/pg": "^8.20.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "express-rate-limit": "^7.5.0",
+    "googleapis": "^173.0.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "pdfkit": "^0.19.1",
+    "pg": "^8.22.0",
+    "prisma": "^7.8.0",
+    "uuid": "^11.1.0",
+    "winston": "^3.17.0",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.18",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.15.30",
+    "@types/pdfkit": "^0.17.6",
+    "@types/uuid": "^10.0.0",
+    "nodemon": "^3.1.14",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.8.3"
+  }
+}

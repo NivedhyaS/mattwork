@@ -1,0 +1,282 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  EDITOR
+  CLIENT
+}
+
+enum ProjectStatus {
+  NEW_VIDEO
+  EDITING
+  EDITING_REVIEW
+  REVISION_1
+  REVISION_1_REVIEW
+  REVISION_2
+  REVISION_2_REVIEW
+  FINAL_DRAFT
+  UPLOADED
+  CANCELLED
+  ON_HOLD
+}
+
+enum ProjectPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  VIEWED
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  CREDIT_CARD
+  DEBIT_CARD
+  UPI
+  PAYPAL
+  STRIPE
+  CASH
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum NotificationType {
+  PROJECT_ASSIGNED
+  PROJECT_STATUS_CHANGED
+  INVOICE_CREATED
+  INVOICE_PAID
+  INVOICE_OVERDUE
+  PAYMENT_RECEIVED
+  FILE_UPLOADED
+  COMMENT_ADDED
+  DEADLINE_REMINDER
+  GENERAL
+}
+
+enum FileType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  SPREADSHEET
+  PRESENTATION
+  ARCHIVE
+  OTHER
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  password     String
+  role         Role     @default(CLIENT)
+  isActive     Boolean  @default(true)
+  refreshToken String?
+  avatar       String?
+  phone        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  client        Client?
+  editor        Editor?
+  notifications Notification[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model Client {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  company     String?
+  phone       String?
+  address     String?
+  city        String?
+  country     String?
+  notes       String?
+  advancePaid Decimal? @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects Project[]
+  invoices Invoice[]
+
+  @@index([userId])
+  @@map("clients")
+}
+
+model Editor {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  bio          String?
+  skills       String[]
+  hourlyRate   Decimal? @db.Decimal(10, 2)
+  availability Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects Project[]
+
+  @@index([userId])
+  @@map("editors")
+}
+
+model Project {
+  id          String          @id @default(cuid())
+  title       String
+  description String?
+  status      ProjectStatus   @default(NEW_VIDEO)
+  priority    ProjectPriority @default(MEDIUM)
+  clientId    String
+  editorId    String?
+  dueDate     DateTime?
+  budget      Decimal?        @db.Decimal(10, 2)
+  clientPrice Decimal?        @db.Decimal(10, 2)
+  editorPrice Decimal?        @db.Decimal(10, 2)
+  tags        String[]
+  notes       String?
+  driveFolder String?
+  formLink    String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  // Relations
+  client        Client         @relation(fields: [clientId], references: [id])
+  editor        Editor?        @relation(fields: [editorId], references: [id])
+  files         ProjectFile[]
+  invoices      Invoice[]
+  notifications Notification[]
+
+  @@index([clientId])
+  @@index([editorId])
+  @@index([status])
+  @@map("projects")
+}
+
+model ProjectFile {
+  id           String   @id @default(cuid())
+  projectId    String
+  uploadedById String
+  filename     String
+  originalName String
+  url          String
+  mimeType     String?
+  fileType     FileType @default(OTHER)
+  size         Int?
+  driveFileId  String?
+  description  String?
+  version      Int      @default(1)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("project_files")
+}
+
+model Invoice {
+  id          String        @id @default(cuid())
+  number      String        @unique
+  projectId   String
+  clientId    String
+  status      InvoiceStatus @default(DRAFT)
+  items       Json
+  subtotal    Decimal       @db.Decimal(10, 2)
+  taxRate     Decimal       @default(0) @db.Decimal(5, 2)
+  taxAmount   Decimal       @default(0) @db.Decimal(10, 2)
+  discount    Decimal       @default(0) @db.Decimal(10, 2)
+  total       Decimal       @db.Decimal(10, 2)
+  amountPaid  Decimal       @default(0) @db.Decimal(10, 2)
+  dueDate     DateTime?
+  sentAt      DateTime?
+  paidAt      DateTime?
+  notes       String?
+  terms       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  project  Project   @relation(fields: [projectId], references: [id])
+  client   Client    @relation(fields: [clientId], references: [id])
+  payments Payment[]
+
+  @@index([projectId])
+  @@index([clientId])
+  @@index([status])
+  @@map("invoices")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  invoiceId     String
+  amount        Decimal       @db.Decimal(10, 2)
+  method        PaymentMethod @default(BANK_TRANSFER)
+  status        PaymentStatus @default(PENDING)
+  transactionId String?
+  reference     String?
+  notes         String?
+  paidAt        DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+
+  @@index([invoiceId])
+  @@map("payments")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType @default(GENERAL)
+  isRead    Boolean          @default(false)
+  projectId String?
+  metadata  Json?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  // Relations
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}

@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fafafa;
+  --foreground: #09090b;
+  --card: #ffffff;
+  --border: #e4e4e7;
+  /* Brand accent: sleek warm violet — distinct from every semantic status color */
+  --accent: #6366f1;
+  --accent-light: rgba(99, 102, 241, 0.1);
+
+  --completed: #10b981;
+  --at-risk: #f59e0b;
+  --overdue: #ef4444;
+  --inactive: #71717a;
+
+  /* ── Typography Scale ─────────────────────────────────────────────────────
+     Centralised font-size tokens. Every arbitrary text-[Npx] class in the
+     app maps to one of these variables. Adjust here to shift the entire UI.
+  ─────────────────────────────────────────────────────────────────────────── */
+  --fs-9:  11px;   /* was 9px  — tiny badge superscripts           */
+  --fs-10: 11px;   /* was 10px — uppercase section labels          */
+  --fs-11: 12px;   /* was 11px — micro labels                      */
+  --fs-12: 13px;   /* was 12px — badge text, table column headers  */
+  --fs-13: 14px;   /* was 13px — secondary / meta text             */
+  --fs-14: 15px;   /* was 14px — form labels, helper text          */
+  --fs-15: 16px;   /* was 15px — primary body / input text         */
+  --fs-16: 17px;   /* was 16px — sub-headings, card titles         */
+  --fs-18: 19px;   /* was 18px — section headings                  */
+  --fs-20: 21px;   /* was 20px — card-level headings               */
+  --fs-28: 30px;   /* was 28px — page sub-titles                   */
+  --fs-36: 40px;   /* was 36px — page h1 headings                  */
+  --fs-38: 42px;   /* was 38px — large page h1 headings            */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #09090b;
+    --foreground: #f4f4f5;
+    --card: #18181b;
+    --border: #27272a;
+    --accent: #818cf8;
+    --accent-light: rgba(129, 140, 248, 0.15);
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+
+  --color-status-green: var(--completed);
+  --color-status-amber: var(--at-risk);
+  --color-status-red: var(--overdue);
+  --color-status-gray: var(--inactive);
+
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  /* Remap Tailwind named utility sizes upward for consistency */
+  --text-xs:   0.8125rem;   /* 13px  (was 0.75rem  / 12px) */
+  --text-sm:   0.9375rem;   /* 15px  (was 0.875rem / 14px) */
+  --text-base: 1rem;        /* 16px  (unchanged)           */
+  --text-lg:   1.1875rem;   /* 19px  (was 1.125rem / 18px) */
+  --text-xl:   1.3125rem;   /* 21px  (was 1.25rem  / 20px) */
+  --text-2xl:  1.5625rem;   /* 25px  (was 1.5rem   / 24px) */
+  --text-3xl:  2rem;        /* 32px  (was 1.875rem / 30px) */
+  --text-4xl:  2.5rem;      /* 40px  (was 2.25rem  / 36px) */
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Arbitrary-value font-size overrides ─────────────────────────────────────
+   Tailwind JIT emits classes like .text-\[13px\]. We intercept them here and
+   redirect to the centralised scale tokens so every component is upgraded
+   without any JSX changes.
+────────────────────────────────────────────────────────────────────────────── */
+.text-\[9px\]  { font-size: var(--fs-9)  !important; }
+.text-\[10px\] { font-size: var(--fs-10) !important; }
+.text-\[11px\] { font-size: var(--fs-11) !important; }
+.text-\[12px\] { font-size: var(--fs-12) !important; }
+.text-\[13px\] { font-size: var(--fs-13) !important; }
+.text-\[14px\] { font-size: var(--fs-14) !important; }
+.text-\[15px\] { font-size: var(--fs-15) !important; }
+.text-\[16px\] { font-size: var(--fs-16) !important; }
+.text-\[18px\] { font-size: var(--fs-18) !important; }
+.text-\[20px\] { font-size: var(--fs-20) !important; }
+.text-\[28px\] { font-size: var(--fs-28) !important; }
+.text-\[36px\] { font-size: var(--fs-36) !important; }
+.text-\[38px\] { font-size: var(--fs-38) !important; }
+
+/* Premium Card Design System (Linear/Stripe style) */
+.flat-card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.flat-card:hover {
+  border-color: rgba(129, 140, 248, 0.25);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.04);
+}
+
+/* Smooth active focus state inputs */
+.flat-control {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background-color: var(--card);
+  padding: 0.625rem 0.875rem;
+  font-size: 16px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.flat-control:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-light);
+}
+
+/* KPI numbers for platform dashboard */
+.kpi-figure {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "kern" 1;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+/* Premium smooth scrollbar overrides */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}
+
+/* Hover active feedback loops */
+.sidebar-link {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-link:hover {
+  background-color: var(--accent-light);
+  color: var(--accent);
+}
