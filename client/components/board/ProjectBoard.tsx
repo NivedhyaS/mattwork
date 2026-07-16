@@ -421,14 +421,14 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
               <TrendingUp className="h-7 w-7 text-accent" />
               Production Workspace
             </h1>
-            <p className="text-[15px] text-slate-500 mt-2">
+            <p className="text-[15px] text-slate-350 mt-2">
               Showing {sortedProjects.length} projects of {projects.length} total. Role view: <span className="font-bold text-accent">{role.toLowerCase()}</span>
             </p>
           </div>
           <div className="flex items-center gap-3">
             {extraHeader}
             {updatingId && (
-              <div className="flex items-center gap-1.5 text-xs text-slate-400">
+              <div className="flex items-center gap-1.5 text-xs text-slate-300">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 syncing status...
               </div>
@@ -456,13 +456,13 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
         <div className="flex flex-col md:flex-row gap-3 pt-2">
           {/* Search Input */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4.5 w-4.5 text-slate-450" />
+            <Search className="absolute left-3 top-3 h-4.5 w-4.5 text-slate-350" />
             <input
               type="text"
               placeholder="Search by ID, video title, client, or editor..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 text-[15px] rounded-lg border border-slate-250 dark:border-slate-800 bg-transparent focus:outline-none focus:ring-1 focus:ring-accent"
+              className="w-full pl-10 pr-4 py-2.5 text-[15px] rounded-lg border border-slate-350 dark:border-slate-700 bg-transparent focus:outline-none focus:ring-1 focus:ring-accent placeholder:text-slate-450 text-slate-800 dark:text-slate-200"
             />
           </div>
 
@@ -470,11 +470,11 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
           {/* Sort selection */}
           <div className="flex items-center gap-2">
-            <SlidersHorizontal className="h-4.5 w-4.5 text-slate-450 shrink-0" />
+            <SlidersHorizontal className="h-4.5 w-4.5 text-slate-350 shrink-0" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="text-[15px] border border-slate-250 dark:border-slate-800 rounded-lg px-3 py-2.5 bg-transparent focus:outline-none"
+              className="text-[15px] border border-slate-355 dark:border-slate-700 rounded-lg px-3 py-2.5 bg-transparent focus:outline-none text-slate-800 dark:text-slate-200"
             >
               <option value="createdAt">Date Created</option>
               <option value="dueDate">Deadline</option>
@@ -482,9 +482,9 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             </select>
             <button
               onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-              className="px-3 py-2.5 border border-slate-250 dark:border-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
+              className="px-3 py-2.5 border border-slate-350 dark:border-slate-750 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
             >
-              <span className="text-[13px] font-bold">{sortOrder.toUpperCase()}</span>
+              <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300">{sortOrder.toUpperCase()}</span>
             </button>
           </div>
         </div>
@@ -525,11 +525,11 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
                           <span className={`h-2.5 w-2.5 rounded-full ${column.color}`} />
-                          <h3 className="font-bold text-[16px] text-slate-800 dark:text-slate-200">
+                          <h3 className="font-bold text-[16px] text-slate-850 dark:text-slate-100">
                             {column.title}
                           </h3>
                         </div>
-                        <span className="text-[12px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-850 px-2.5 py-0.5 rounded-full">
+                        <span className="text-[12px] font-bold text-slate-650 bg-slate-200/60 dark:bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-300 dark:border-slate-750 text-slate-700 dark:text-slate-200">
                           {columnProjects.length}
                         </span>
                       </div>
@@ -582,20 +582,20 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                     <div className="pl-1.5 space-y-2.5">
                                       {/* Project ID & Priority */}
                                       <div className="flex items-center justify-between">
-                                        <span className="text-[11px] font-mono text-slate-400 font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/40 px-1.5 py-0.5 rounded">
+                                        <span className="text-[11px] font-mono text-slate-350 font-bold bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-750 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300">
                                           #{project.id.slice(-6).toUpperCase()}
                                         </span>
                                       </div>
 
                                       {/* Video Title */}
-                                      <p className="font-bold text-[15px] text-slate-800 dark:text-slate-100 leading-snug line-clamp-2">
+                                      <p className="font-bold text-[15px] text-slate-900 dark:text-slate-50 leading-snug line-clamp-2">
                                         {project.title}
                                       </p>
 
                                       {/* Client Company / Name */}
                                       <div className="flex items-center gap-1.5">
-                                        <Briefcase className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
-                                        <span className="text-[13px] text-slate-500 font-medium truncate">
+                                        <Briefcase className="h-3.5 w-3.5 text-slate-450 flex-shrink-0" />
+                                        <span className="text-[13px] text-slate-650 dark:text-slate-300 font-medium truncate">
                                           {project.client?.company || project.client?.user?.name}
                                         </span>
                                       </div>
@@ -603,30 +603,30 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                       {/* Editor name */}
                                       {project.editor ? (
                                         <div className="flex items-center gap-1.5">
-                                          <User className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
-                                          <span className="text-[13px] text-slate-500 font-normal">
+                                          <User className="h-3.5 w-3.5 text-slate-455 flex-shrink-0" />
+                                          <span className="text-[13px] text-slate-650 dark:text-slate-300 font-normal">
                                             {project.editor.user.name}
                                           </span>
                                         </div>
                                       ) : (
                                         <div className="flex items-center gap-1.5">
-                                          <User className="h-3.5 w-3.5 text-slate-350 flex-shrink-0" />
-                                          <span className="text-[13px] text-slate-400 italic">
+                                          <User className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+                                          <span className="text-[13px] text-slate-450 dark:text-slate-400 italic font-medium">
                                             unassigned
                                           </span>
                                         </div>
                                       )}
 
                                       {/* Footer: Date & Profit */}
-                                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-900 mt-1">
+                                      <div className="flex items-center justify-between pt-2 border-t border-slate-300 dark:border-slate-850 mt-1">
                                         {dueDate ? (
                                           <div
                                             className={`flex items-center gap-1 text-[10px] font-semibold rounded px-1.5 py-0.5 border ${
                                               dueDate.isOverdue
-                                                ? 'text-rose-600 bg-rose-50 border-rose-100 dark:bg-rose-950/20 dark:border-rose-900/30'
+                                                ? 'text-rose-650 bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/40 dark:text-rose-450'
                                                 : dueDate.isUrgentHighlight
-                                                ? 'text-amber-700 bg-amber-50 border-amber-100 dark:bg-amber-950/20 dark:border-amber-900/30'
-                                                : 'text-slate-500 bg-slate-50 border-slate-200/50 dark:bg-slate-900/30 dark:border-slate-800'
+                                                ? 'text-amber-700 bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/40 dark:text-amber-350'
+                                                : 'text-slate-650 bg-slate-50 border-slate-300 dark:bg-slate-900/30 dark:border-slate-750 dark:text-slate-300'
                                             }`}
                                           >
                                             <Clock className="h-3 w-3" />
@@ -638,7 +638,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
                                         {/* Financial indicator (ADMIN only) */}
                                         {profitAmount !== null && (
-                                          <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                                          <span className="text-[10px] font-bold text-slate-850 dark:text-slate-100">
                                             ₹{profitAmount.toLocaleString('en-IN')}
                                           </span>
                                         )}
@@ -680,30 +680,28 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
         {selectedProject ? (
           <div className="space-y-6 text-[14px] text-slate-700 dark:text-slate-350">
             {/* Upper Stage Header */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-900 pb-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-300 dark:border-slate-750 pb-4">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded border border-slate-200/50">
+                <span className="text-[10px] font-mono font-bold bg-slate-150 dark:bg-slate-800 px-2 py-1 rounded border border-slate-300 dark:border-slate-750 text-slate-700 dark:text-slate-200">
                   ID: {selectedProject.id.toUpperCase()}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-450 uppercase font-semibold">status:</span>
+                <span className="text-[10px] text-slate-350 uppercase font-bold">status:</span>
                 <Badge variant={selectedProject.status === 'UPLOADED' ? 'success' : 'warning'}>
                   {selectedProject.status.replace(/_/g, ' ').toLowerCase()}
                 </Badge>
               </div>
-            </div>
-
-            {/* Profile grids (Admin editable, Client/Editor view constraints) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/50 dark:bg-slate-900/20 p-4 border border-slate-200/80 dark:border-slate-850 rounded-xl">
+            </div>             {/* Profile grids (Admin editable, Client/Editor view constraints) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/50 dark:bg-slate-900/20 p-4 border border-slate-300 dark:border-slate-750 rounded-xl">
               <div className="space-y-1.5">
-                <span className="text-slate-400 text-[12px] font-bold uppercase tracking-wider block">Client (Owner)</span>
+                <span className="text-slate-350 text-[12px] font-bold uppercase tracking-wider block">Client (Owner)</span>
                 {role === 'ADMIN' ? (
                   <Select
                     value={selectedProject.clientId}
                     disabled={isSavingField === 'clientId'}
                     onChange={(e) => handleUpdateField('clientId', e.target.value)}
-                    className="text-[13px] py-1.5 h-9"
+                    className="text-[13px] py-1.5 h-9 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-850 dark:text-slate-150"
                   >
                     {clients.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -713,18 +711,18 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   </Select>
                 ) : (
                   <>
-                    <p className="font-bold text-[15px] text-slate-800 dark:text-slate-200">
+                    <p className="font-bold text-[15px] text-slate-900 dark:text-slate-100">
                       {selectedProject.client?.user?.name}
                     </p>
                     {selectedProject.client?.company && (
-                      <p className="text-[14px] text-slate-500 font-semibold">{selectedProject.client.company}</p>
+                      <p className="text-[14px] text-slate-650 dark:text-slate-350 font-semibold">{selectedProject.client.company}</p>
                     )}
                   </>
                 )}
               </div>
               {role !== 'CLIENT' && (
-                <div className="space-y-1.5 border-t md:border-t-0 md:border-l border-slate-250/60 dark:border-slate-800/60 pt-3 md:pt-0 md:pl-4">
-                  <span className="text-slate-400 text-[12px] font-bold uppercase tracking-wider block">Assigned Editor</span>
+                <div className="space-y-1.5 border-t md:border-t-0 md:border-l border-slate-300 dark:border-slate-750 pt-3 md:pt-0 md:pl-4">
+                  <span className="text-slate-350 text-[12px] font-bold uppercase tracking-wider block">Assigned Editor</span>
                   {role === 'ADMIN' ? (
                     <EditorCombobox
                       editors={editors}
@@ -734,50 +732,50 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                     />
                   ) : selectedProject.editor ? (
                     <>
-                      <p className="font-bold text-[15px] text-slate-800 dark:text-slate-200">
+                      <p className="font-bold text-[15px] text-slate-900 dark:text-slate-100">
                         {selectedProject.editor.user.name}
                       </p>
                       {selectedProject.editor.user.email && (
-                        <p className="text-[13px] text-slate-450 font-normal">{selectedProject.editor.user.email}</p>
+                        <p className="text-[13px] text-slate-650 dark:text-slate-350 font-normal">{selectedProject.editor.user.email}</p>
                       )}
                     </>
                   ) : (
-                    <p className="text-[14px] text-slate-400 italic">No editor assigned</p>
+                    <p className="text-[14px] text-slate-450 dark:text-slate-400 italic font-semibold">No editor assigned</p>
                   )}
                 </div>
               )}
             </div>
 
             {/* Submission Date & Deadline Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/50 dark:bg-slate-900/20 p-4 border border-slate-200/80 dark:border-slate-850 rounded-xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/50 dark:bg-slate-900/20 p-4 border border-slate-300 dark:border-slate-755 rounded-xl">
               <div className="space-y-1.5">
-                <span className="text-slate-400 text-[12px] font-bold uppercase tracking-wider block font-semibold">Submission Date</span>
+                <span className="text-slate-350 text-[12px] font-bold uppercase tracking-wider block font-bold">Submission Date</span>
                 {role === 'ADMIN' ? (
                   <input
                     type="date"
                     disabled={isSavingField === 'submissionDate'}
                     value={selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toISOString().split('T')[0] : ''}
                     onChange={(e) => handleUpdateField('submissionDate', e.target.value)}
-                    className="w-full text-[13px] p-2 rounded-lg border border-slate-350 dark:border-slate-750 bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-50 focus:outline-none"
+                    className="w-full text-[13px] p-2 rounded-lg border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-50 focus:outline-none"
                   />
                 ) : (
-                  <p className="font-semibold text-slate-850 dark:text-slate-200">
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
                     {selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
                   </p>
                 )}
               </div>
-              <div className="space-y-1.5 border-t md:border-t-0 md:border-l border-slate-250/60 dark:border-slate-800/60 pt-3 md:pt-0 md:pl-4">
-                <span className="text-slate-400 text-[12px] font-bold uppercase tracking-wider block font-semibold">Final Deadline</span>
+              <div className="space-y-1.5 border-t md:border-t-0 md:border-l border-slate-300 dark:border-slate-750 pt-3 md:pt-0 md:pl-4">
+                <span className="text-slate-350 text-[12px] font-bold uppercase tracking-wider block font-bold">Final Deadline</span>
                 {role === 'ADMIN' ? (
                   <input
                     type="date"
                     disabled={isSavingField === 'dueDate'}
                     value={selectedProject.dueDate ? new Date(selectedProject.dueDate).toISOString().split('T')[0] : ''}
                     onChange={(e) => handleUpdateField('dueDate', e.target.value)}
-                    className="w-full text-[13px] p-2 rounded-lg border border-slate-350 dark:border-slate-750 bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-50 focus:outline-none"
+                    className="w-full text-[13px] p-2 rounded-lg border border-slate-355 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-50 focus:outline-none"
                   />
                 ) : (
-                  <p className="font-semibold text-slate-850 dark:text-slate-200">
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
                     {selectedProject.dueDate ? new Date(selectedProject.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
                   </p>
                 )}
@@ -786,16 +784,16 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
             {/* Description */}
             <div className="space-y-1.5">
-              <h4 className="font-bold text-[14px] text-slate-850 dark:text-slate-200 uppercase tracking-wide">Brief / Description</h4>
-              <p className="bg-white dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-850 text-[14px] leading-relaxed whitespace-pre-line">
+              <h4 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 uppercase tracking-wide">Brief / Description</h4>
+              <p className="bg-white dark:bg-slate-950 p-4 rounded-xl border border-slate-300 dark:border-slate-750 text-[14px] leading-relaxed whitespace-pre-line text-slate-850 dark:text-slate-150">
                 {selectedProject.description || 'No description provided.'}
               </p>
             </div>
 
             {/* Raw Materials Folder */}
             {(role === 'ADMIN' || selectedProject.rawMaterialsFolder) && (
-              <div className="space-y-2 border-t border-slate-200 dark:border-slate-800 pt-4">
-                <h4 className="font-bold text-[14px] text-slate-850 dark:text-slate-200 uppercase tracking-wide">Raw Materials</h4>
+              <div className="space-y-2 border-t border-slate-300 dark:border-slate-750 pt-4">
+                <h4 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 uppercase tracking-wide">Raw Materials</h4>
                 {isEditingRawMaterials ? (
                   <div className="flex gap-2">
                     <input
@@ -803,7 +801,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       placeholder="https://drive.google.com/drive/..."
                       value={rawMaterialsUrlInput}
                       onChange={(e) => setRawMaterialsUrlInput(e.target.value)}
-                      className="flex-1 text-[13px] p-2 rounded-lg border border-slate-350 dark:border-slate-750 bg-transparent focus:outline-none"
+                      className="flex-1 text-[13px] p-2 rounded-lg border border-slate-350 dark:border-slate-750 bg-transparent focus:outline-none text-slate-850 dark:text-slate-150 placeholder:text-slate-450"
                     />
                     <Button
                       size="sm"
@@ -819,12 +817,12 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                     </Button>
                   </div>
                 ) : selectedProject.rawMaterialsFolder ? (
-                  <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950">
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-slate-300 dark:border-slate-755 bg-white dark:bg-slate-950">
                     <a
                       href={selectedProject.rawMaterialsFolder}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-2 text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-350 transition-colors font-medium"
+                      className="flex items-center gap-2 text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-350 transition-colors font-semibold"
                     >
                       <span>Google Drive Folder Link</span>
                       <ExternalLink className="h-4 w-4" />
@@ -846,15 +844,15 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             )}
 
             {/* Deliverable drafts / Working Files */}
-            <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-              <h4 className="font-bold text-[14px] text-slate-850 dark:text-slate-200 uppercase tracking-wide">
+            <div className="space-y-3 pt-4 border-t border-slate-300 dark:border-slate-750">
+              <h4 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 uppercase tracking-wide">
                 {role === 'CLIENT' ? 'Final Deliverables' : 'Working Files & Drafts'}
               </h4>
               <div className="space-y-2">
                 {loadingDetails ? (
                   <div className="h-12 bg-slate-100 dark:bg-slate-900 rounded-lg animate-pulse" />
                 ) : !selectedProject.files || selectedProject.files.length === 0 ? (
-                  <p className="text-center py-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg text-slate-400">
+                  <p className="text-center py-6 border border-dashed border-slate-300 dark:border-slate-750 rounded-lg text-slate-400">
                     No deliverables or working files uploaded.
                   </p>
                 ) : (
@@ -867,12 +865,12 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       return true;
                     })
                     .map((file: any) => (
-                      <div key={file.id} className="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-850 rounded-xl bg-white dark:bg-slate-950">
+                      <div key={file.id} className="flex items-center justify-between p-3 border border-slate-300 dark:border-slate-755 rounded-xl bg-white dark:bg-slate-950">
                         <div className="flex items-center gap-2.5 min-w-0">
                           <FileText className="h-4.5 w-4.5 text-accent" />
                           <div className="min-w-0">
-                            <p className="font-semibold text-[14px] truncate text-slate-800 dark:text-slate-200">{file.originalName}</p>
-                            <p className="text-[13px] text-slate-450">Version {file.version} · {formatDate(file.createdAt)}</p>
+                            <p className="font-semibold text-[14px] truncate text-slate-900 dark:text-slate-100">{file.originalName}</p>
+                            <p className="text-[13px] text-slate-500 dark:text-slate-350">Version {file.version} · {formatDate(file.createdAt)}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -880,7 +878,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                             href={file.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                            className="p-1.5 text-slate-450 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
                           >
                             <ExternalLink className="h-4 w-4" />
                           </a>
@@ -910,24 +908,24 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
             {/* Financial panel (ADMIN only) */}
             {role === 'ADMIN' && (
-              <div className="space-y-2.5 pt-4 border-t border-slate-200 dark:border-slate-800">
-                <h4 className="font-bold text-[14px] text-slate-850 dark:text-slate-200 uppercase tracking-wide">Financial breakdown</h4>
-                <div className="grid grid-cols-3 gap-3 bg-slate-50/70 dark:bg-slate-900/30 p-4 border border-slate-250/60 dark:border-slate-800 rounded-xl">
+              <div className="space-y-2.5 pt-4 border-t border-slate-300 dark:border-slate-750">
+                <h4 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 uppercase tracking-wide">Financial breakdown</h4>
+                <div className="grid grid-cols-3 gap-3 bg-slate-50/70 dark:bg-slate-900/30 p-4 border border-slate-300 dark:border-slate-750 rounded-xl">
                   <div>
                     <span className="text-[12px] text-slate-400 block font-bold uppercase">Client budget</span>
-                    <span className="font-bold text-slate-800 dark:text-white">
+                    <span className="font-bold text-slate-900 dark:text-white">
                       {selectedProject.clientPrice ? formatCurrency(selectedProject.clientPrice) : 'N/A'}
                     </span>
                   </div>
                   <div>
                     <span className="text-[12px] text-slate-400 block font-bold uppercase">Editor payout</span>
-                    <span className="font-bold text-[15px] text-slate-800 dark:text-white">
+                    <span className="font-bold text-[15px] text-slate-900 dark:text-white">
                       {selectedProject.editorPrice ? formatCurrency(selectedProject.editorPrice) : 'N/A'}
                     </span>
                   </div>
                   <div>
                     <span className="text-[12px] text-slate-400 block font-bold uppercase">Net margins</span>
-                    <span className="font-bold text-[15px] text-emerald-600 dark:text-emerald-400">
+                    <span className="font-bold text-[15px] text-emerald-600 dark:text-emerald-450 font-extrabold">
                       {selectedProject.profit ? formatCurrency(selectedProject.profit) : 'N/A'}
                     </span>
                   </div>
@@ -937,20 +935,20 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
             {/* Invoices panel */}
             {role === 'ADMIN' && selectedProject.invoices && selectedProject.invoices.length > 0 && (
-              <div className="space-y-2.5 pt-4 border-t border-slate-200 dark:border-slate-800">
-                <h4 className="font-bold text-[14px] text-slate-850 dark:text-slate-200 uppercase tracking-wide">Associated invoices</h4>
+              <div className="space-y-2.5 pt-4 border-t border-slate-300 dark:border-slate-750">
+                <h4 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 uppercase tracking-wide">Associated invoices</h4>
                 <div className="space-y-2">
                   {selectedProject.invoices.map((inv: any) => (
-                    <div key={inv.id} className="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-850 rounded-xl bg-white dark:bg-slate-950">
+                    <div key={inv.id} className="flex items-center justify-between p-3 border border-slate-300 dark:border-slate-755 rounded-xl bg-white dark:bg-slate-950">
                       <div className="flex items-center gap-2">
                         <DollarSign className="h-4.5 w-4.5 text-accent" />
                         <div>
-                          <p className="font-semibold text-[14px]">{inv.number}</p>
-                          <p className="text-[13px] text-slate-400">Due {formatDate(inv.dueDate)}</p>
+                          <p className="font-semibold text-[14px] text-slate-900 dark:text-slate-100">{inv.number}</p>
+                          <p className="text-[13px] text-slate-505 dark:text-slate-350">Due {formatDate(inv.dueDate)}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">{formatCurrency(inv.total)}</p>
+                        <p className="font-bold text-slate-900 dark:text-slate-50">{formatCurrency(inv.total)}</p>
                         <Badge className="text-[10px] py-0 px-2 font-semibold capitalize" variant={inv.status === 'PAID' ? 'success' : 'secondary'}>
                           {inv.status.toLowerCase()}
                         </Badge>
@@ -1016,8 +1014,8 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             )}
 
             {/* Workstation Actions based on role */}
-            <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-              <h4 className="font-bold text-[14px] text-slate-850 dark:text-slate-200 uppercase tracking-wide">Available actions</h4>
+            <div className="space-y-3 pt-4 border-t border-slate-300 dark:border-slate-750">
+              <h4 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 uppercase tracking-wide">Available actions</h4>
               
               {role === 'ADMIN' && (
                 <div className="flex flex-col gap-3">
@@ -1027,10 +1025,10 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       <button
                         key={s}
                         onClick={() => handleStatusUpdate(selectedProject.id, s)}
-                        className={`text-[10px] font-semibold border px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                        className={`text-[10px] font-bold border px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                           selectedProject.status === s 
                             ? 'bg-accent text-white border-accent' 
-                            : 'border-slate-250 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900'
+                            : 'border-slate-350 dark:border-slate-700 text-slate-650 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/60'
                         }`}
                       >
                         {s.replace(/_/g, ' ').toLowerCase()}
@@ -1039,7 +1037,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   </div>
                   <a
                     href={`/admin/projects`}
-                    className="w-full flex items-center justify-center bg-slate-900 dark:bg-slate-800 text-white py-2 rounded-lg font-semibold text-center hover:opacity-90 transition-opacity"
+                    className="w-full flex items-center justify-center bg-slate-900 dark:bg-slate-800 text-white py-2 rounded-lg font-bold text-center hover:opacity-90 transition-opacity border border-slate-300 dark:border-slate-700"
                   >
                     Edit Project Configurations
                   </a>
@@ -1050,7 +1048,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                 <div className="space-y-4">
                   {/* Quick status progress buttons */}
                   <div className="space-y-2">
-                    <span className="text-[12px] text-slate-400 font-bold uppercase tracking-wider block">Update progress stage</span>
+                    <span className="text-[12px] text-slate-350 font-bold uppercase tracking-wider block">Update progress stage</span>
                     <div className="flex flex-wrap gap-2">
                       {['EDITING', 'REVISION_1', 'REVISION_2'].map((s) => (
                         <button
@@ -1059,7 +1057,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                           className={`text-[12px] font-bold border px-3.5 py-2 rounded-lg transition-colors cursor-pointer ${
                             selectedProject.status === s
                               ? 'bg-accent text-white border-accent'
-                              : 'border-slate-250 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900'
+                              : 'border-slate-350 dark:border-slate-700 text-slate-650 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/60'
                           }`}
                         >
                           {s.replace(/_/g, ' ').toLowerCase()}
