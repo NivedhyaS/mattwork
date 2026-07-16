@@ -22,7 +22,6 @@ import {
   Tooltip,
   AreaChart, Area,
   CartesianGrid,
-  PieChart, Pie, Cell,
 } from 'recharts';
 
 /*
@@ -152,13 +151,6 @@ export default function AdminDashboard() {
     { name: 'Ellen Ripley', projects: 1 },
   ];
 
-  // Donut: Medium priority → neutral slate, NOT accent violet
-  const priorityData = [
-    { name: 'Urgent', value: projects.filter((p: any) => p.priority === 'URGENT').length  || 2,  color: V.red    },
-    { name: 'High',   value: projects.filter((p: any) => p.priority === 'HIGH').length    || 5,  color: V.orange },
-    { name: 'Medium', value: projects.filter((p: any) => p.priority === 'MEDIUM').length  || 12, color: V.neutral },
-    { name: 'Low',    value: projects.filter((p: any) => p.priority === 'LOW').length     || 5,  color: V.gray   },
-  ];
 
   // ── Shared icon props — ONE spec, applied uniformly ───────────────────────
   const iconProps = { size: 18, strokeWidth: 1.5 };
@@ -179,14 +171,14 @@ export default function AdminDashboard() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
 
         {/* Total projects — neutral left-bar, neutral number */}
-        <Card className="flat-card border-l-4 border-l-slate-400 shadow-none">
+        <Card className="flat-card border-l-4 shadow-none" style={{ borderLeftColor: '#fff' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-450">
               Total projects
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-slate-100">
+            <div className="kpi-figure text-[38px] font-extrabold" style={{ color: '#fff' }}>
               {demoProjects}
             </div>
             <p className="text-[12px] mt-2" style={{ color: V.muted }}>
@@ -196,14 +188,14 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Active projects — ONLY use of violet accent */}
-        <Card className="flat-card border-l-4 shadow-none" style={{ borderLeftColor: V.accent }}>
+        <Card className="flat-card border-l-4 shadow-none" style={{ borderLeftColor: '#fff' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-450">
               Active projects
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold" style={{ color: V.accent }}>
+            <div className="kpi-figure text-[38px] font-extrabold" style={{ color: '#fff' }}>
               {demoActive}
             </div>
             <p className="text-[12px] mt-2" style={{ color: V.muted }}>
@@ -213,14 +205,14 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Completed projects — green */}
-        <Card className="flat-card border-l-4 border-l-emerald-500 shadow-none">
+        <Card className="flat-card border-l-4 shadow-none" style={{ borderLeftColor: '#fff' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-450">
               Completed projects
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-emerald-500">
+            <div className="kpi-figure text-[38px] font-extrabold" style={{ color: '#fff' }}>
               {demoCompleted}
             </div>
             <p className="text-[12px] mt-2" style={{ color: V.muted }}>
@@ -230,14 +222,14 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Upcoming deadlines — red */}
-        <Card className="flat-card border-l-4 border-l-red-500 shadow-none">
+        <Card className="flat-card border-l-4 shadow-none" style={{ borderLeftColor: '#fff' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-450">
               Upcoming deadlines
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-red-500">
+            <div className="kpi-figure text-[38px] font-extrabold" style={{ color: '#fff' }}>
               {demoDeadlines}
             </div>
             <p className="text-[12px] mt-2" style={{ color: V.muted }}>
@@ -247,14 +239,14 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Revenue — neutral (informational, not alarming) */}
-        <Card className="flat-card border-l-4 border-l-slate-400 shadow-none">
+        <Card className="flat-card border-l-4 shadow-none" style={{ borderLeftColor: '#fff' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-450">
               Revenue
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-slate-100">
+            <div className="kpi-figure text-[38px] font-extrabold" style={{ color: '#fff' }}>
               {formatCurrency(demoRevenue)}
             </div>
             <p className="text-[12px] mt-2" style={{ color: V.muted }}>
@@ -264,14 +256,14 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Costs — neutral (operational, not alarm) */}
-        <Card className="flat-card border-l-4 border-l-slate-400 shadow-none">
+        <Card className="flat-card border-l-4 shadow-none" style={{ borderLeftColor: '#fff' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-450">
               Costs
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-500 dark:text-slate-400">
+            <div className="kpi-figure text-[38px] font-extrabold" style={{ color: '#fff' }}>
               {formatCurrency(demoCosts)}
             </div>
             <p className="text-[12px] mt-2" style={{ color: V.muted }}>
@@ -281,14 +273,14 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Profit — green */}
-        <Card className="flat-card border-l-4 border-l-emerald-500 shadow-none">
+        <Card className="flat-card border-l-4 shadow-none" style={{ borderLeftColor: '#fff' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-450">
               Profit
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-emerald-500">
+            <div className="kpi-figure text-[38px] font-extrabold" style={{ color: '#fff' }}>
               {formatCurrency(demoProfit)}
             </div>
             <p className="text-[12px] mt-2" style={{ color: V.muted }}>
@@ -298,14 +290,14 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Pending payments — amber */}
-        <Card className="flat-card border-l-4 border-l-amber-500 shadow-none">
+        <Card className="flat-card border-l-4 shadow-none" style={{ borderLeftColor: '#fff' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-450">
               Pending payments
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-amber-500">
+            <div className="kpi-figure text-[38px] font-extrabold" style={{ color: '#fff' }}>
               {demoPending}
             </div>
             <p className="text-[12px] mt-2" style={{ color: V.muted }}>
@@ -319,7 +311,7 @@ export default function AdminDashboard() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 
         {/* Financial performance — bar chart */}
-        <Card className="lg:col-span-2 flat-card shadow-none">
+        <Card className="lg:col-span-3 flat-card shadow-none">
           <CardHeader className="pb-4">
             <CardTitle className="text-[18px] font-bold text-slate-900 dark:text-white">Financial performance</CardTitle>
             {/* Subtitle: muted gray, never accent color */}
@@ -352,49 +344,6 @@ export default function AdminDashboard() {
                   <Bar dataKey="profit"  fill={V.green}   name="Profit"  radius={[2,2,0,0]} />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Project priorities — donut */}
-        <Card className="flat-card shadow-none">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-[18px] font-bold text-slate-900 dark:text-white">Project priorities</CardTitle>
-            <CardDescription className="text-sm mt-1" style={{ color: V.muted }}>
-              Distribution of active projects by urgency levels
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center">
-            <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={priorityData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={85}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {priorityData.map((entry, i) => (
-                      <Cell key={`cell-${i}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ background: '#18181b', border: '1px solid #27272a', borderRadius: 8 }}
-                    itemStyle={{ fontSize: 14 }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-2 mt-4 text-[14px] font-semibold">
-              {priorityData.map((item) => (
-                <div key={item.name} className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: item.color }} />
-                  <span style={{ color: V.muted }}>{item.name}</span>
-                </div>
-              ))}
             </div>
           </CardContent>
         </Card>

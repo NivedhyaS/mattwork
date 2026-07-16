@@ -5,6 +5,20 @@ import { AuthUser } from '../../types/express';
 // We use a structural duck-type that matches the shape we actually use at runtime.
 type PrismaDecimal = { toFixed(n: number): string } | null;
 
+type CommentAuthor = {
+  id: string;
+  name: string;
+  role: string;
+};
+
+type RawComment = {
+  id: string;
+  content: string;
+  authorId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  author: CommentAuthor;
+};
 
 /** The full project shape as returned from the DB (all fields present). */
 export type RawProject = {
@@ -12,8 +26,8 @@ export type RawProject = {
   title: string;
   description: string | null;
   status: string;
-  priority: string;
   dueDate: Date | null;
+  submissionDate: Date | null;
   budget: PrismaDecimal;
   clientPrice: PrismaDecimal;
   editorPrice: PrismaDecimal;
@@ -21,6 +35,7 @@ export type RawProject = {
   notes: string | null;
   driveFolder: string | null;
   formLink: string | null;
+  rawMaterialsFolder: string | null;
   clientId: string;
   editorId: string | null;
   createdAt: Date;
@@ -48,13 +63,14 @@ export type RawProject = {
   // Optional extra relations on detail endpoint
   files?: unknown[];
   invoices?: unknown[];
+  comments?: RawComment[];
 };
 
 // ─── Per-role response shapes ─────────────────────────────────────────────────
 
 /**
  * ADMIN — sees everything: clientPrice, editorPrice, computed profit,
- * full client and editor identity (including contact email).
+ * full client and editor identity (including contact email), and internal comments.
  */
 export type AdminProjectView = Omit<RawProject, 'clientPrice' | 'editorPrice'> & {
   clientPrice: string | null;
@@ -63,18 +79,18 @@ export type AdminProjectView = Omit<RawProject, 'clientPrice' | 'editorPrice'> &
 };
 
 /**
- * CLIENT — sees clientPrice, but editorPrice, profit, and all editor
- * identity fields (name, email, avatar, id) are completely absent.
+ * CLIENT — sees clientPrice, but editorPrice, profit, all editor
+ * identity fields, and all comments are completely absent.
  */
 export type ClientProjectView = Omit<
   RawProject,
-  'editorPrice' | 'editorId' | 'editor'
+  'editorPrice' | 'editorId' | 'editor' | 'comments'
 > & {
   clientPrice: string | null;
 };
 
 /**
- * EDITOR — sees title, status, deadlines, drive links — but clientPrice,
+ * EDITOR — sees title, status, deadlines, drive links, and comments — but clientPrice,
  * editorPrice, profit, and all client contact info (email, phone) are absent.
  */
 export type EditorProjectView = Omit<
@@ -123,12 +139,13 @@ export function serializeProject(
     case Role.CLIENT: {
       const clientPrice = toDecimalString(raw.clientPrice);
 
-      // Omit editorPrice, profit, all editor identity (editorId + editor relation)
+      // Omit editorPrice, profit, all editor identity, and comments (never expose to client)
       const {
         clientPrice: _cp,
-        editorPrice: _ep, // excluded
-        editorId: _eid,   // excluded — prevents client discovering who their editor is by ID
-        editor: _editor,  // excluded — entire editor sub-object
+        editorPrice: _ep,   // excluded
+        editorId: _eid,     // excluded — prevents client discovering who their editor is by ID
+        editor: _editor,    // excluded — entire editor sub-object
+        comments: _comments, // excluded — internal admin/editor discussion
         ...rest
       } = raw;
 

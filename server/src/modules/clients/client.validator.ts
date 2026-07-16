@@ -13,6 +13,7 @@ export const createClientSchema = z.object({
   city: z.string().optional(),
   country: z.string().optional(),
   notes: z.string().optional(),
+  currency: z.string().length(3).regex(/^[A-Z]{3}$/, 'Must be a 3-letter currency code').optional().default('USD'),
 });
 
 export const updateClientSchema = z.object({
@@ -24,11 +25,12 @@ export const updateClientSchema = z.object({
   country: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   advancePaid: z.coerce.number().min(0).optional().nullable(),
+  currency: z.string().length(3).regex(/^[A-Z]{3}$/, 'Must be a 3-letter currency code').optional(),
 });
 
 export const listClientsSchema = z.object({
   page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(100).default(10),
+  limit: z.coerce.number().min(1).max(1000).default(10),
   sortBy: z.string().default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
   search: z.string().optional(),

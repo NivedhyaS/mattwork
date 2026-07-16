@@ -16,10 +16,10 @@
  *   node scripts/audit-balance.mjs
  *
  * PRD reference numbers to verify by eye:
- *   Advance Paid       ₹50,000
- *   Completed Work     ₹ 5,000
- *   Remaining Credit   ₹45,000
- *   Equivalent Videos      45   (@ ₹1,000 avg, or as seeded)
+ *   Advance Paid       $50,000
+ *   Completed Work     $ 5,000
+ *   Remaining Credit   $45,000
+ *   Equivalent Videos      45   (@ $1,000 avg, or as seeded)
  */
 
 const BASE_URL    = process.env.BASE_URL            || 'http://localhost:5000/api/v1';

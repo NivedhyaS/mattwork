@@ -10,7 +10,15 @@ import {
 } from './invoice.validator';
 
 export class InvoiceService {
-  async listInvoices(query: ListInvoicesQuery) {
+  async listInvoices(query: ListInvoicesQuery, requester?: any) {
+    if (requester && requester.role === 'CLIENT') {
+      const client = await prisma.client.findUnique({
+        where: { userId: requester.id },
+        select: { id: true },
+      });
+      if (!client) throw ApiError.notFound('Client profile not found');
+      query.clientId = client.id;
+    }
     return invoiceRepository.findAll(query);
   }
 
@@ -21,31 +29,84 @@ export class InvoiceService {
   }
 
   async createInvoice(input: CreateInvoiceInput) {
-    const project = await prisma.project.findUnique({ where: { id: input.projectId } });
-    if (!project) throw ApiError.notFound('Project not found');
-
     const client = await prisma.client.findUnique({ where: { id: input.clientId } });
     if (!client) throw ApiError.notFound('Client not found');
+
+    // Collect all project IDs referenced (from explicit list or legacy single projectId)
+    const projectIds: string[] = input.projectIds?.length
+      ? input.projectIds
+      : input.projectId
+        ? [input.projectId]
+        : [];
+
+    // Validate each project exists and belongs to this client
+    if (projectIds.length > 0) {
+      const projects = await prisma.project.findMany({
+        where: { id: { in: projectIds }, clientId: input.clientId },
+        include: {
+          invoices: {
+            where: { status: { not: 'CANCELLED' } },
+            select: { id: true, number: true },
+          },
+          invoicedProjects: {
+            where: { status: { not: 'CANCELLED' } },
+            select: { id: true, number: true },
+          },
+        },
+      });
+
+      if (projects.length !== projectIds.length) {
+        throw ApiError.badRequest('One or more projects not found or do not belong to this client');
+      }
+
+      // Duplicate-invoicing guard: reject if any project already has a live invoice
+      const alreadyInvoiced = projects.filter(
+        p => p.invoices.length > 0 || p.invoicedProjects.length > 0
+      );
+      if (alreadyInvoiced.length > 0) {
+        const titles = alreadyInvoiced.map(p => p.title).join(', ');
+        throw ApiError.badRequest(
+          `The following projects are already covered by a live invoice and cannot be invoiced again: ${titles}. Cancel those invoices first.`
+        );
+      }
+    }
+
+    // For a single-project invoice keep the FK; for multi-project leave it null
+    const singleProjectId = projectIds.length === 1 ? projectIds[0] : undefined;
 
     const subtotal = input.items.reduce((sum, item) => sum + item.total, 0);
     const taxAmount = (subtotal * input.taxRate) / 100;
     const total = subtotal + taxAmount - input.discount;
-    const number = await invoiceRepository.getNextInvoiceNumber();
 
-    return invoiceRepository.create({
-      number,
-      subtotal,
-      taxRate: input.taxRate,
-      taxAmount,
-      discount: input.discount,
-      total,
-      items: input.items as any,
-      dueDate: input.dueDate,
-      notes: input.notes,
-      terms: input.terms,
-      project: { connect: { id: input.projectId } },
-      client: { connect: { id: input.clientId } },
-    });
+    let retries = 5;
+    while (retries > 0) {
+      try {
+        const number = await invoiceRepository.getNextInvoiceNumber(input.clientId);
+        return await invoiceRepository.create({
+          number,
+          subtotal,
+          taxRate: input.taxRate,
+          taxAmount,
+          discount: input.discount,
+          total,
+          items: input.items as any,
+          dueDate: input.dueDate,
+          notes: input.notes,
+          terms: input.terms,
+          ...(singleProjectId ? { project: { connect: { id: singleProjectId } } } : {}),
+          projects: { connect: projectIds.map(id => ({ id })) },
+          client: { connect: { id: input.clientId } },
+        });
+      } catch (err: any) {
+        if (err.code === 'P2002' && (err.meta?.target?.includes('number') || err.message?.includes('number'))) {
+          retries--;
+          await new Promise(r => setTimeout(r, Math.random() * 50 + 10));
+        } else {
+          throw err;
+        }
+      }
+    }
+    throw ApiError.badRequest('Failed to generate a unique invoice number after multiple retries.');
   }
 
   async updateInvoice(id: string, input: UpdateInvoiceInput) {

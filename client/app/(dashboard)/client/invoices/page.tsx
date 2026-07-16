@@ -24,38 +24,34 @@ export default function ClientInvoicesPage() {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load projects, then fetch each project detail in parallel to gather invoices
-    api.get('/projects?limit=100')
-      .then(async (projectsRes) => {
-        const projData = projectsRes.data.data;
-        if (projData.length === 0) {
-          setInvoices([]);
-          return;
-        }
+    api.get('/invoices?limit=100')
+      .then((res) => {
+        const mappedInvoices = (res.data?.data || []).map((inv: any) => {
+          const projectTitles: string[] = [];
+          if (inv.project?.title) {
+            projectTitles.push(inv.project.title);
+          } else if (Array.isArray(inv.items)) {
+            inv.items.forEach((it: any) => {
+              if (it.description && !projectTitles.includes(it.description)) {
+                projectTitles.push(it.description);
+              }
+            });
+          }
+          const projectLabel =
+            projectTitles.slice(0, 2).join(', ') +
+            (projectTitles.length > 2 ? ` +${projectTitles.length - 2} more` : '');
 
-        try {
-          const detailPromises = projData.map((p: Project) => api.get(`/projects/${p.id}`));
-          const detailsRes = await Promise.all(detailPromises);
-          
-          const allInvoicesMap = new Map<string, any>();
-          detailsRes.forEach((res) => {
-            const detailProj = res.data.data;
-            if (detailProj.invoices && detailProj.invoices.length > 0) {
-              detailProj.invoices.forEach((inv: any) => {
-                // Add project context for display
-                allInvoicesMap.set(inv.id, {
-                  ...inv,
-                  projectTitle: detailProj.title,
-                });
-              });
-            }
-          });
-          setInvoices(Array.from(allInvoicesMap.values()).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-        } catch (invoiceErr) {
-          console.error('Failed to gather invoices from projects:', invoiceErr);
-        }
+          return {
+            ...inv,
+            projectTitle: projectLabel || 'No Projects',
+          };
+        });
+
+        setInvoices(mappedInvoices.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error('Failed to fetch invoices:', err);
+      })
       .finally(() => setLoading(false));
   }, []);
 

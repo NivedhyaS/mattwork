@@ -13,10 +13,10 @@ const router = Router();
 
 router.use(authenticate);
 
-// GET /api/v1/invoices — Admin, Editor
+// GET /api/v1/invoices — Admin, Editor, Client
 router.get(
   '/',
-  authorize(Role.ADMIN, Role.EDITOR),
+  authorize(Role.ADMIN, Role.EDITOR, Role.CLIENT),
   validate(listInvoicesSchema, 'query'),
   invoiceController.listInvoices
 );

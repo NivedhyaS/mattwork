@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { 
@@ -12,10 +13,12 @@ import {
   MoreHorizontal,
   Trash2,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  PackageOpen,
 } from 'lucide-react';
 import Button from '@/components/ui/button';
 import { formatCurrency } from '@/lib/utils';
+import { getCurrencySymbol } from '@/lib/currency';
 import Drawer from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label';
@@ -35,16 +38,16 @@ const STATUS_COLORS: Record<string, string> = {
 
 const invoiceItemSchema = z.object({
   description: z.string().min(1, 'Description is required'),
-  quantity: z.coerce.number().positive('Quantity must be positive'),
-  unitPrice: z.coerce.number().positive('Unit price must be positive'),
+  quantity: z.number().positive('Quantity must be positive'),
+  unitPrice: z.number().min(0, 'Unit price must be 0 or more'),
 });
 
 const createInvoiceSchema = z.object({
   clientId: z.string().min(1, 'Client is required'),
-  projectId: z.string().min(1, 'Project is required'),
-  taxRate: z.coerce.number().min(0).max(100).default(0),
-  discount: z.coerce.number().min(0).default(0),
-  dueDate: z.string().optional().or(z.literal('')),
+  projectIds: z.array(z.string()),
+  taxRate: z.number().min(0).max(100),
+  discount: z.number().min(0),
+  dueDate: z.string().optional(),
   notes: z.string().optional(),
   terms: z.string().optional(),
   items: z.array(invoiceItemSchema).min(1, 'At least one item is required'),
@@ -52,14 +55,21 @@ const createInvoiceSchema = z.object({
 
 type InvoiceFormValues = z.infer<typeof createInvoiceSchema>;
 
+interface UploadedProject {
+  id: string;
+  title: string;
+  clientPrice: number | null;
+}
+
 export default function InvoicesPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
+  const [loadingProjects, setLoadingProjects] = useState(false);
 
   const { isAuthenticated } = useAuthStore();
 
-  // Queries
   const { data: invoicesData, isLoading, error, refetch } = useQuery({
     queryKey: ['invoices'],
     queryFn: async () => {
@@ -80,30 +90,25 @@ export default function InvoicesPage() {
     enabled: isAuthenticated,
   });
 
-  const { data: projectsData } = useQuery({
-    queryKey: ['projects'],
-    queryFn: async () => {
-      const res = await api.get('/projects?limit=100');
-      return res.data;
-    },
-    enabled: isAuthenticated,
-  });
-
   const clients = clientsData?.data || [];
-  const projects = projectsData?.data || [];
 
-  // Mutations
   const generatePdfMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, number }: { id: string; number: string }) => {
       const response = await api.get(`/invoices/${id}/pdf`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `invoice-${id}.pdf`);
+      link.setAttribute('download', `invoice_${number}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
     },
+    onError: (err: any) => {
+      console.error('Invoice PDF download failed:', err);
+      alert('Failed to download invoice PDF. Please try again.');
+    }
   });
 
   const createInvoiceMutation = useMutation({
@@ -117,58 +122,100 @@ export default function InvoicesPage() {
     },
   });
 
-  // Form Setup
   const {
     register,
     control,
     handleSubmit,
     watch,
     reset,
+    setValue,
     formState: { errors },
-  } = useForm({
+  } = useForm<InvoiceFormValues>({
     resolver: zodResolver(createInvoiceSchema),
     defaultValues: {
       clientId: '',
-      projectId: '',
+      projectIds: [],
       taxRate: 0,
       discount: 0,
       dueDate: '',
       notes: '',
       terms: '',
-      items: [{ description: '', quantity: 1, unitPrice: 0 }],
+      items: [],
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control,
     name: 'items',
   });
 
-  // Dynamic values watch for real-time calculations
+  const watchedClientId = watch('clientId');
+
+  useEffect(() => {
+    if (!watchedClientId) {
+      replace([]);
+      setValue('projectIds', []);
+      return;
+    }
+
+    setLoadingProjects(true);
+
+    api
+      .get('/projects', {
+        params: {
+          clientId: watchedClientId,
+          status: 'UPLOADED',
+          excludeInvoiced: true,
+          limit: 200,
+        },
+      })
+      .then((res) => {
+        const uploaded: UploadedProject[] = (res.data?.data || []).map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          clientPrice: p.clientPrice != null ? Number(p.clientPrice) : null,
+        }));
+
+        if (uploaded.length === 0) {
+          replace([]);
+          setValue('projectIds', []);
+        } else {
+          replace(
+            uploaded.map((p) => ({
+              description: p.title,
+              quantity: 1,
+              unitPrice: p.clientPrice ?? 0,
+            }))
+          );
+          setValue('projectIds', uploaded.map((p) => p.id));
+        }
+      })
+      .catch(() => {
+        replace([]);
+        setValue('projectIds', []);
+      })
+      .finally(() => setLoadingProjects(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedClientId]);
+
   const watchedItems = watch('items') || [];
   const watchedTaxRate = Number(watch('taxRate')) || 0;
   const watchedDiscount = Number(watch('discount')) || 0;
 
+  const selectedClient = clients.find((c: any) => c.id === watchedClientId);
+  const activeCurrency = selectedClient?.currency || 'USD';
+  const curSymbol = getCurrencySymbol(activeCurrency);
+
   const subtotal = watchedItems.reduce((acc, item) => {
     if (!item) return acc;
-    const qty = Number(item.quantity) || 0;
-    const price = Number(item.unitPrice) || 0;
-    return acc + qty * price;
+    return acc + (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
   }, 0);
 
   const taxAmount = subtotal * (watchedTaxRate / 100);
   const total = subtotal + taxAmount - watchedDiscount;
 
-  const watchedClientId = watch('clientId');
-  // Filter projects by selected client (if client matches)
-  const filteredProjects = projects.filter((proj: any) => {
-    if (!watchedClientId) return true;
-    return proj.clientId === watchedClientId;
-  });
-
-  const onSubmit = (values: any) => {
-    // Process items to calculate total for each
-    const processedItems = values.items.map((item: any) => ({
+  const onSubmit = (values: InvoiceFormValues) => {
+    const processedItems = values.items.map((item) => ({
       ...item,
       total: Number(item.quantity) * Number(item.unitPrice),
     }));
@@ -182,16 +229,19 @@ export default function InvoicesPage() {
     createInvoiceMutation.mutate(payload);
   };
 
-  const invoices = (invoicesData?.data || []).filter((inv: any) => 
-    !search || 
-    inv.number.toLowerCase().includes(search.toLowerCase()) ||
-    inv.client?.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
-    inv.project?.title?.toLowerCase().includes(search.toLowerCase())
+  const invoices = (invoicesData?.data || []).filter(
+    (inv: any) =>
+      !search ||
+      inv.number.toLowerCase().includes(search.toLowerCase()) ||
+      inv.client?.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
+      inv.project?.title?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const clientSelected = !!watchedClientId;
+  const hasItems = fields.length > 0;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-[36px] font-bold tracking-tight text-slate-900 dark:text-white">
@@ -207,7 +257,6 @@ export default function InvoicesPage() {
         </Button>
       </div>
 
-      {/* Search */}
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <input
@@ -219,7 +268,6 @@ export default function InvoicesPage() {
         />
       </div>
 
-      {/* Data Table */}
       <div className="bg-white dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-900 shadow-sm overflow-hidden flex flex-col">
         {isLoading ? (
           <div className="flex items-center justify-center py-24">
@@ -258,7 +306,7 @@ export default function InvoicesPage() {
               <thead>
                 <tr className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-900 text-[12px] font-bold uppercase tracking-wider text-slate-400">
                   <th className="py-4 px-5">Invoice</th>
-                  <th className="py-4 px-5">Client / Project</th>
+                  <th className="py-4 px-5">Client / Projects</th>
                   <th className="py-4 px-5">Amount</th>
                   <th className="py-4 px-5">Status</th>
                   <th className="py-4 px-5">Issued</th>
@@ -266,56 +314,73 @@ export default function InvoicesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-900">
-                {invoices.map((inv: any) => (
-                  <tr key={inv.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-900/30 transition-colors group">
-                    <td className="py-4 px-5 font-semibold text-slate-900 dark:text-white">
-                      {inv.number}
-                    </td>
-                    <td className="py-4 px-5">
-                      <p className="font-semibold text-[15px] text-slate-800 dark:text-slate-200">
-                        {inv.client?.user?.name || 'Unknown Client'}
-                      </p>
-                      <p className="text-[13px] text-slate-400 truncate max-w-[200px]">
-                        {inv.project?.title || 'No Project'}
-                      </p>
-                    </td>
-                    <td className="py-4 px-5">
-                      <p className="font-bold text-slate-900 dark:text-white">
-                        {formatCurrency(Number(inv.total))}
-                      </p>
-                    </td>
-                    <td className="py-4 px-5">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${STATUS_COLORS[inv.status] || STATUS_COLORS.DRAFT}`}>
-                        {inv.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-5 text-slate-500 font-medium">
-                      {new Date(inv.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </td>
-                    <td className="py-4 px-5">
-                      <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
-                          onClick={() => generatePdfMutation.mutate(inv.id)}
-                          disabled={generatePdfMutation.isPending}
-                          className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 rounded-lg cursor-pointer transition-colors"
-                          title="Download PDF"
-                        >
-                          {generatePdfMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                        </button>
-                        <button className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {invoices.map((inv: any) => {
+                  // Show project title from FK or fall back to item descriptions
+                  const projectTitles: string[] = [];
+                  if (inv.project?.title) {
+                    projectTitles.push(inv.project.title);
+                  } else if (Array.isArray(inv.items)) {
+                    inv.items.forEach((it: any) => {
+                      if (it.description && !projectTitles.includes(it.description)) {
+                        projectTitles.push(it.description);
+                      }
+                    });
+                  }
+                  const projectLabel =
+                    projectTitles.slice(0, 2).join(', ') +
+                    (projectTitles.length > 2 ? ` +${projectTitles.length - 2} more` : '');
+
+                  return (
+                    <tr 
+                      key={inv.id} 
+                      onClick={() => router.push(`/admin/invoices/${inv.id}`)}
+                      className="hover:bg-indigo-500/5 dark:hover:bg-indigo-500/10 hover:shadow-[inset_4px_0_0_0_#4f46e5] cursor-pointer transition-all border-b border-slate-100 dark:border-slate-900 group"
+                    >
+                      <td className="py-4 px-5 font-semibold text-slate-900 dark:text-white">{inv.number}</td>
+                      <td className="py-4 px-5">
+                        <p className="font-semibold text-[15px] text-slate-800 dark:text-slate-200">
+                          {inv.client?.user?.name || 'Unknown Client'}
+                        </p>
+                        <p className="text-[13px] text-slate-400 truncate max-w-[220px]">
+                          {projectLabel || 'No Projects'}
+                        </p>
+                      </td>
+                      <td className="py-4 px-5">
+                        <p className="font-bold text-slate-900 dark:text-white">{formatCurrency(Number(inv.total), inv.client?.currency || 'USD')}</p>
+                      </td>
+                      <td className="py-4 px-5">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${STATUS_COLORS[inv.status] || STATUS_COLORS.DRAFT}`}>
+                          {inv.status}
+                        </span>
+                      </td>
+                      <td className="py-4 px-5 text-slate-500 font-medium">
+                        {new Date(inv.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </td>
+                      <td className="py-4 px-5">
+                        <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              generatePdfMutation.mutate({ id: inv.id, number: inv.number });
+                            }}
+                            disabled={generatePdfMutation.isPending}
+                            className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 rounded-lg cursor-pointer transition-colors"
+                            title="Download PDF"
+                          >
+                            {generatePdfMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
       </div>
 
-      {/* Create Invoice Drawer */}
+      {/* ── Create Invoice Drawer ─────────────────────────────────────────────── */}
       <Drawer
         isOpen={isCreateDrawerOpen}
         onClose={() => {
@@ -323,37 +388,26 @@ export default function InvoicesPage() {
           reset();
         }}
         title="Create Invoice"
-        description="Draft a new invoice for a client project."
+        description="Select a client to auto-load their completed (Uploaded) projects as line items."
         size="lg"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="clientId">Client</Label>
-                <Select id="clientId" error={errors.clientId?.message} {...register('clientId')}>
-                  <option value="">Select a client...</option>
-                  {clients.map((c: any) => (
-                    <option key={c.id} value={c.id}>
-                      {c.company ? `${c.company} (${c.user.name})` : c.user.name}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="projectId">Project</Label>
-                <Select id="projectId" error={errors.projectId?.message} {...register('projectId')}>
-                  <option value="">Select a project...</option>
-                  {filteredProjects.map((p: any) => (
-                    <option key={p.id} value={p.id}>
-                      {p.title}
-                    </option>
-                  ))}
-                </Select>
-              </div>
+
+            {/* Client selector */}
+            <div className="space-y-2">
+              <Label htmlFor="clientId">Client</Label>
+              <Select id="clientId" error={errors.clientId?.message} {...register('clientId')}>
+                <option value="">Select a client…</option>
+                {clients.map((c: any) => (
+                  <option key={c.id} value={c.id}>
+                    {c.company ? `${c.company} (${c.user.name})` : c.user.name}
+                  </option>
+                ))}
+              </Select>
             </div>
-            
+
+            {/* Due date / Tax / Discount */}
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="dueDate">Due Date</Label>
@@ -361,75 +415,111 @@ export default function InvoicesPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="taxRate">Tax Rate (%)</Label>
-                <Input id="taxRate" type="number" step="0.1" error={errors.taxRate?.message} {...register('taxRate')} />
+                <Input id="taxRate" type="number" step="0.1" error={errors.taxRate?.message} {...register('taxRate', { valueAsNumber: true })} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="discount">Discount ($)</Label>
-                <Input id="discount" type="number" step="0.01" error={errors.discount?.message} {...register('discount')} />
+                <Label htmlFor="discount">Discount ({curSymbol})</Label>
+                <Input id="discount" type="number" step="0.01" error={errors.discount?.message} {...register('discount', { valueAsNumber: true })} />
               </div>
             </div>
 
             {/* Line Items */}
             <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
               <div className="flex justify-between items-center">
-                <Label className="text-sm font-bold">Line Items</Label>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm" 
+                <Label className="text-sm font-bold">
+                  Line Items
+                  {clientSelected && !loadingProjects && (
+                    <span className="ml-2 text-[11px] font-normal text-slate-400">
+                      (auto-populated from Uploaded projects)
+                    </span>
+                  )}
+                </Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => append({ description: '', quantity: 1, unitPrice: 0 })}
                   className="h-8 text-[11px] cursor-pointer"
+                  disabled={!clientSelected}
                 >
                   Add Item
                 </Button>
               </div>
-              
-              {errors.items && <p className="text-xs text-rose-500 font-medium">{errors.items.message}</p>}
 
-              <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
-                {fields.map((field, index) => {
-                  const itemQuantity = Number(watchedItems[index]?.quantity) || 0;
-                  const itemUnitPrice = Number(watchedItems[index]?.unitPrice) || 0;
-                  const itemTotal = itemQuantity * itemUnitPrice;
+              {errors.items && (
+                <p className="text-xs text-rose-500 font-medium">{errors.items.message}</p>
+              )}
 
-                  return (
-                    <div key={field.id} className="flex gap-3 items-start bg-slate-50/50 dark:bg-slate-900/30 p-3 rounded-lg border border-slate-100 dark:border-slate-850">
-                      <div className="flex-1 space-y-1">
-                        <Label className="text-[10px] uppercase text-slate-400">Description</Label>
-                        <Input 
-                          placeholder="e.g. Editing services" 
-                          error={errors.items?.[index]?.description?.message}
-                          {...register(`items.${index}.description` as const)} 
-                        />
-                      </div>
-                      
-                      <div className="w-20 space-y-1">
-                        <Label className="text-[10px] uppercase text-slate-400">Qty</Label>
-                        <Input 
-                          type="number" 
-                          error={errors.items?.[index]?.quantity?.message}
-                          {...register(`items.${index}.quantity` as const)} 
-                        />
-                      </div>
+              {/* Before client is chosen */}
+              {!clientSelected && (
+                <div className="py-6 text-center text-[14px] text-slate-400">
+                  Select a client above to auto-load their completed projects.
+                </div>
+              )}
 
-                      <div className="w-28 space-y-1">
-                        <Label className="text-[10px] uppercase text-slate-400">Rate</Label>
-                        <Input 
-                          type="number" 
-                          step="0.01" 
-                          error={errors.items?.[index]?.unitPrice?.message}
-                          {...register(`items.${index}.unitPrice` as const)} 
-                        />
-                      </div>
+              {/* Loading */}
+              {clientSelected && loadingProjects && (
+                <div className="flex items-center gap-2 py-6 justify-center text-slate-400">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span className="text-[14px]">Loading completed projects…</span>
+                </div>
+              )}
 
-                      <div className="w-24 space-y-1">
-                        <Label className="text-[10px] uppercase text-slate-400">Total</Label>
-                        <div className="h-10 flex items-center px-3 border border-slate-200 dark:border-slate-850 bg-slate-100 dark:bg-slate-900 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300">
-                          {formatCurrency(itemTotal)}
+              {/* Empty state */}
+              {clientSelected && !loadingProjects && !hasItems && (
+                <div className="flex flex-col items-center gap-2 py-8 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
+                  <PackageOpen className="h-8 w-8 text-slate-300 dark:text-slate-700" />
+                  <p className="font-semibold text-[14px] text-slate-600 dark:text-slate-400">
+                    No completed projects to invoice
+                  </p>
+                  <p className="text-[13px] text-slate-400 max-w-xs">
+                    This client has no Uploaded projects that haven&apos;t been invoiced yet.
+                    Use &ldquo;Add Item&rdquo; to create a manual line item.
+                  </p>
+                </div>
+              )}
+
+              {/* Auto-populated + manual items */}
+              {!loadingProjects && hasItems && (
+                <div className="space-y-3 max-h-[260px] overflow-y-auto pr-1">
+                  {fields.map((field, index) => {
+                    const qty = Number(watchedItems[index]?.quantity) || 0;
+                    const rate = Number(watchedItems[index]?.unitPrice) || 0;
+                    const lineTotal = qty * rate;
+
+                    return (
+                      <div key={field.id} className="flex gap-3 items-start bg-slate-50/50 dark:bg-slate-900/30 p-3 rounded-lg border border-slate-100 dark:border-slate-850">
+                        <div className="flex-1 space-y-1">
+                          <Label className="text-[10px] uppercase text-slate-400">Description</Label>
+                          <Input
+                            placeholder="Project title or service"
+                            error={errors.items?.[index]?.description?.message}
+                            {...register(`items.${index}.description` as const)}
+                          />
                         </div>
-                      </div>
-
-                      {fields.length > 1 && (
+                        <div className="w-20 space-y-1">
+                          <Label className="text-[10px] uppercase text-slate-400">Qty</Label>
+                          <Input
+                            type="number"
+                            error={errors.items?.[index]?.quantity?.message}
+                            {...register(`items.${index}.quantity` as const, { valueAsNumber: true })}
+                          />
+                        </div>
+                        <div className="w-28 space-y-1">
+                          <Label className="text-[10px] uppercase text-slate-400">Rate ({curSymbol})</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            error={errors.items?.[index]?.unitPrice?.message}
+                            {...register(`items.${index}.unitPrice` as const, { valueAsNumber: true })}
+                          />
+                        </div>
+                        <div className="w-24 space-y-1">
+                          <Label className="text-[10px] uppercase text-slate-400">Total</Label>
+                          <div className="h-10 flex items-center px-3 border border-slate-200 dark:border-slate-850 bg-slate-100 dark:bg-slate-900 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300">
+                            {formatCurrency(lineTotal, activeCurrency)}
+                          </div>
+                        </div>
                         <button
                           type="button"
                           onClick={() => remove(index)}
@@ -437,19 +527,19 @@ export default function InvoicesPage() {
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
-            {/* Terms and Notes */}
+            {/* Notes / Terms */}
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes</Label>
-                <textarea 
-                  id="notes" 
+                <textarea
+                  id="notes"
                   {...register('notes')}
                   placeholder="Notes shown on invoice..."
                   className="w-full h-20 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -457,8 +547,8 @@ export default function InvoicesPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="terms">Terms</Label>
-                <textarea 
-                  id="terms" 
+                <textarea
+                  id="terms"
                   {...register('terms')}
                   placeholder="Payment terms..."
                   className="w-full h-20 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -466,30 +556,45 @@ export default function InvoicesPage() {
               </div>
             </div>
 
-            {/* Calculations Summary */}
+            {/* Totals */}
             <div className="bg-slate-50 dark:bg-slate-900/50 p-4 border border-slate-150 dark:border-slate-850 rounded-xl space-y-2 text-sm font-semibold">
               <div className="flex justify-between text-slate-500">
                 <span>Subtotal</span>
-                <span>{formatCurrency(subtotal)}</span>
+                <span>{formatCurrency(subtotal, activeCurrency)}</span>
               </div>
               <div className="flex justify-between text-slate-500">
                 <span>Tax ({watchedTaxRate}%)</span>
-                <span>{formatCurrency(taxAmount)}</span>
+                <span>{formatCurrency(taxAmount, activeCurrency)}</span>
               </div>
               <div className="flex justify-between text-slate-500">
                 <span>Discount</span>
-                <span>-{formatCurrency(watchedDiscount)}</span>
+                <span>-{formatCurrency(watchedDiscount, activeCurrency)}</span>
               </div>
               <div className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-2 text-base font-black text-slate-900 dark:text-white">
                 <span>Grand Total</span>
-                <span>{formatCurrency(total)}</span>
+                <span>{formatCurrency(total, activeCurrency)}</span>
               </div>
             </div>
           </div>
-          
+
           <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="ghost" onClick={() => setIsCreateDrawerOpen(false)}>Cancel</Button>
-            <Button type="submit" isLoading={createInvoiceMutation.isPending}>Create Invoice</Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setIsCreateDrawerOpen(false);
+                reset();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              isLoading={createInvoiceMutation.isPending}
+              disabled={createInvoiceMutation.isPending}
+            >
+              Create Invoice
+            </Button>
           </div>
         </form>
       </Drawer>

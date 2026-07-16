@@ -101,6 +101,14 @@ export class UserService {
     if (!user) throw ApiError.notFound('User not found');
     return userRepository.update(id, { isActive: !user.isActive });
   }
+
+  async adminPasswordReset(userId: string, input: { newPassword: string }) {
+    const user = await userRepository.findById(userId);
+    if (!user) throw ApiError.notFound('User not found');
+
+    const hashed = await hashPassword(input.newPassword);
+    await userRepository.updatePassword(userId, hashed);
+  }
 }
 
 export const userService = new UserService();

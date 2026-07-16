@@ -12,13 +12,14 @@ import { logger } from '../../config/logger';
 
 // Schema for validating incoming Google Form submission payloads
 const googleFormIntakeSchema = z.object({
-  submissionId: z.string().min(1, 'Submission ID is required'),
-  clientEmail: z.string().email('Invalid email address').toLowerCase().optional().or(z.literal('')),
-  clientName: z.string().min(1, 'Client name is required'),
-  companyName: z.string().optional().nullable(),
-  videoTitle: z.string().min(2, 'Video title must be at least 2 characters'),
-  rawFootageLink: z.string().url('Raw footage link must be a valid URL'),
-  scriptLink: z.string().url('Script link must be a valid URL').optional().or(z.literal('')),
+  submissionId: z.string().min(1, "Submission ID is required"),
+
+  clientName: z.string().min(1, "Client name is required"),
+
+  videoTitle: z.string().min(2, "Video title must be at least 2 characters"),
+
+  driveFolderLink: z.string().url("Drive folder link must be a valid URL"),
+
   deadline: z.string().optional().nullable(),
 });
 
@@ -47,12 +48,9 @@ export class WebhookController {
 
     const {
       submissionId,
-      clientEmail,
       clientName,
-      companyName,
       videoTitle,
-      rawFootageLink,
-      scriptLink,
+      driveFolderLink,
       deadline
     } = validationResult.data;
 
@@ -72,71 +70,33 @@ export class WebhookController {
       return;
     }
 
-    // 4. Find or Create Client
-    let client = null;
+    // 4. Find Client (Strict Existence Check)
+    const client = await prisma.client.findFirst({
+      where: {
+        OR: [
+          { user: { name: { equals: clientName, mode: 'insensitive' } } },
+          { company: { equals: clientName, mode: 'insensitive' } }
+        ]
+      },
+      include: { user: true }
+    });
 
-    // Try finding by email first
-    if (clientEmail) {
-      client = await prisma.client.findFirst({
-        where: { user: { email: clientEmail } },
-        include: { user: true }
-      });
-    }
-
-    // Try finding by name/company if not found by email
-    if (!client && clientName) {
-      client = await prisma.client.findFirst({
-        where: {
-          OR: [
-            { user: { name: { equals: clientName, mode: 'insensitive' } } },
-            { company: { equals: clientName, mode: 'insensitive' } }
-          ]
-        },
-        include: { user: true }
-      });
-    }
-
-    // Create client if not found
-    let newlyCreated = false;
     if (!client) {
-      if (!clientEmail) {
-        logger.warn(`[WebhookController] Client lookup failed and no email was supplied to create a new profile for: ${clientName}`);
-        res.status(400).json({ error: 'Client profile not found. An email address must be supplied to create a new client account.' });
-        return;
-      }
-
-      logger.info(`[WebhookController] Client not found. Creating new user and client profile for: ${clientEmail}`);
-      const randomPassword = Math.random().toString(36).substring(2, 12);
-      const passwordHash = await bcrypt.hash(randomPassword, 10);
-
-      const user = await prisma.user.create({
-        data: {
-          name: clientName,
-          email: clientEmail,
-          password: passwordHash,
-          role: Role.CLIENT,
-        }
+      logger.warn(`[WebhookController] Client lookup failed for name: ${clientName}`);
+      res.status(400).json({
+        error: 'Client not found. Please create the client in the Admin panel before submitting projects.'
       });
-
-      client = await prisma.client.create({
-        data: {
-          userId: user.id,
-          company: companyName || clientName || 'New Client LLC',
-        },
-        include: { user: true }
-      });
-      newlyCreated = true;
+      return;
     }
 
     const submissionDate = new Date();
     const parsedDeadline = deadline ? new Date(deadline) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Default 7 days from now
 
-    // 5. Google Drive Folder Setup (real API or graceful simulation)
+    // 5. Google Drive Folder Setup (Real copy or simulated copy)
     const driveResult = await googleDriveService.setupProjectFolder({
       clientName: client.user.name || client.company || 'Client',
       videoTitle,
-      rawFootageLink,
-      scriptLink: scriptLink || '',
+      driveFolderLink,
       submissionDate,
     });
 
@@ -147,9 +107,8 @@ export class WebhookController {
     // 6. Create Project in NEW_VIDEO status
     const project = await projectService.createProject({
       title: videoTitle,
-      description: `Automated intake from Google Form.\nRaw Footage Link: ${rawFootageLink}\nScript Link: ${scriptLink || 'N/A'}`,
+      description: `Automated intake from Google Form.`,
       clientId: client.id,
-      priority: 'MEDIUM',
       dueDate: parsedDeadline,
       driveFolder: driveResult.projectFolderUrl,
       formLink: submissionId, // stores submissionId for idempotency
@@ -160,12 +119,11 @@ export class WebhookController {
 
     ApiResponse.created(res, {
       project,
-      credentialsCreated: newlyCreated,
       driveFolder: {
-        url:            driveResult.projectFolderUrl,
-        folderId:       driveResult.projectFolderId,
+        url: driveResult.projectFolderUrl,
+        folderId: driveResult.projectFolderId,
         assetsFolderId: driveResult.assetsFolderId,
-        isSimulated:    driveResult.isSimulated,
+        isSimulated: driveResult.isSimulated,
       },
     }, 'Project card created and Drive files organized successfully');
   });

@@ -70,9 +70,10 @@ interface Project {
 
 interface ProjectBoardProps {
   role: 'ADMIN' | 'EDITOR' | 'CLIENT';
+  extraHeader?: React.ReactNode;
 }
 
-export default function ProjectBoard({ role }: ProjectBoardProps) {
+export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -316,6 +317,7 @@ export default function ProjectBoard({ role }: ProjectBoardProps) {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            {extraHeader}
             {updatingId && (
               <div className="flex items-center gap-1.5 text-xs text-slate-400">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />

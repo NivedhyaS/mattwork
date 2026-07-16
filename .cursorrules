@@ -1,0 +1,23 @@
+This is a production-grade full-stack application.
+
+Frontend:
+- Next.js App Router
+- React
+- TypeScript
+- Tailwind CSS
+
+Backend:
+- Express.js
+- Prisma ORM
+- PostgreSQL
+
+Rules:
+- Do not rewrite working modules.
+- Preserve existing architecture.
+- Reuse existing components before creating new ones.
+- Follow the current folder structure.
+- Maintain role-based access (ADMIN, EDITOR, CLIENT).
+- Never break existing APIs.
+- Prefer small, focused edits over large refactors.
+- Keep TypeScript strict with no type errors.
+- Follow enterprise-level UI consistency.

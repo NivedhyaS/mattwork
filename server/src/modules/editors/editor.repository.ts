@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, ProjectStatus } from '@prisma/client';
 import { BaseRepository } from '../../repositories/base.repository';
 import { PaginationParams } from '../../types';
 
@@ -15,9 +15,13 @@ const editorSelect = {
     select: { id: true, name: true, email: true, avatar: true, isActive: true },
   },
   _count: {
-    select: { projects: true },
+    select: {
+      projects: {
+        where: { status: { notIn: ['UPLOADED', 'CANCELLED'] as ProjectStatus[] } },
+      },
+    },
   },
-} as const;
+};
 
 export class EditorRepository extends BaseRepository<any, any, any> {
   readonly modelName = 'Editor';
@@ -54,7 +58,6 @@ export class EditorRepository extends BaseRepository<any, any, any> {
             id: true,
             title: true,
             status: true,
-            priority: true,
             dueDate: true,
             client: { select: { id: true, company: true, user: { select: { name: true } } } },
           },

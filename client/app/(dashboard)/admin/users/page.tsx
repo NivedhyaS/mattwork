@@ -149,13 +149,28 @@ export default function UsersPage() {
     createMutation.mutate(values);
   };
 
-  const onEditSubmit = (values: EditUserFormValues) => {
+  const onEditSubmit = async (values: EditUserFormValues) => {
     if (!editUser) return;
     const updateData: Partial<EditUserFormValues> = { name: values.name, email: values.email, role: values.role };
-    if (values.password) {
-      updateData.password = values.password;
+    
+    try {
+      setUpdateError(null);
+      // Update basic details
+      await api.patch(`/users/${editUser.id}`, updateData);
+      
+      // If a new password was provided, forcefully reset it
+      if (values.password) {
+        await api.post(`/users/${editUser.id}/admin-password-reset`, { newPassword: values.password });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setEditUser(null);
+      editForm.reset();
+    } catch (err: any) {
+      setUpdateError(
+        err.response?.data?.message || err.message || 'Failed to update user'
+      );
     }
-    updateMutation.mutate({ id: editUser.id, data: updateData });
   };
 
   const openEditModal = (user: User) => {

@@ -8,7 +8,8 @@ const invoiceItemSchema = z.object({
 });
 
 export const createInvoiceSchema = z.object({
-  projectId: z.string().min(1),
+  projectId: z.string().optional().nullable(),
+  projectIds: z.array(z.string()).optional().default([]),
   clientId: z.string().min(1),
   items: z.array(invoiceItemSchema).min(1, 'At least one item is required'),
   taxRate: z.coerce.number().min(0).max(100).default(0),
@@ -30,7 +31,7 @@ export const updateInvoiceSchema = z.object({
 
 export const listInvoicesSchema = z.object({
   page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(100).default(10),
+  limit: z.coerce.number().min(1).max(1000).default(10),
   sortBy: z.string().default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
   status: z.enum(['DRAFT', 'SENT', 'VIEWED', 'PARTIAL', 'PAID', 'OVERDUE', 'CANCELLED']).optional(),

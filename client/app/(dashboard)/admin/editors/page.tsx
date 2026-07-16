@@ -256,7 +256,7 @@ export default function EditorsPage() {
                 <div>
                   {editor.hourlyRate ? (
                     <p className="text-[15px] font-bold text-slate-900 dark:text-white">
-                      ₹{Number(editor.hourlyRate).toLocaleString('en-IN')}
+                      ${Number(editor.hourlyRate).toLocaleString('en-US')}
                       <span className="text-[13px] font-medium text-slate-400 ml-1">/ video</span>
                     </p>
                   ) : (

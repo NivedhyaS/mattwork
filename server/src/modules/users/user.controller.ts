@@ -33,6 +33,11 @@ export class UserController {
     const user = await userService.toggleUserStatus(req.params.id as string);
     ApiResponse.success(res, user, `User ${user.isActive ? 'activated' : 'deactivated'} successfully`);
   });
+
+  adminPasswordReset = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    await userService.adminPasswordReset(req.params.id as string, req.body);
+    ApiResponse.success(res, null, 'User password forcefully reset successfully');
+  });
 }
 
 export const userController = new UserController();

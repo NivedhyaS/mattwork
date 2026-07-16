@@ -29,6 +29,17 @@ export const changePasswordSchema = z.object({
     ),
 });
 
+export const adminPasswordResetSchema = z.object({
+  newPassword: z
+    .string()
+    .min(8, 'New password must be at least 8 characters')
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      'Password must contain uppercase, lowercase, and a number'
+    ),
+});
+
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type ListUsersQuery = z.infer<typeof listUsersSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+export type AdminPasswordResetInput = z.infer<typeof adminPasswordResetSchema>;

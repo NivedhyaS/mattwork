@@ -23,7 +23,7 @@ export const updateEditorSchema = z.object({
 
 export const listEditorsSchema = z.object({
   page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(100).default(10),
+  limit: z.coerce.number().min(1).max(1000).default(10),
   sortBy: z.string().default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
   availability: z.coerce.boolean().optional(),

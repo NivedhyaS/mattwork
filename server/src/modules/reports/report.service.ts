@@ -40,7 +40,7 @@ export class ReportService {
       },
     });
 
-    const clientMap = new Map<string, { clientName: string; company?: string; totalRevenue: number }>();
+    const clientMap = new Map<string, { clientName: string; company?: string; totalRevenue: number; currency?: string }>();
     let totalRevenue = 0;
 
     payments.forEach((payment) => {
@@ -48,6 +48,7 @@ export class ReportService {
       const clientName = client.user.name;
       const company = client.company || undefined;
       const amount = Number(payment.amount);
+      const currency = client.currency;
 
       totalRevenue += amount;
 
@@ -59,6 +60,7 @@ export class ReportService {
           clientName,
           company,
           totalRevenue: amount,
+          currency,
         });
       }
     });
@@ -92,6 +94,7 @@ export class ReportService {
             user: true,
           },
         },
+        client: true,
       },
     });
 

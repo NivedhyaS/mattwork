@@ -12,6 +12,7 @@ const clientSelect = {
   country: true,
   notes: true,
   advancePaid: true,
+  currency: true,
   createdAt: true,
   updatedAt: true,
   user: {
@@ -56,7 +57,6 @@ export class ClientRepository extends BaseRepository<any, any, any> {
             id: true,
             title: true,
             status: true,
-            priority: true,
             dueDate: true,
             createdAt: true,
           },

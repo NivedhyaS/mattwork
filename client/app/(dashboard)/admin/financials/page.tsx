@@ -387,7 +387,7 @@ export default function FinancialsDashboard() {
               <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Min Project Value</label>
               <input
                 type="number"
-                placeholder="Min INR"
+                placeholder="Min $"
                 value={minVal}
                 onChange={(e) => setMinVal(e.target.value)}
                 className="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px]"
@@ -399,7 +399,7 @@ export default function FinancialsDashboard() {
               <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Max Project Value</label>
               <input
                 type="number"
-                placeholder="Max INR"
+                placeholder="Max $"
                 value={maxVal}
                 onChange={(e) => setMaxVal(e.target.value)}
                 className="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px]"
@@ -421,15 +421,14 @@ export default function FinancialsDashboard() {
       {/* ── KPI Cards ──────────────────────────────────────────────────────── */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Revenue */}
-        <Card className="flat-card border-l-4 border-l-slate-400 shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+          <CardHeader className="pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
               Total Revenue
             </CardTitle>
-            <Banknote {...iconProps} className="text-slate-400" />
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-slate-100">
+            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
               {formatCurrency(totalRevenue)}
             </div>
             <p className="text-[12px] mt-2 text-slate-500">Gross cleared client income</p>
@@ -437,15 +436,14 @@ export default function FinancialsDashboard() {
         </Card>
 
         {/* Total Costs */}
-        <Card className="flat-card border-l-4 border-l-slate-400 shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+          <CardHeader className="pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
               Total Costs
             </CardTitle>
-            <Receipt {...iconProps} className="text-slate-400" />
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-500 dark:text-slate-450">
+            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
               {formatCurrency(totalCosts)}
             </div>
             <p className="text-[12px] mt-2 text-slate-500">Editor service payouts</p>
@@ -453,15 +451,14 @@ export default function FinancialsDashboard() {
         </Card>
 
         {/* Total Profit */}
-        <Card className="flat-card border-l-4 border-l-emerald-500 shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+          <CardHeader className="pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
               Total Profit
             </CardTitle>
-            <TrendingUp {...iconProps} className="text-emerald-500" />
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-emerald-500">
+            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
               {formatCurrency(totalProfit)}
             </div>
             <p className="text-[12px] mt-2 text-slate-500">Net operating margin</p>
@@ -469,15 +466,14 @@ export default function FinancialsDashboard() {
         </Card>
 
         {/* Outstanding Balance */}
-        <Card className="flat-card border-l-4 border-l-amber-500 shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+          <CardHeader className="pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
               Client Balances
             </CardTitle>
-            <Hourglass {...iconProps} className="text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-amber-500">
+            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
               {formatCurrency(outstandingBalance)}
             </div>
             <p className="text-[12px] mt-2 text-slate-500">Unpaid invoice amounts</p>
@@ -485,15 +481,14 @@ export default function FinancialsDashboard() {
         </Card>
 
         {/* Pending Editor Payments */}
-        <Card className="flat-card border-l-4 border-l-amber-500 shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+          <CardHeader className="pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
               Pending Payouts
             </CardTitle>
-            <Hourglass {...iconProps} className="text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-amber-500">
+            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
               {formatCurrency(pendingEditorPayments)}
             </div>
             <p className="text-[12px] mt-2 text-slate-500">Owed to editors for finished videos</p>
@@ -501,15 +496,14 @@ export default function FinancialsDashboard() {
         </Card>
 
         {/* Completed Projects */}
-        <Card className="flat-card border-l-4 border-l-emerald-500 shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+          <CardHeader className="pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
               Completed Work
             </CardTitle>
-            <CircleCheck {...iconProps} className="text-emerald-500" />
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-emerald-500">
+            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
               {completedProjectsCount}
             </div>
             <p className="text-[12px] mt-2 text-slate-500">Delivered video count</p>
@@ -517,15 +511,14 @@ export default function FinancialsDashboard() {
         </Card>
 
         {/* Active Projects */}
-        <Card className="flat-card border-l-4 shadow-none" style={{ borderLeftColor: V.accent }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+          <CardHeader className="pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
               Active Pipeline
             </CardTitle>
-            <Timer {...iconProps} style={{ color: V.accent }} />
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold" style={{ color: V.accent }}>
+            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
               {activeProjectsCount}
             </div>
             <p className="text-[12px] mt-2 text-slate-500">Videos in progress</p>
@@ -533,15 +526,14 @@ export default function FinancialsDashboard() {
         </Card>
 
         {/* Monthly Revenue */}
-        <Card className="flat-card border-l-4 border-l-slate-400 shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+          <CardHeader className="pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
               Monthly Revenue
             </CardTitle>
-            <Calendar {...iconProps} className="text-slate-400" />
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-slate-100">
+            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
               {formatCurrency(monthlyRevenue)}
             </div>
             <p className="text-[12px] mt-2 text-slate-500">Billed in the current calendar month</p>

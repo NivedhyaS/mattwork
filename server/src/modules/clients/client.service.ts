@@ -12,6 +12,8 @@ import {
 
 // ── Status set that counts as "completed work" ────────────────────────────────
 // Maps to the final stages of the Kanban pipeline where delivery is confirmed.
+// Must stay in sync with getClientStatus() in the client dashboard UI,
+// which maps both UPLOADED and COMPLETED to 'delivered'.
 export const COMPLETED_STATUSES: ProjectStatus[] = [
   ProjectStatus.UPLOADED,
 ];
@@ -55,6 +57,7 @@ export class ClientService {
             city: input.city,
             country: input.country,
             notes: input.notes,
+            currency: input.currency,
           },
         },
       },

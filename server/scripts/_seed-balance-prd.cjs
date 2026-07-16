@@ -36,7 +36,6 @@ async function main() {
         status: ProjectStatus.UPLOADED,
         clientPrice: 5000,
         editorPrice: 2000,
-        priority: 'MEDIUM',
         tags: ['prd-reference'],
         client: { connect: { id: client.id } },
         ...(editor && { editor: { connect: { id: editor.id } } }),

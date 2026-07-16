@@ -12,6 +12,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '@/store/authStore';
+import Link from 'next/link';
 
 interface Client {
   id: string;
@@ -19,6 +20,7 @@ interface Client {
   city?: string | null;
   country?: string | null;
   notes?: string | null;
+  currency?: string | null;
   createdAt: string;
   user: {
     id: string;
@@ -39,6 +41,7 @@ const clientSchema = z.object({
   city: z.string().optional(),
   country: z.string().optional(),
   notes: z.string().optional(),
+  currency: z.string().length(3, 'Must be a 3-letter currency code'),
 });
 
 type ClientFormValues = z.infer<typeof clientSchema>;
@@ -98,12 +101,12 @@ export default function ClientsPage() {
   // Forms
   const createForm = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
-    defaultValues: { name: '', email: '', password: '', company: '', phone: '', city: '', country: '', notes: '' },
+    defaultValues: { name: '', email: '', password: '', company: '', phone: '', city: '', country: '', notes: '', currency: 'USD' },
   });
 
   const editForm = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
-    defaultValues: { name: '', email: '', password: '', company: '', phone: '', city: '', country: '', notes: '' },
+    defaultValues: { name: '', email: '', password: '', company: '', phone: '', city: '', country: '', notes: '', currency: 'USD' },
   });
 
   const onCreateSubmit = (values: ClientFormValues) => {
@@ -120,6 +123,7 @@ export default function ClientsPage() {
       city: values.city,
       country: values.country,
       notes: values.notes,
+      currency: values.currency,
     };
     if (values.password) {
       updateData.password = values.password;
@@ -138,6 +142,7 @@ export default function ClientsPage() {
       city: client.city || '',
       country: client.country || '',
       notes: client.notes || '',
+      currency: client.currency || 'USD',
     });
   };
 
@@ -249,13 +254,13 @@ export default function ClientsPage() {
                         >
                           <Edit2 className="h-4 w-4" />
                         </button>
-                        <a
-                          href={`/admin/clients/${client.id}`}
+                        <Link
+                          href={`/admin/projects?clientId=${client.id}`}
                           title="View projects"
                           className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition-colors"
                         >
                           <ExternalLink className="h-4 w-4" />
-                        </a>
+                        </Link>
                         <button
                           onClick={() => {
                             if (confirm(`Remove ${client.user.name}? This cannot be undone.`)) {
@@ -316,7 +321,7 @@ export default function ClientsPage() {
               <Label>Phone (Optional)</Label>
               <Input {...createForm.register('phone')} placeholder="" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>City (Optional)</Label>
                 <Input {...createForm.register('city')} placeholder="" />
@@ -324,6 +329,18 @@ export default function ClientsPage() {
               <div className="space-y-2">
                 <Label>Country (Optional)</Label>
                 <Input {...createForm.register('country')} placeholder="" />
+              </div>
+              <div className="space-y-2">
+                <Label>Currency</Label>
+                <select
+                  {...createForm.register('currency')}
+                  className="w-full h-10 px-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="INR">INR (₹)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="GBP">GBP (£)</option>
+                  <option value="EUR">EUR (€)</option>
+                </select>
               </div>
             </div>
             <div className="space-y-2">
@@ -374,7 +391,7 @@ export default function ClientsPage() {
               <Label>Phone (Optional)</Label>
               <Input {...editForm.register('phone')} placeholder="" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>City (Optional)</Label>
                 <Input {...editForm.register('city')} placeholder="" />
@@ -382,6 +399,18 @@ export default function ClientsPage() {
               <div className="space-y-2">
                 <Label>Country (Optional)</Label>
                 <Input {...editForm.register('country')} placeholder="" />
+              </div>
+              <div className="space-y-2">
+                <Label>Currency</Label>
+                <select
+                  {...editForm.register('currency')}
+                  className="w-full h-10 px-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="INR">INR (₹)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="GBP">GBP (£)</option>
+                  <option value="EUR">EUR (€)</option>
+                </select>
               </div>
             </div>
             <div className="space-y-2">

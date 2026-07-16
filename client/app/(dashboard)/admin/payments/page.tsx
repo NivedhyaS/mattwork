@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import {
@@ -10,7 +11,8 @@ import {
   Loader2,
   MoreHorizontal,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Download
 } from 'lucide-react';
 import Button from '@/components/ui/button';
 import { formatCurrency } from '@/lib/utils';
@@ -54,6 +56,7 @@ const createPaymentSchema = z.object({
 type PaymentFormValues = z.infer<typeof createPaymentSchema>;
 
 export default function PaymentsPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
@@ -94,6 +97,25 @@ export default function PaymentsPage() {
       setIsRecordModalOpen(false);
       reset();
     },
+  });
+
+  const generatePdfMutation = useMutation({
+    mutationFn: async ({ id, number }: { id: string; number: string }) => {
+      const response = await api.get(`/invoices/${id}/pdf`, { responseType: 'blob' });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `invoice_${number}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    },
+    onError: (err: any) => {
+      console.error('Invoice PDF download failed:', err);
+      alert('Failed to download invoice PDF. Please try again.');
+    }
   });
 
   // Form Setup
@@ -207,13 +229,17 @@ export default function PaymentsPage() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-900">
                 {payments.map((payment: any) => (
-                  <tr key={payment.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-900/30 transition-colors group">
+                  <tr 
+                    key={payment.id} 
+                    onClick={() => router.push(`/admin/payments/${payment.id}`)}
+                    className="hover:bg-indigo-500/5 dark:hover:bg-indigo-500/10 hover:shadow-[inset_4px_0_0_0_#4f46e5] cursor-pointer transition-all border-b border-slate-100 dark:border-slate-900 group"
+                  >
                     <td className="py-4 px-5 font-semibold text-slate-900 dark:text-white">
                       {payment.invoice?.number || 'N/A'}
                     </td>
                     <td className="py-4 px-5">
                       <p className="font-bold text-slate-900 dark:text-white">
-                        {formatCurrency(Number(payment.amount))}
+                        {formatCurrency(Number(payment.amount), payment.invoice?.client?.currency || 'USD')}
                       </p>
                     </td>
                     <td className="py-4 px-5 text-slate-600 dark:text-slate-300 font-medium">
@@ -228,9 +254,21 @@ export default function PaymentsPage() {
                       {new Date(payment.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>
                     <td className="py-4 px-5 text-right">
-                      <button className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </button>
+                      {payment.invoice && (
+                        <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              generatePdfMutation.mutate({ id: payment.invoice.id, number: payment.invoice.number });
+                            }}
+                            disabled={generatePdfMutation.isPending}
+                            className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 rounded-lg cursor-pointer transition-colors"
+                            title="Download Invoice PDF"
+                          >
+                            {generatePdfMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -28,6 +28,25 @@ export class AuthController {
     const user = await authService.getMe(req.user!.id);
     ApiResponse.success(res, user, 'Profile retrieved successfully');
   });
+
+  /**
+   * POST /api/v1/auth/forgot-password
+   * Always returns a generic 200 response to prevent email enumeration.
+   * In development, the devResetLink is included in the response for testing.
+   */
+  forgotPassword = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const result = await authService.forgotPassword(req.body);
+    ApiResponse.success(res, result, result.message);
+  });
+
+  /**
+   * POST /api/v1/auth/reset-password
+   * Validates the token and atomically sets the new password.
+   */
+  resetPassword = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    await authService.resetPassword(req.body);
+    ApiResponse.success(res, null, 'Password has been reset successfully. Please sign in with your new password.');
+  });
 }
 
 export const authController = new AuthController();

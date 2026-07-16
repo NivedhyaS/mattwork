@@ -306,7 +306,7 @@ export default function ReportsPage() {
                       <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
                         <th className="p-4 font-bold text-slate-500 uppercase tracking-wider">Client Name</th>
                         <th className="p-4 font-bold text-slate-500 uppercase tracking-wider">Company</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Revenue (INR)</th>
+                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Revenue (USD)</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -332,8 +332,8 @@ export default function ReportsPage() {
                       <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
                         <th className="p-4 font-bold text-slate-500 uppercase tracking-wider">Editor Name</th>
                         <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-center">Completed Count</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Avg Rate (INR)</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Total Payout (INR)</th>
+                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Avg Rate (USD)</th>
+                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Total Payout (USD)</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -391,7 +391,7 @@ export default function ReportsPage() {
                     <thead>
                       <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
                         <th className="p-4 font-bold text-slate-500 uppercase tracking-wider">Metric</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Value (INR)</th>
+                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Value (USD)</th>
                       </tr>
                     </thead>
                     <tbody>

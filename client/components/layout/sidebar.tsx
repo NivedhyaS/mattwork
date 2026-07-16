@@ -29,7 +29,6 @@ export default function Sidebar() {
     { name: 'dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'financials', href: '/admin/financials', icon: CreditCard },
     { name: 'reports', href: '/admin/reports', icon: FileSpreadsheet },
-    { name: 'board', href: '/admin/board', icon: TrendingUp },
     { name: 'projects', href: '/admin/projects', icon: FolderKanban },
     { name: 'users', href: '/admin/users', icon: Users },
     { name: 'clients', href: '/admin/clients', icon: Briefcase },
@@ -40,13 +39,11 @@ export default function Sidebar() {
 
   const editorLinks = [
     { name: 'dashboard', href: '/editor', icon: LayoutDashboard },
-    { name: 'board', href: '/editor/board', icon: TrendingUp },
     { name: 'invoices', href: '/editor/invoices', icon: FileSpreadsheet },
   ];
 
   const clientLinks = [
     { name: 'dashboard', href: '/client', icon: LayoutDashboard },
-    { name: 'board', href: '/client/board', icon: TrendingUp },
     { name: 'invoices', href: '/client/invoices', icon: FileSpreadsheet },
   ];
 
@@ -140,21 +137,6 @@ export default function Sidebar() {
 
       {/* Footer Profile & Logout */}
       <div className="p-4 border-t border-border flex flex-col gap-2">
-        {!isCollapsed && user && (
-          <div className="flex items-center gap-3 px-3 py-2 rounded-lg border border-border bg-slate-50/50 dark:bg-slate-900/50">
-            <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-semibold text-slate-800 dark:text-white flex-shrink-0">
-              {user.name.charAt(0).toLowerCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold truncate text-slate-800 dark:text-slate-200">
-                {user.name}
-              </p>
-              <p className="text-[11px] truncate text-slate-400">
-                {user.role.toLowerCase()}
-              </p>
-            </div>
-          </div>
-        )}
         <button
           onClick={logout}
           className={cn(

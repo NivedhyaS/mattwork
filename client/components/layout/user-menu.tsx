@@ -31,9 +31,6 @@ export default function UserMenu() {
         <div className="h-8 w-8 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center font-bold text-sm shadow-sm">
           {user.name.charAt(0)}
         </div>
-        <span className="hidden sm:inline text-[15px] font-semibold text-slate-700 dark:text-slate-200">
-          {user.name}
-        </span>
       </button>
 
       {isOpen && (

@@ -18,7 +18,7 @@ export class ReportController {
       sheet.columns = [
         { header: 'Client Name', key: 'clientName', width: 25 },
         { header: 'Company', key: 'company', width: 25 },
-        { header: 'Total Revenue (INR)', key: 'totalRevenue', width: 20 },
+        { header: 'Total Revenue (USD)', key: 'totalRevenue', width: 20 },
       ];
 
       // Format Header Row
@@ -66,8 +66,8 @@ export class ReportController {
       sheet.columns = [
         { header: 'Editor Name', key: 'editorName', width: 25 },
         { header: 'Completed Count', key: 'completedCount', width: 18 },
-        { header: 'Average Rate (INR)', key: 'averageRate', width: 20 },
-        { header: 'Total Payout (INR)', key: 'totalPayout', width: 20 },
+        { header: 'Average Rate (USD)', key: 'averageRate', width: 20 },
+        { header: 'Total Payout (USD)', key: 'totalPayout', width: 20 },
       ];
 
       sheet.getRow(1).font = { bold: true };
@@ -173,7 +173,7 @@ export class ReportController {
 
       sheet.columns = [
         { header: 'Financial Metric', key: 'metric', width: 35 },
-        { header: 'Amount (INR) / Value', key: 'value', width: 25 },
+        { header: 'Amount (USD) / Value', key: 'value', width: 25 },
       ];
 
       sheet.getRow(1).font = { bold: true };

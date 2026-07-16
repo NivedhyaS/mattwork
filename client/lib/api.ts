@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -81,8 +81,14 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        useAuthStore.getState().logout();
         isRefreshing = false;
+        // Clear stale tokens and redirect to login
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('mattwork_access_token');
+          localStorage.removeItem('mattwork_refresh_token');
+          localStorage.removeItem('mattwork_user');
+          window.location.href = '/login';
+        }
         return Promise.reject(refreshError);
       }
     }

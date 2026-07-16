@@ -24,7 +24,6 @@ export interface DriveProjectFolder {
 export interface SetupProjectFolderParams {
   clientName: string;
   videoTitle: string;
-  rawFootageLink: string;
-  scriptLink: string;
+  driveFolderLink: string;
   submissionDate: Date;
 }

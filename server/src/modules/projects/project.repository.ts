@@ -1,4 +1,4 @@
-import { Prisma, ProjectStatus, ProjectPriority } from '@prisma/client';
+import { Prisma, ProjectStatus } from '@prisma/client';
 import { BaseRepository } from '../../repositories/base.repository';
 import { PaginationParams } from '../../types';
 
@@ -7,13 +7,14 @@ const projectSelect = {
   title: true,
   description: true,
   status: true,
-  priority: true,
   dueDate: true,
+  submissionDate: true,
   budget: true,
   tags: true,
   notes: true,
   driveFolder: true,
   formLink: true,
+  rawMaterialsFolder: true,
   clientPrice: true,
   editorPrice: true,
   clientId: true,
@@ -24,6 +25,7 @@ const projectSelect = {
     select: {
       id: true,
       company: true,
+      currency: true,
       user: { select: { id: true, name: true, email: true, avatar: true } },
     },
   },
@@ -36,13 +38,23 @@ const projectSelect = {
   _count: { select: { files: true, invoices: true } },
 } as const;
 
+const commentSelect = {
+  id: true,
+  content: true,
+  createdAt: true,
+  updatedAt: true,
+  authorId: true,
+  author: {
+    select: { id: true, name: true, role: true },
+  },
+} as const;
+
 export class ProjectRepository extends BaseRepository<any, any, any> {
   readonly modelName = 'Project';
 
   async findAll(
     params: PaginationParams & {
       status?: ProjectStatus;
-      priority?: ProjectPriority;
       clientId?: string;
       editorId?: string;
       search?: string;
@@ -53,11 +65,11 @@ export class ProjectRepository extends BaseRepository<any, any, any> {
       deadlineAfter?: Date;
       minValue?: number;
       maxValue?: number;
+      excludeInvoiced?: boolean;
     }
   ) {
     const {
       status,
-      priority,
       clientId,
       editorId,
       search,
@@ -68,13 +80,13 @@ export class ProjectRepository extends BaseRepository<any, any, any> {
       deadlineAfter,
       minValue,
       maxValue,
+      excludeInvoiced,
       ...pagination
     } = params;
 
     const andConditions: Prisma.ProjectWhereInput[] = [];
 
     if (status) andConditions.push({ status });
-    if (priority) andConditions.push({ priority });
     if (clientId) andConditions.push({ clientId });
     if (editorId) andConditions.push({ editorId });
     if (search) {
@@ -134,6 +146,14 @@ export class ProjectRepository extends BaseRepository<any, any, any> {
       andConditions.push({ clientPrice: priceFilter });
     }
 
+    // Exclude projects already covered by a live (non-cancelled) invoice
+    if (excludeInvoiced) {
+      andConditions.push({
+        invoices: { none: { status: { not: 'CANCELLED' } } },
+        invoicedProjects: { none: { status: { not: 'CANCELLED' } } },
+      });
+    }
+
     const where: Prisma.ProjectWhereInput = andConditions.length > 0 ? { AND: andConditions } : {};
 
     return this.paginate(
@@ -171,6 +191,10 @@ export class ProjectRepository extends BaseRepository<any, any, any> {
             dueDate: true,
             createdAt: true,
           },
+        },
+        comments: {
+          select: commentSelect,
+          orderBy: { createdAt: 'asc' },
         },
       },
     });
@@ -216,6 +240,42 @@ export class ProjectRepository extends BaseRepository<any, any, any> {
 
   async delete(id: string) {
     return this.db.project.delete({ where: { id } });
+  }
+
+  // ── Comments ──────────────────────────────────────────────────────────────
+
+  async getComments(projectId: string) {
+    return this.db.projectComment.findMany({
+      where: { projectId },
+      select: commentSelect,
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async addComment(projectId: string, authorId: string, content: string) {
+    return this.db.projectComment.create({
+      data: { projectId, authorId, content },
+      select: commentSelect,
+    });
+  }
+
+  async updateComment(commentId: string, content: string) {
+    return this.db.projectComment.update({
+      where: { id: commentId },
+      data: { content },
+      select: commentSelect,
+    });
+  }
+
+  async deleteComment(commentId: string) {
+    return this.db.projectComment.delete({ where: { id: commentId } });
+  }
+
+  async findCommentById(commentId: string) {
+    return this.db.projectComment.findUnique({
+      where: { id: commentId },
+      select: { id: true, authorId: true, projectId: true },
+    });
   }
 }
 

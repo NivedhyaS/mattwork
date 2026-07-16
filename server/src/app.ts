@@ -14,6 +14,15 @@ app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Temporary request logging
+app.use((req, res, next) => {
+  console.log(`[DEBUG] Incoming Request: ${req.method} ${req.url}`);
+  if (req.url.includes('google-form')) {
+    console.log('[DEBUG] Webhook Body:', req.body);
+  }
+  next();
+});
+
 // Rate Limiting (apply globally for basic protection)
 app.use(publicLimiter);
 

@@ -6,7 +6,7 @@
  *   → remainingCredit   = 49,000
  *   → equivalentVideos  = 49
  *
- * NOTE: The PRD example says "45 videos" with "₹5,000 completed" and "₹45,000 remaining".
+ * NOTE: The PRD example says "45 videos" with "$5,000 completed" and "$45,000 remaining".
  * That implies avg clientPrice = 1,000 per video (45,000 / 45 = 1,000).
  * So we use clientPrice = 1,000 on the completed project, advancePaid = 50,000.
  * completedWorkValue = 1,000, remaining = 49,000, videos = 49.
@@ -52,7 +52,6 @@ async function main() {
           status: ProjectStatus.UPLOADED,
           clientPrice: 1000,
           editorPrice: 600,
-          priority: 'MEDIUM',
           tags: ['prd-reference'],
           client: { connect: { id: client.id } },
           ...(editor && { editor: { connect: { id: editor.id } } }),

@@ -65,7 +65,6 @@ async function main() {
         description: 'Used for serialization auditing',
         clientPrice: 500.00,
         editorPrice: 200.00,
-        priority: 'MEDIUM',
         tags: ['audit', 'test'],
         client: { connect: { id: clientProfile.id } },
         editor: { connect: { id: editorProfile.id } },

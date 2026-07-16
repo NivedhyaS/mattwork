@@ -116,7 +116,7 @@ async function getMyClientId(token) {
             paidAt: new Date().toISOString()
           })
         });
-        console.log('✅ Recorded test payment of INR 500.\n');
+        console.log('✅ Recorded test payment of USD 500.\n');
       }
     }
 
@@ -151,7 +151,7 @@ async function getMyClientId(token) {
         const completedProjectsCount = utilClient.projectsCompleted;
         // Since test projects have a flat price of 1000, we expect completedCount * 1000 to match balance CompletedWorkValue
         // Wait, the client also has the "Audit Test Project" (completed count might vary), let's perform a direct count comparison
-        console.log(`  Client Balance Completed Work Value: INR ${balanceCompletedValue}`);
+        console.log(`  Client Balance Completed Work Value: USD ${balanceCompletedValue}`);
         console.log(`  Client Utilization Monthly Completed Projects: ${completedProjectsCount}`);
         
         // Assert that the numbers align logically (e.g. non-negative and defined)

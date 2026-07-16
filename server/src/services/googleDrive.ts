@@ -13,6 +13,37 @@ const RETRY_BASE_MS = 500;
 /** Sub-folders created inside every video-title folder */
 const SUBFOLDERS = ['Assets', 'Working Files', 'Final Deliverables'] as const;
 
+// ─── ID extraction ────────────────────────────────────────────────────────────
+
+/**
+ * Extracts the raw Google Drive / Docs file or folder ID from any of the
+ * common share-link formats:
+ *
+ *   https://drive.google.com/file/d/<ID>/view
+ *   https://drive.google.com/open?id=<ID>
+ *   https://docs.google.com/document/d/<ID>/edit   (and other Workspace apps)
+ *   https://drive.google.com/drive/folders/<ID>
+ *
+ * Returns `null` when no recognisable ID pattern is found.
+ */
+export function extractGoogleDriveId(url: string): string | null {
+  if (!url) return null;
+
+  // Pattern 1: /file/d/<ID>/ or /document/d/<ID>/ or /spreadsheets/d/<ID>/ etc.
+  const slashD = url.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
+  if (slashD) return slashD[1];
+
+  // Pattern 2: ?id=<ID> or &id=<ID>
+  const queryId = url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  if (queryId) return queryId[1];
+
+  // Pattern 3: /folders/<ID>
+  const folder = url.match(/\/folders\/([a-zA-Z0-9_-]{10,})/);
+  if (folder) return folder[1];
+
+  return null;
+}
+
 // ─── Retry helper ─────────────────────────────────────────────────────────────
 
 async function withRetry<T>(
@@ -106,8 +137,16 @@ async function findOrCreateFolder(
 }
 
 /**
- * Creates a Drive shortcut pointing to an external URL inside the given folder.
- * If a shortcut with the same name already exists it is reused.
+ * Creates a Drive shortcut pointing to a Google Drive file/folder inside the
+ * given parent folder.  The shortcut target must be a Drive **file ID** — not a
+ * full URL — so we call `extractGoogleDriveId` first.
+ *
+ * If the ID cannot be extracted from `targetUrl`, the shortcut is skipped
+ * gracefully (logs an error, returns an empty string) so the rest of the
+ * folder hierarchy continues unaffected.
+ *
+ * If a shortcut with the same name already exists under `parentId` it is
+ * reused without creating a duplicate.
  */
 async function createShortcut(
   drive: drive_v3.Drive,
@@ -117,8 +156,22 @@ async function createShortcut(
 ): Promise<string> {
   const safeName = name.replace(/[/\\?%*:|"<>]/g, '-').trim() || 'Link';
 
+  // ── Extract the Drive file/folder ID from the source URL ────────────────
+  const targetId = extractGoogleDriveId(targetUrl);
+
+  if (!targetId) {
+    logger.error(
+      `[GoogleDriveService] createShortcut("${safeName}"): could not extract a Drive ID from URL "${targetUrl}" — skipping shortcut creation`
+    );
+    return '';
+  }
+
+  logger.info(
+    `[GoogleDriveService] createShortcut("${safeName}"): source URL="${targetUrl}" → extracted ID="${targetId}"`
+  );
+
   return withRetry(`createShortcut("${safeName}")`, async () => {
-    // Check if a shortcut already exists
+    // ── Check for an existing shortcut with the same name in this folder ──
     const query = [
       `mimeType = '${SHORTCUT_MIME}'`,
       `name = '${safeName.replace(/'/g, "\\'")}'`,
@@ -141,22 +194,22 @@ async function createShortcut(
       return existing.id;
     }
 
-    // Create a new shortcut file
+    // ── Create the shortcut with the extracted file ID ───────────────────
     const createRes = await drive.files.create({
       requestBody: {
         name: safeName,
         mimeType: SHORTCUT_MIME,
         parents: [parentId],
         shortcutDetails: {
-          targetId: targetUrl, // Drive accepts URLs for shortcut targets
-        } as any,
+          targetId,   // ✓ Drive file/folder ID — NOT the full URL
+        },
       },
       fields: 'id',
     });
 
     const newId = createRes.data.id!;
     logger.info(
-      `[GoogleDriveService] Created shortcut "${safeName}" → ${targetUrl} (id=${newId})`
+      `[GoogleDriveService] Created shortcut "${safeName}" | sourceURL=${targetUrl} | targetId=${targetId} | shortcutId=${newId}`
     );
     return newId;
   });
@@ -218,8 +271,44 @@ export class GoogleDriveService {
    *                                                                 ├── Working Files/
    *                                                                 └── Final Deliverables/
    */
+  /**
+   * Recursively copies all files and subfolders from sourceFolderId to destFolderId.
+   */
+  async copyFolderRecursively(
+    drive: drive_v3.Drive,
+    sourceFolderId: string,
+    destFolderId: string
+  ): Promise<void> {
+    await withRetry(`copyFolderRecursively(${sourceFolderId} -> ${destFolderId})`, async () => {
+      const listRes = await drive.files.list({
+        q: `'${sourceFolderId}' in parents and trashed = false`,
+        fields: 'files(id, name, mimeType)',
+        spaces: 'drive',
+      });
+
+      const files = listRes.data.files || [];
+      for (const file of files) {
+        if (file.id && file.name) {
+          if (file.mimeType === FOLDER_MIME) {
+            const subfolderId = await findOrCreateFolder(drive, file.name, destFolderId);
+            await this.copyFolderRecursively(drive, file.id, subfolderId);
+          } else {
+            await drive.files.copy({
+              fileId: file.id,
+              requestBody: {
+                name: file.name,
+                parents: [destFolderId],
+              },
+            });
+            logger.info(`[GoogleDriveService] Copied file "${file.name}" to destination ${destFolderId}`);
+          }
+        }
+      }
+    });
+  }
+
   async setupProjectFolder(params: SetupProjectFolderParams): Promise<DriveProjectFolder> {
-    const { clientName, videoTitle, rawFootageLink, scriptLink, submissionDate } = params;
+    const { clientName, videoTitle, driveFolderLink, submissionDate } = params;
 
     const year  = submissionDate.getFullYear().toString();
     const month = submissionDate.toLocaleString('default', { month: 'long' });
@@ -244,8 +333,7 @@ export class GoogleDriveService {
 
       logger.info(`[GoogleDriveService] [SIMULATION] Folder hierarchy for "${hierarchyPath}"`);
       logger.info(`[GoogleDriveService] [SIMULATION] Sub-folders: Assets, Working Files, Final Deliverables`);
-      if (rawFootageLink) logger.info(`[GoogleDriveService] [SIMULATION] Shortcut → Raw Footage: ${rawFootageLink}`);
-      if (scriptLink)     logger.info(`[GoogleDriveService] [SIMULATION] Shortcut → Script: ${scriptLink}`);
+      logger.info(`[GoogleDriveService] [SIMULATION] Copied entire contents from source folder: ${driveFolderLink}`);
 
       return mockResult;
     }
@@ -268,19 +356,18 @@ export class GoogleDriveService {
         findOrCreateFolder(drive, 'Final Deliverables',  videoFolderId),
       ]);
 
-      // Create shortcut links in the Assets folder for source files
-      const shortcutPromises: Promise<string>[] = [];
-      if (rawFootageLink) {
-        shortcutPromises.push(
-          createShortcut(drive, 'Raw Footage Link', rawFootageLink, assetsFolderId)
-        );
+      // Copy source folder contents to destination Assets subfolder
+      const sourceFolderId = extractGoogleDriveId(driveFolderLink);
+      if (sourceFolderId) {
+        logger.info(`[GoogleDriveService] Copying files from client folder ID ${sourceFolderId} to Assets folder ${assetsFolderId}`);
+        try {
+          await this.copyFolderRecursively(drive, sourceFolderId, assetsFolderId);
+        } catch (copyErr: any) {
+          logger.error(`[GoogleDriveService] Failed to copy files recursively from source folder ${sourceFolderId}: ${copyErr?.message || copyErr}. Continuing project setup without copies.`);
+        }
+      } else {
+        logger.warn(`[GoogleDriveService] Could not extract source folder ID from URL: ${driveFolderLink}`);
       }
-      if (scriptLink) {
-        shortcutPromises.push(
-          createShortcut(drive, 'Script Link', scriptLink, assetsFolderId)
-        );
-      }
-      await Promise.all(shortcutPromises);
 
       const projectFolderUrl = `https://drive.google.com/drive/folders/${videoFolderId}`;
       logger.info(
@@ -297,19 +384,9 @@ export class GoogleDriveService {
       };
     } catch (err: any) {
       logger.error(
-        `[GoogleDriveService] Drive API error during folder setup: ${err?.message}. Falling back to simulation.`
+        `[GoogleDriveService] Drive API error during folder setup: ${err?.message}.`
       );
-
-      // Graceful degradation — don't fail the whole webhook just because Drive had an error
-      const fallbackBase = `drive_fallback_${Math.random().toString(36).substring(2, 9)}`;
-      return {
-        projectFolderId:      fallbackBase,
-        projectFolderUrl:     `https://drive.google.com/drive/folders/${fallbackBase}`,
-        assetsFolderId:       `${fallbackBase}_assets`,
-        workingFilesFolderId: `${fallbackBase}_working`,
-        finalsFolderId:       `${fallbackBase}_finals`,
-        isSimulated:          true,
-      };
+      throw new Error(`Google Drive API failed: ${err?.message}`);
     }
   }
 
@@ -340,6 +417,46 @@ export class GoogleDriveService {
       logger.info(
         `[GoogleDriveService] Granted editor access: folder=${folderId} email=${editorEmail}`
       );
+    });
+  }
+
+  /**
+   * Revokes a Google Drive editor's access (by email) to a specific folder.
+   * No-op in simulation mode.
+   */
+  async unshareFolder(folderId: string, editorEmail: string): Promise<void> {
+    const drive = this.initDriveClient();
+    if (!drive) {
+      logger.info(
+        `[GoogleDriveService] [SIMULATION] Would revoke access to folder ${folderId} for ${editorEmail}`
+      );
+      return;
+    }
+
+    await withRetry(`unshareFolder(${folderId}, ${editorEmail})`, async () => {
+      // Fetch permissions for the folder to find the permission ID corresponding to the email
+      const listRes = await drive.permissions.list({
+        fileId: folderId,
+        fields: 'permissions(id, emailAddress)',
+      });
+
+      const permission = listRes.data.permissions?.find(
+        (p) => p.emailAddress?.toLowerCase() === editorEmail.toLowerCase()
+      );
+
+      if (permission?.id) {
+        await drive.permissions.delete({
+          fileId: folderId,
+          permissionId: permission.id,
+        });
+        logger.info(
+          `[GoogleDriveService] Revoked editor access: folder=${folderId} email=${editorEmail}`
+        );
+      } else {
+        logger.info(
+          `[GoogleDriveService] No permission found for email=${editorEmail} on folder=${folderId}`
+        );
+      }
     });
   }
 }

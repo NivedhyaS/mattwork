@@ -130,7 +130,6 @@ export default function LoginPage() {
                 className={`w-full h-12 pl-11 pr-4 rounded-xl bg-slate-950/40 border text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:bg-slate-950/80 transition-all duration-200 ${
                   errors.email ? 'border-rose-500/50 focus:border-rose-500' : 'border-slate-800/80 hover:border-slate-700/80 focus:border-blue-500/60'
                 }`}
-                placeholder="name@company.com"
                 aria-invalid={errors.email ? 'true' : 'false'}
               />
             </div>
@@ -144,16 +143,12 @@ export default function LoginPage() {
               <Label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
                 Password
               </Label>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  alert('Please contact your administrator to reset your password.');
-                }}
+              <Link
+                href="/forgot-password"
                 className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors cursor-pointer"
               >
                 Forgot Password?
-              </a>
+              </Link>
             </div>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">

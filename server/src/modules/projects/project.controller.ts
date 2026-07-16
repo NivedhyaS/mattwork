@@ -20,13 +20,18 @@ export class ProjectController {
   });
 
   updateProject = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const project = await projectService.updateProject(req.params.id as string, req.body);
+    const project = await projectService.updateProject(req.params.id as string, req.body, req.user!);
     ApiResponse.success(res, project, 'Project updated successfully');
   });
 
   updateStatus = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const project = await projectService.updateProjectStatus(req.params.id as string, req.body);
+    const project = await projectService.updateProjectStatus(req.params.id as string, req.body, req.user!);
     ApiResponse.success(res, project, 'Project status updated successfully');
+  });
+
+  reassignEditor = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const project = await projectService.reassignEditor(req.params.id as string, req.body, req.user!);
+    ApiResponse.success(res, project, 'Editor reassigned successfully');
   });
 
   deleteProject = asyncHandler(async (req: Request, res: Response): Promise<void> => {

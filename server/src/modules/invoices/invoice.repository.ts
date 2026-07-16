@@ -30,6 +30,7 @@ const invoiceSelect = {
       address: true,
       city: true,
       country: true,
+      currency: true,
       user: { select: { id: true, name: true, email: true, phone: true } },
     },
   },
@@ -87,10 +88,12 @@ export class InvoiceRepository extends BaseRepository<any, any, any> {
     return this.db.invoice.findUnique({ where: { number } });
   }
 
-  async getNextInvoiceNumber(): Promise<string> {
-    const count = await this.db.invoice.count();
+  async getNextInvoiceNumber(clientId: string): Promise<string> {
+    const count = await this.db.invoice.count({ where: { clientId } });
     const year = new Date().getFullYear();
-    return `INV-${year}-${String(count + 1).padStart(4, '0')}`;
+    const client = await this.db.client.findUnique({ where: { id: clientId } });
+    const clientSuffix = client ? client.id.substring(client.id.length - 4).toUpperCase() : 'CLI';
+    return `INV-${clientSuffix}-${year}-${String(count + 1).padStart(4, '0')}`;
   }
 
   async create(data: Prisma.InvoiceCreateInput) {

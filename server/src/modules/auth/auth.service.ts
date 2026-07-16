@@ -1,5 +1,7 @@
+import crypto from 'crypto';
 import { Role } from '@prisma/client';
 import prisma from '../../config/database';
+import { env } from '../../config/env';
 import { ApiError } from '../../utils/ApiError';
 import { hashPassword, comparePassword } from '../../utils/password.utils';
 import {
@@ -7,7 +9,7 @@ import {
   signRefreshToken,
   verifyRefreshToken,
 } from '../../utils/jwt.utils';
-import { RegisterInput, LoginInput } from './auth.validator';
+import { RegisterInput, LoginInput, ForgotPasswordInput, ResetPasswordInput } from './auth.validator';
 
 interface AuthTokens {
   accessToken: string;
@@ -25,6 +27,13 @@ interface AuthResult {
   tokens: AuthTokens;
 }
 
+interface ForgotPasswordResult {
+  /** Always the same generic message to prevent email enumeration */
+  message: string;
+  /** Only included in development — the raw, un-hashed reset link */
+  devResetLink?: string;
+}
+
 export class AuthService {
   async register(input: RegisterInput): Promise<AuthResult> {
     const existing = await prisma.user.findUnique({
@@ -36,12 +45,6 @@ export class AuthService {
     }
 
     const hashedPassword = await hashPassword(input.password);
-    const accessToken = signAccessToken({
-      id: 'temp',
-      email: input.email,
-      name: input.name,
-      role: input.role as Role,
-    });
 
     const user = await prisma.user.create({
       data: {
@@ -207,6 +210,108 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  /**
+   * Generates a password reset token and stores its SHA-256 hash in the database.
+   *
+   * Security considerations:
+   * - Always returns the same generic message regardless of whether the email exists
+   *   (prevents email enumeration attacks).
+   * - Stores only the hashed token in the database, so a DB leak cannot be used
+   *   to directly reset passwords.
+   * - Raw token is only exposed in the API response when NODE_ENV === 'development'.
+   */
+  async forgotPassword(input: ForgotPasswordInput): Promise<ForgotPasswordResult> {
+    const genericMessage =
+      'If that email exists in our system, a password reset link has been sent.';
+
+    const user = await prisma.user.findUnique({
+      where: { email: input.email },
+      select: { id: true, email: true, isActive: true },
+    });
+
+    // Always return generic response — never reveal whether email exists
+    if (!user || !user.isActive) {
+      return { message: genericMessage };
+    }
+
+    // Generate a cryptographically secure 32-byte random token
+    const rawToken = crypto.randomBytes(32).toString('hex');
+
+    // Store only the SHA-256 hash of the token in the database
+    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+    // Set expiry to 1 hour from now
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetPasswordToken: hashedToken,
+        resetPasswordExpires: expiresAt,
+      },
+    });
+
+    // Construct the full reset URL
+    const clientBaseUrl = process.env.CORS_ORIGIN || 'http://localhost:3000';
+    const resetLink = `${clientBaseUrl}/reset-password?token=${rawToken}`;
+
+    // Always log to server terminal for audit trail
+    console.log(`\n🔑 [Password Reset] User: ${user.email}`);
+    console.log(`   Reset Link (expires in 1 hour): ${resetLink}\n`);
+
+    // Only expose raw link in development (server-side guard)
+    if (env.NODE_ENV === 'development') {
+      return { message: genericMessage, devResetLink: resetLink };
+    }
+
+    return { message: genericMessage };
+  }
+
+  /**
+   * Validates the reset token and updates the password atomically in a single transaction.
+   *
+   * Security considerations:
+   * - Looks up the user by the SHA-256 hash of the incoming token (never plain-text comparison).
+   * - Password update AND token clearance happen in a single Prisma transaction, preventing
+   *   token reuse if any step fails.
+   * - Also invalidates the refresh token to force re-login.
+   */
+  async resetPassword(input: ResetPasswordInput): Promise<void> {
+    // Hash the incoming token to match against the stored hashed value
+    const hashedToken = crypto.createHash('sha256').update(input.token).digest('hex');
+
+    // Find user with matching non-expired token
+    const user = await prisma.user.findFirst({
+      where: {
+        resetPasswordToken: hashedToken,
+        resetPasswordExpires: { gt: new Date() },
+      },
+      select: { id: true },
+    });
+
+    if (!user) {
+      throw ApiError.badRequest(
+        'Password reset token is invalid or has expired. Please request a new reset link.'
+      );
+    }
+
+    const hashedPassword = await hashPassword(input.password);
+
+    // Atomically update password and clear the token in a single transaction
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: {
+          password: hashedPassword,
+          resetPasswordToken: null,
+          resetPasswordExpires: null,
+          // Also invalidate any existing refresh tokens to force re-login
+          refreshToken: null,
+        },
+      }),
+    ]);
   }
 }
 

@@ -22,7 +22,10 @@ const paymentSelect = {
       amountPaid: true,
       status: true,
       client: {
-        select: { user: { select: { name: true, email: true } } },
+        select: {
+          currency: true,
+          user: { select: { name: true, email: true } }
+        },
       },
     },
   },

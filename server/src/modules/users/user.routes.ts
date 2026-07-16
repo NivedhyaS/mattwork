@@ -7,6 +7,7 @@ import {
   updateUserSchema,
   listUsersSchema,
   changePasswordSchema,
+  adminPasswordResetSchema,
 } from './user.validator';
 
 const router = Router();
@@ -41,6 +42,14 @@ router.patch(
   '/:id/toggle-status',
   authorize(Role.ADMIN),
   userController.toggleStatus
+);
+
+// POST /api/v1/users/:id/admin-password-reset — Admin only
+router.post(
+  '/:id/admin-password-reset',
+  authorize(Role.ADMIN),
+  validate(adminPasswordResetSchema),
+  userController.adminPasswordReset
 );
 
 // POST /api/v1/users/change-password — Any authenticated user

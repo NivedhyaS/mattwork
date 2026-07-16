@@ -12,7 +12,7 @@ import { COMPLETED_STATUSES } from '../clients/client.service';
 
 export class InvoiceController {
   listInvoices = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const result = await invoiceService.listInvoices(req.query as any);
+    const result = await invoiceService.listInvoices(req.query as any, (req as any).user);
     ApiResponse.paginated(res, result.data, result.meta, 'Invoices retrieved successfully');
   });
 
@@ -47,7 +47,7 @@ export class InvoiceController {
     const items = (invoice.items as any[]).map(item => ({
       description: item.description || 'Video Editing Services',
       quantity: item.quantity || 1,
-      amount: Number(item.price || item.amount || invoice.subtotal),
+      amount: Number(item.unitPrice || item.price || item.amount || invoice.subtotal),
       total: Number(item.total || invoice.subtotal)
     }));
 
@@ -59,7 +59,9 @@ export class InvoiceController {
       items,
       subtotal: Number(invoice.subtotal),
       taxAmount: Number(invoice.taxAmount),
+      discount: Number(invoice.discount || 0),
       total: Number(invoice.total),
+      currency: invoice.client.currency,
     });
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -81,34 +83,84 @@ export class InvoiceController {
       return;
     }
 
-    // Find all completed projects
+    // Parse month (e.g. "July 2026") into a date range filter
+    let dateFilter: any = undefined;
+    if (month) {
+      const monthStr = month as string;
+      const parts = monthStr.split(' ');
+      if (parts.length === 2) {
+        const monthName = parts[0];
+        const year = parseInt(parts[1], 10);
+        const date = new Date(`${monthName} 1, ${year}`);
+        if (!isNaN(date.getTime())) {
+          const start = new Date(date.getFullYear(), date.getMonth(), 1);
+          const end = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+          dateFilter = {
+            gte: start,
+            lt: end
+          };
+        }
+      }
+    }
+
+    // Find completed projects matching the selected month range (if provided)
     const completedProjects = await prisma.project.findMany({
       where: {
         editorId: editor.id,
-        status: 'UPLOADED'
+        status: 'UPLOADED',
+        ...(dateFilter && { updatedAt: dateFilter })
+      },
+      include: {
+        client: true
       },
       orderBy: { updatedAt: 'desc' }
     });
 
-    const rate = editor.hourlyRate ? Number(editor.hourlyRate) : 500; // Flat rate fallback
-    const totalAmount = completedProjects.length * rate;
-    const invoiceNumber = `EDR-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    // Map projects and sum actual project-specific editorPrice fields
+    const projectsMapped = [];
+    for (const p of completedProjects) {
+      if (p.editorPrice == null) {
+        throw ApiError.badRequest(
+          `Unable to compile invoice payout statement: Completed project "${p.title}" does not have an editor payout price (editorPrice) configured by the administrator. Please ask your administrator to set the project price.`
+        );
+      }
+      projectsMapped.push({
+        title: p.title,
+        completedDate: p.updatedAt.toLocaleDateString(),
+        rate: Number(p.editorPrice),
+        currency: p.client?.currency || 'USD'
+      });
+    }
+
+    const totalAmount = projectsMapped.reduce((sum, p) => sum + p.rate, 0);
+
+    // Compute sequential/auto-incrementing invoice number up to the end of the month
+    const endOfRange = dateFilter ? dateFilter.lt : new Date();
+    const completedCount = await prisma.project.count({
+      where: {
+        editorId: editor.id,
+        status: 'UPLOADED',
+        updatedAt: {
+          lt: endOfRange
+        }
+      }
+    });
+
+    const editorIdSuffix = editor.id.substring(editor.id.length - 4).toUpperCase();
+    const invoiceNumber = `EDR-${editorIdSuffix}-${String(completedCount).padStart(4, '0')}`;
 
     const pdfBuffer = await pdfService.generateEditorInvoicePDF({
       editorName: editor.user.name,
       invoiceNumber,
       month: (month as string) || new Date().toLocaleString('default', { month: 'long', year: 'numeric' }),
-      completedProjects: completedProjects.map(p => ({
-        title: p.title,
-        completedDate: p.updatedAt.toLocaleDateString()
-      })),
-      ratePerProject: rate,
+      completedProjects: projectsMapped,
+      ratePerProject: editor.hourlyRate ? Number(editor.hourlyRate) : 500,
       totalAmount,
       paymentDetails: `Bank Payout for ${editor.user.name}`
     });
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=editor_invoice_${month || 'current'}.pdf`);
+    res.setHeader('Content-Disposition', `attachment; filename=editor_invoice_${(month as string || 'current').replace(/\s+/g, '_')}.pdf`);
     res.send(pdfBuffer);
   });
 
@@ -164,7 +216,7 @@ export class InvoiceController {
         where: { userId: requester.id },
         select: { id: true }
       });
-      if (!editorProfile || invoice.project.editorId !== editorProfile.id) {
+      if (!editorProfile || invoice.project?.editorId !== editorProfile.id) {
         throw ApiError.forbidden('You can only generate PDFs for invoices of your assigned projects');
       }
     } else if (requester.role === Role.ADMIN) {
@@ -175,8 +227,10 @@ export class InvoiceController {
       }
     }
 
-    // Check project completion status
-    const isProjectCompleted = COMPLETED_STATUSES.includes(invoice.project.status);
+    // Check project completion status (project may be null for multi-project invoices)
+    const isProjectCompleted = invoice.project
+      ? COMPLETED_STATUSES.includes(invoice.project.status)
+      : true; // for multi-project invoices, trust items are complete
 
     let pdfBuffer: Buffer;
 
@@ -198,19 +252,20 @@ export class InvoiceController {
         items,
         subtotal: Number(invoice.subtotal),
         taxAmount: Number(invoice.taxAmount),
+        discount: Number(invoice.discount || 0),
         total: Number(invoice.total),
       });
     } else {
-      const editorName = invoice.project.editor?.user?.name || 'Unassigned Editor';
+      const editorName = invoice.project?.editor?.user?.name || 'Unassigned Editor';
       
-      const completedProjects = (isProjectCompleted && invoice.project.editorId)
+      const completedProjects = (isProjectCompleted && invoice.project?.editorId)
         ? [{
             title: invoice.project.title,
             completedDate: invoice.project.updatedAt.toLocaleDateString()
           }]
         : [];
 
-      const editorPrice = Number(invoice.project.editorPrice ?? 0);
+      const editorPrice = Number(invoice.project?.editorPrice ?? 0);
       const totalAmount = completedProjects.length > 0 ? editorPrice : 0;
       const ratePerProject = completedProjects.length > 0 ? editorPrice : 0;
 

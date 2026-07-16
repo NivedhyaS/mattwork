@@ -13,7 +13,14 @@ import {
 
 export class EditorService {
   async listEditors(query: ListEditorsQuery) {
-    return editorRepository.findAll(query);
+    const result = await editorRepository.findAll(query);
+    return {
+      ...result,
+      data: result.data.map((e: any) => ({
+        ...e,
+        activeProjects: e._count?.projects ?? 0,
+      })),
+    };
   }
 
   async getEditorById(id: string) {

@@ -1,21 +1,25 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import ProjectBoard from '@/components/board/ProjectBoard';
 import { 
-  DollarSign, 
-  Video, 
-  Clock, 
+  Video,
+  Clock,
+  CreditCard,
   Download, 
   ExternalLink, 
   FileText, 
   Image as ImageIcon, 
-  CheckCircle2, 
   Loader2,
-  AlertCircle,
-  CreditCard
+  X,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Check
 } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 
 interface Project {
   id: string;
@@ -27,6 +31,24 @@ interface Project {
   formLink: string | null;
   files: { url: string; fileType: string; filename: string }[];
 }
+
+interface BalanceData {
+  advancePaid: number;
+  completedWorkValue: number;
+  remainingCredit: number;
+  equivalentRemainingVideos: number | null;
+  averageNote?: string;
+}
+
+const customFormatDate = (dateString: string | Date | undefined | null): string => {
+  if (!dateString) return '—';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '—';
+  const day = date.getDate();
+  const month = date.toLocaleString('en-US', { month: 'short' });
+  const year = date.getFullYear();
+  return `${day} ${month} ${year}`;
+};
 
 const getClientStatus = (status: string) => {
   const s = status.toUpperCase();
@@ -45,17 +67,181 @@ const STATUS_COLORS: Record<string, string> = {
   inactive: 'bg-slate-50 text-slate-500 border-border',
 };
 
+// ── Breakdown Modal ──────────────────────────────────────────────────────────
+
+interface BreakdownModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  currency: string;
+  balanceData: BalanceData | null;
+  activeCard: 'advance' | 'completed' | 'remaining' | 'videos' | null;
+}
+
+function BreakdownModal({ isOpen, onClose, title, currency, balanceData, activeCard }: BreakdownModalProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    if (isOpen) document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !balanceData) return null;
+
+  const fmt = (n: number) => formatCurrency(n, currency);
+  const { advancePaid, completedWorkValue, remainingCredit, equivalentRemainingVideos, averageNote } = balanceData;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        ref={ref}
+        className="bg-white dark:bg-slate-950 border border-border rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 space-y-5"
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="text-[18px] font-bold text-slate-900 dark:text-white">{title}</h3>
+            <p className="text-xs text-slate-400 mt-0.5">How this number is calculated</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-colors">
+            <X className="h-4 w-4 text-slate-400" />
+          </button>
+        </div>
+
+        {/* Calculation breakdown */}
+        <div className="space-y-3">
+          {activeCard === 'advance' && (
+            <>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                This is the total advance payment credited to your account by the admin. 
+                It represents the funds paid upfront before video delivery.
+              </p>
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Total Advance Paid</span>
+                <span className="text-[20px] font-black text-slate-900 dark:text-white">{fmt(advancePaid)}</span>
+              </div>
+              <p className="text-xs text-slate-400">
+                This value is updated by your account manager whenever a new payment is received.
+              </p>
+            </>
+          )}
+
+          {activeCard === 'completed' && (
+            <>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                The total value of all videos that have been delivered (status: <span className="font-semibold text-status-green">UPLOADED</span> or <span className="font-semibold text-status-green">COMPLETED</span>), summed from each project's quoted price.
+              </p>
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Sum of delivered project prices</span>
+                <span className="text-[20px] font-black text-slate-900 dark:text-white">{fmt(completedWorkValue)}</span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Only projects with a confirmed delivery status and a set client price are included in this total.
+              </p>
+            </>
+          )}
+
+          {activeCard === 'remaining' && (
+            <>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Your remaining credit is calculated as:
+              </p>
+              <div className="space-y-2">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-status-green" />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">Advance Paid</span>
+                  </div>
+                  <span className="font-bold text-slate-900 dark:text-white">{fmt(advancePaid)}</span>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingDown className="h-4 w-4 text-status-amber" />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">Work Completed</span>
+                  </div>
+                  <span className="font-bold text-slate-900 dark:text-white">− {fmt(completedWorkValue)}</span>
+                </div>
+                <div className="border-t border-border pt-2 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-lg p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Minus className="h-4 w-4 text-indigo-400" />
+                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">Remaining Credit</span>
+                  </div>
+                  <span className="font-black text-indigo-600 dark:text-indigo-400 text-[18px]">{fmt(remainingCredit)}</span>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeCard === 'videos' && (
+            <>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Estimated videos you can still commission with your remaining credit.
+              </p>
+              <div className="space-y-2">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 flex items-center justify-between">
+                  <span className="text-sm text-slate-700 dark:text-slate-300">Remaining Credit</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{fmt(remainingCredit)}</span>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 flex items-center justify-between">
+                  <span className="text-sm text-slate-700 dark:text-slate-300">Per-video price used</span>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {equivalentRemainingVideos !== null && remainingCredit > 0
+                      ? fmt(Math.round(remainingCredit / equivalentRemainingVideos))
+                      : '—'}
+                  </span>
+                </div>
+                <div className="border-t border-border pt-2 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-lg p-3 flex items-center justify-between">
+                  <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">Estimated Remaining Videos</span>
+                  <span className="font-black text-indigo-600 dark:text-indigo-400 text-[18px]">
+                    {equivalentRemainingVideos !== null ? equivalentRemainingVideos : '—'}
+                  </span>
+                </div>
+              </div>
+              {averageNote && (
+                <p className="text-xs text-slate-400 italic">{averageNote}</p>
+              )}
+              {!averageNote && (
+                <p className="text-xs text-slate-400">
+                  Based on the average price of your completed projects. Floored to the nearest whole video.
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Component ───────────────────────────────────────────────────────────
+
 export default function ClientDashboard() {
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [currency, setCurrency] = useState('USD');
 
-  // Dynamic balance states
-  const [advancePaid, setAdvancePaid] = useState(0);
-  const [completedWork, setCompletedWork] = useState(0);
-  const [remainingCredit, setRemainingCredit] = useState(0);
-  const [remainingVideos, setRemainingVideos] = useState(0);
+  const [balanceData, setBalanceData] = useState<BalanceData | null>(null);
+  const [breakdownCard, setBreakdownCard] = useState<'advance' | 'completed' | 'remaining' | 'videos' | null>(null);
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOARD'>('OVERVIEW');
+
+  const handleSelectProject = async (project: Project) => {
+    setSelectedProject(project);
+    try {
+      const res = await api.get(`/projects/${project.id}`);
+      setSelectedProject(res.data.data);
+    } catch (err) {
+      console.error('Failed to load project details:', err);
+    }
+  };
 
   useEffect(() => {
     Promise.all([
@@ -65,55 +251,52 @@ export default function ClientDashboard() {
       .then(async ([projectsRes, clientRes]) => {
         const projData = projectsRes.data.data;
         setProjects(projData);
-        if (projData.length > 0) setSelectedProject(projData[0]);
+        if (projData.length > 0) {
+          handleSelectProject(projData[0]);
+        }
 
         const clientProfile = clientRes.data.data;
-        const fallbackCompleted = projData.filter((p: Project) => getClientStatus(p.status) === 'delivered').length * 1000;
+        const clientCurrency = clientProfile?.currency || 'USD';
+        setCurrency(clientCurrency);
 
         if (clientProfile?.id) {
           try {
             const balanceRes = await api.get(`/clients/${clientProfile.id}/balance`);
             const bal = balanceRes.data.data;
-            setAdvancePaid(Number(bal.advancePaid));
-            setCompletedWork(Number(bal.completedWorkValue));
-            setRemainingCredit(Number(bal.remainingCredit));
-            setRemainingVideos(Number(bal.equivalentRemainingVideos ?? 0));
+            setBalanceData({
+              advancePaid: Number(bal.advancePaid),
+              completedWorkValue: Number(bal.completedWorkValue),
+              remainingCredit: Number(bal.remainingCredit),
+              equivalentRemainingVideos: bal.equivalentRemainingVideos !== null ? Number(bal.equivalentRemainingVideos) : null,
+              averageNote: bal.averageNote,
+            });
           } catch (balErr) {
             console.error('Failed to load dynamic client balance:', balErr);
-            setAdvancePaid(50000);
-            setCompletedWork(fallbackCompleted);
-            setRemainingCredit(50000 - fallbackCompleted);
-            setRemainingVideos(Math.max(0, Math.floor((50000 - fallbackCompleted) / 1000)));
+            // Fallback with delivered projects count heuristic
+            const fallbackCompleted = projData.filter((p: Project) => getClientStatus(p.status) === 'delivered').length * 1000;
+            setBalanceData({
+              advancePaid: 0,
+              completedWorkValue: fallbackCompleted,
+              remainingCredit: -fallbackCompleted,
+              equivalentRemainingVideos: 0,
+            });
           }
         } else {
-          setAdvancePaid(50000);
-          setCompletedWork(fallbackCompleted);
-          setRemainingCredit(50000 - fallbackCompleted);
-          setRemainingVideos(Math.max(0, Math.floor((50000 - fallbackCompleted) / 1000)));
+          setBalanceData({ advancePaid: 0, completedWorkValue: 0, remainingCredit: 0, equivalentRemainingVideos: 0 });
         }
 
-        // Fetch each project details to compile client's invoices safely
         try {
-          const detailPromises = projData.map((p: Project) => api.get(`/projects/${p.id}`));
-          const detailsRes = await Promise.all(detailPromises);
-          
-          const allInvoicesMap = new Map<string, any>();
-          detailsRes.forEach((res) => {
-            const detailProj = res.data.data;
-            if (detailProj.invoices && detailProj.invoices.length > 0) {
-              detailProj.invoices.forEach((inv: any) => {
-                allInvoicesMap.set(inv.id, inv);
-              });
-            }
-          });
-          setInvoices(Array.from(allInvoicesMap.values()));
+          const res = await api.get('/invoices?limit=100');
+          setInvoices(res.data?.data || []);
         } catch (invoiceErr) {
-          console.error('Failed to gather invoices from project details:', invoiceErr);
+          console.error('Failed to fetch invoices:', invoiceErr);
         }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  const fmt = (n: number) => formatCurrency(n, currency);
 
   const finalFiles = selectedProject?.files?.filter(f => 
     f.fileType === 'VIDEO' || f.fileType === 'IMAGE'
@@ -132,37 +315,148 @@ export default function ClientDashboard() {
     }))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  const stats = balanceData ? [
+    {
+      key: 'advance' as const,
+      label: 'advance paid',
+      value: fmt(balanceData.advancePaid),
+      isPrimary: false,
+    },
+    {
+      key: 'completed' as const,
+      label: 'work completed',
+      value: fmt(balanceData.completedWorkValue),
+      isPrimary: false,
+    },
+    {
+      key: 'remaining' as const,
+      label: 'remaining credit',
+      value: fmt(balanceData.remainingCredit),
+      isPrimary: true,
+    },
+    {
+      key: 'videos' as const,
+      label: 'remaining videos',
+      value: balanceData.equivalentRemainingVideos !== null ? `${balanceData.equivalentRemainingVideos} videos` : '—',
+      subtitle: 'Based on remaining credit',
+      isPrimary: false,
+    },
+  ] : [];
+
+  const tabToggle = (
+    <div className="flex items-center bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-850 shrink-0">
+      <button
+        onClick={() => setActiveTab('OVERVIEW')}
+        className={`px-3.5 py-1.5 rounded-lg text-[13px] font-bold transition-all cursor-pointer ${
+          activeTab === 'OVERVIEW'
+            ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
+            : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+        }`}
+      >
+        Overview
+      </button>
+      <button
+        onClick={() => setActiveTab('BOARD')}
+        className={`px-3.5 py-1.5 rounded-lg text-[13px] font-bold transition-all cursor-pointer ${
+          activeTab === 'BOARD'
+            ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
+            : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+        }`}
+      >
+        Project Board
+      </button>
+    </div>
+  );
+
+  if (activeTab === 'BOARD') {
+    return <ProjectBoard role="CLIENT" extraHeader={tabToggle} />;
+  }
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto text-base">
-      <div>
-        <h1 className="text-[36px] font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
-          Client dashboard
-        </h1>
-        <p className="text-[16px] text-slate-500 mt-2">
-          Welcome back. Track your video production progress and credit balance.
-        </p>
+      {/* Breakdown Modal */}
+      <BreakdownModal
+        isOpen={breakdownCard !== null}
+        onClose={() => setBreakdownCard(null)}
+        title={
+          breakdownCard === 'advance' ? 'Advance Paid'
+          : breakdownCard === 'completed' ? 'Work Completed'
+          : breakdownCard === 'remaining' ? 'Remaining Credit'
+          : 'Remaining Videos'
+        }
+        currency={currency}
+        balanceData={balanceData}
+        activeCard={breakdownCard}
+      />
+
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-[36px] font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
+            Client dashboard
+          </h1>
+          <p className="text-[16px] text-slate-500 mt-2">
+            Welcome back. Track your video production progress and credit balance.
+          </p>
+        </div>
+        {tabToggle}
       </div>
 
       {/* Financial Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {[
-          { label: 'advance paid', value: formatCurrency(advancePaid), icon: DollarSign, color: 'text-status-green', bg: 'bg-status-green/10' },
-          { label: 'work completed', value: formatCurrency(completedWork), icon: CheckCircle2, color: 'text-accent', bg: 'bg-accent/10' },
-          { label: 'remaining credit', value: formatCurrency(remainingCredit), icon: DollarSign, color: 'text-slate-900 dark:text-white', bg: 'bg-slate-100 dark:bg-slate-800' },
-          { label: 'remaining videos', value: `${remainingVideos} videos`, icon: Video, color: 'text-slate-655', bg: 'bg-slate-100 dark:bg-slate-800' },
-        ].map((stat) => (
-          <div key={stat.label} className="flat-card bg-card p-6 border border-border">
-            <div className="flex justify-between items-start">
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flat-card bg-card/40 p-6 border border-border animate-pulse">
+              <div className="h-3 w-20 bg-slate-200 dark:bg-slate-800 rounded mb-3" />
+              <div className="h-8 w-28 bg-slate-200 dark:bg-slate-800 rounded" />
+            </div>
+          ))
+        ) : stats.map((stat) => {
+          if (stat.isPrimary) {
+            return (
+              <button
+                key={stat.key}
+                onClick={() => setBreakdownCard(stat.key)}
+                className="flat-card bg-gradient-to-br from-indigo-600/15 via-indigo-650/5 to-transparent p-6 border border-indigo-500/40 dark:border-indigo-400/30 shadow-[0_4px_25px_rgba(99,102,241,0.08)] relative overflow-hidden text-left w-full hover:border-indigo-400/60 dark:hover:border-indigo-400/50 hover:shadow-[0_4px_30px_rgba(99,102,241,0.15)] transition-all duration-200 cursor-pointer group"
+              >
+                {/* Glowing decorative background blur */}
+                <div className="absolute top-[-20%] right-[-20%] w-[60%] h-[60%] bg-indigo-500/10 rounded-full blur-[35px] pointer-events-none" />
+                
+                <div>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-2">
+                    Primary Balance
+                  </span>
+                  <p className="text-[12px] uppercase font-bold text-indigo-300 dark:text-indigo-400 tracking-wider">
+                    {stat.label}
+                  </p>
+                  <h3 className="kpi-figure text-[42px] font-black mt-1.5 text-indigo-600 dark:text-indigo-400 leading-none">
+                    {stat.value}
+                  </h3>
+                  <p className="text-[10px] text-indigo-400/60 mt-2 group-hover:text-indigo-400/80 transition-colors">
+                    Click to see breakdown →
+                  </p>
+                </div>
+              </button>
+            );
+          }
+          return (
+            <button
+              key={stat.key}
+              onClick={() => setBreakdownCard(stat.key)}
+              className="flat-card bg-card/40 p-6 border border-border text-left w-full hover:border-accent/40 hover:bg-accent/[0.03] transition-all duration-200 cursor-pointer group"
+            >
               <div>
                 <p className="text-[12px] uppercase font-bold text-slate-450 tracking-wider">{stat.label}</p>
-                <h3 className="kpi-figure text-[38px] font-extrabold mt-2 text-slate-900 dark:text-white">{stat.value}</h3>
+                <h3 className="kpi-figure text-[32px] font-extrabold mt-2 text-slate-800 dark:text-slate-200">{stat.value}</h3>
+                {stat.subtitle && (
+                  <p className="text-[11px] text-slate-400 mt-1">{stat.subtitle}</p>
+                )}
+                <p className="text-[10px] text-slate-400/50 mt-2 group-hover:text-slate-400/80 transition-colors">
+                  Click to see breakdown →
+                </p>
               </div>
-              <div className={`p-3 rounded-lg ${stat.bg}`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
-              </div>
-            </div>
-          </div>
-        ))}
+            </button>
+          );
+        })}
       </div>
 
       {/* Main Section */}
@@ -191,37 +485,37 @@ export default function ClientDashboard() {
                   <table className="w-full text-left border-collapse text-[15px]">
                     <thead>
                       <tr className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-border text-[12px] font-bold uppercase tracking-wider text-slate-450">
-                        <th className="py-4 px-6">video title</th>
+                        <th className="py-4 pl-6 pr-6">video title</th>
                         <th className="py-4 px-6">deadline</th>
                         <th className="py-4 px-6">status</th>
-                        <th className="py-4 px-6 text-right">details</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
                       {projects.map((project) => {
                         const status = getClientStatus(project.status);
+                        const isSelected = selectedProject?.id === project.id;
                         return (
                           <tr 
                             key={project.id} 
-                            className={`hover:bg-slate-50/50 dark:hover:bg-slate-900/10 transition-colors cursor-pointer ${selectedProject?.id === project.id ? 'bg-slate-50/70 dark:bg-slate-900/20' : ''}`}
-                            onClick={() => setSelectedProject(project)}
+                            className={`hover:bg-slate-50/50 dark:hover:bg-slate-900/10 transition-colors cursor-pointer ${
+                              isSelected ? 'bg-indigo-500/5 dark:bg-indigo-500/10' : ''
+                            }`}
+                            onClick={() => handleSelectProject(project)}
                           >
-                            <td className="py-4 px-6 font-semibold text-slate-800 dark:text-slate-200">{project.title}</td>
+                            <td className={`py-4 pr-6 font-semibold transition-all ${
+                              isSelected 
+                                ? 'text-indigo-600 dark:text-indigo-400 border-l-4 border-indigo-500 pl-5' 
+                                : 'text-slate-800 dark:text-slate-200 border-l-4 border-transparent pl-6'
+                            }`}>
+                              {project.title}
+                            </td>
                             <td className="py-4 px-6 text-slate-550">
-                              {project.dueDate ? new Date(project.dueDate).toLocaleDateString('en-IN') : '—'}
+                              {customFormatDate(project.dueDate)}
                             </td>
                             <td className="py-4 px-6">
                               <span className={`px-2.5 py-1 rounded border text-[11px] font-bold ${STATUS_COLORS[status] || STATUS_COLORS.inactive}`}>
                                 {status}
                               </span>
-                            </td>
-                            <td className="py-4 px-6 text-right">
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); setSelectedProject(project); }}
-                                className="text-accent hover:underline font-bold inline-flex items-center gap-1 cursor-pointer"
-                              >
-                                view <ExternalLink className="h-3.5 w-3.5" />
-                              </button>
                             </td>
                           </tr>
                         );
@@ -245,8 +539,14 @@ export default function ClientDashboard() {
                   <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
                 </div>
               ) : invoices.length === 0 ? (
-                <div className="text-center py-12 text-slate-400">
-                  <p className="font-bold text-[15px]">No invoices found</p>
+                <div className="text-center py-16 px-4 bg-slate-900/10 dark:bg-slate-900/5">
+                  <div className="mx-auto w-12 h-12 rounded-full border border-dashed border-border/80 flex items-center justify-center mb-4 text-slate-500">
+                    <FileText className="h-6 w-6 stroke-[1.5]" />
+                  </div>
+                  <h3 className="font-bold text-[16px] text-slate-800 dark:text-slate-200">No invoices yet</h3>
+                  <p className="text-xs text-slate-500 mt-1 max-w-[260px] mx-auto">
+                    We'll post invoices here as soon as they're generated for your projects.
+                  </p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -261,9 +561,15 @@ export default function ClientDashboard() {
                     </thead>
                     <tbody className="divide-y divide-border">
                       {invoices.map((inv: any) => (
-                        <tr key={inv.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10 transition-colors">
-                          <td className="py-4 px-6 font-semibold text-slate-800 dark:text-slate-200">{inv.number}</td>
-                          <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">{formatCurrency(inv.total)}</td>
+                        <tr
+                          key={inv.id}
+                          onClick={() => router.push(`/client/invoices?highlight=${inv.id}`)}
+                          className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10 transition-colors cursor-pointer group"
+                        >
+                          <td className="py-4 px-6 font-semibold text-slate-800 dark:text-slate-200 group-hover:text-accent transition-colors">
+                            {inv.number}
+                          </td>
+                          <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">{fmt(inv.total)}</td>
                           <td className="py-4 px-6">
                             <span className={`px-2.5 py-1 rounded border text-[11px] font-bold ${
                               inv.status === 'PAID' 
@@ -274,7 +580,7 @@ export default function ClientDashboard() {
                             </span>
                           </td>
                           <td className="py-4 px-6 text-slate-550">
-                            {new Date(inv.createdAt).toLocaleDateString('en-IN')}
+                            {customFormatDate(inv.createdAt)}
                           </td>
                         </tr>
                       ))}
@@ -297,8 +603,14 @@ export default function ClientDashboard() {
                   <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
                 </div>
               ) : paymentHistory.length === 0 ? (
-                <div className="text-center py-12 text-slate-400">
-                  <p className="font-bold text-[15px]">No completed payments found</p>
+                <div className="text-center py-16 px-4 bg-slate-900/10 dark:bg-slate-900/5">
+                  <div className="mx-auto w-12 h-12 rounded-full border border-dashed border-border/80 flex items-center justify-center mb-4 text-slate-500">
+                    <CreditCard className="h-6 w-6 stroke-[1.5]" />
+                  </div>
+                  <h3 className="font-bold text-[16px] text-slate-800 dark:text-slate-200">No transactions recorded</h3>
+                  <p className="text-xs text-slate-500 mt-1 max-w-[280px] mx-auto">
+                    Your processed bank transfers and payments will be listed here once complete.
+                  </p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -316,12 +628,12 @@ export default function ClientDashboard() {
                         <tr key={pay.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10 transition-colors">
                           <td className="py-4 px-6">
                             <p className="font-semibold text-slate-800 dark:text-slate-200">{pay.id}</p>
-                            <span className="text-xs text-slate-400">{formatDate(pay.date)}</span>
+                            <span className="text-xs text-slate-400">{customFormatDate(pay.date)}</span>
                           </td>
                           <td className="py-4 px-6 text-slate-500 font-semibold">{pay.invoiceNumber}</td>
                           <td className="py-4 px-6 text-slate-500">{pay.method}</td>
                           <td className="py-4 px-6 font-bold text-slate-950 dark:text-white text-right">
-                            {formatCurrency(pay.amount)}
+                            {fmt(pay.amount)}
                           </td>
                         </tr>
                       ))}
@@ -338,11 +650,10 @@ export default function ClientDashboard() {
           <h2 className="text-[20px] font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
             <Clock className="h-5 w-5 text-slate-450" />
             Project details
-          </h2>
-
-          {selectedProject ? (
-            <div className="flat-card bg-card p-6 border border-border space-y-6">
-              <div>
+          </h2>          {selectedProject ? (
+            <div className="flat-card bg-card p-6 border border-border space-y-6 divide-y divide-border/50">
+              {/* Section 1: Header */}
+              <div className="pb-6">
                 <span className={`px-2.5 py-1 rounded border text-[11px] font-bold ${STATUS_COLORS[getClientStatus(selectedProject.status)] || ''}`}>
                   {getClientStatus(selectedProject.status)}
                 </span>
@@ -351,9 +662,9 @@ export default function ClientDashboard() {
                 </h3>
               </div>
 
-              {/* Progress Stepper */}
-              <div className="py-4 border-t border-border border-b">
-                <span className="text-[12px] font-bold text-slate-450 uppercase tracking-wider block mb-3.5">progress</span>
+              {/* Section 2: Progress Stepper */}
+              <div className="py-6">
+                <span className="text-[12px] font-bold text-slate-450 uppercase tracking-wider block mb-4">progress</span>
                 <div className="flex justify-between items-center relative">
                   <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-200 dark:bg-slate-800 -translate-y-1/2 z-0" />
                   {['submitted', 'in production', 'in review', 'delivered'].map((step, index) => {
@@ -362,19 +673,31 @@ export default function ClientDashboard() {
                     const stepIndex = steps.indexOf(step);
                     const currentIndex = steps.indexOf(currentStatus);
                     
-                    const isCompleted = stepIndex <= currentIndex;
+                    const isCompleted = stepIndex < currentIndex;
                     const isCurrent = stepIndex === currentIndex;
 
                     return (
                       <div key={step} className="flex flex-col items-center z-10 relative">
-                        <div className={`h-5 w-5 rounded-full flex items-center justify-center border text-[10px] font-bold ${
+                        <div className={`h-6 w-6 rounded-full flex items-center justify-center border text-[11px] font-bold transition-all duration-300 ${
                           isCompleted
-                            ? isCurrent ? 'bg-accent text-white border-accent' : 'bg-status-green text-white border-status-green'
-                            : 'bg-white dark:bg-slate-950 text-slate-400 border-border'
+                            ? 'bg-status-green text-white border-status-green shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                            : isCurrent
+                              ? 'bg-accent text-white border-accent ring-4 ring-indigo-500/20 shadow-[0_0_12px_rgba(79,70,229,0.4)]'
+                              : 'bg-white dark:bg-slate-950 text-slate-400 border-border'
                         }`}>
-                          {stepIndex + 1}
+                          {isCompleted ? (
+                            <Check className="h-3.5 w-3.5 stroke-[3]" />
+                          ) : (
+                            stepIndex + 1
+                          )}
                         </div>
-                        <span className={`text-[10px] mt-2 font-bold whitespace-nowrap ${isCompleted ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400'}`}>
+                        <span className={`text-[10px] mt-2 font-bold whitespace-nowrap uppercase tracking-wider ${
+                          isCurrent
+                            ? 'text-accent dark:text-indigo-400'
+                            : isCompleted
+                              ? 'text-slate-800 dark:text-slate-350'
+                              : 'text-slate-400'
+                        }`}>
                           {step}
                         </span>
                       </div>
@@ -383,14 +706,14 @@ export default function ClientDashboard() {
                 </div>
               </div>
 
-              {/* Source materials */}
-              <div className="space-y-3">
+              {/* Section 3: Source materials */}
+              <div className="py-6 space-y-3">
                 <span className="text-[12px] font-bold text-slate-450 uppercase tracking-wider block">materials</span>
                 {selectedProject.driveFolder && (
                   <a href={selectedProject.driveFolder} target="_blank" rel="noreferrer"
                     className="flex items-center justify-between p-3.5 rounded-lg border border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
                     <div className="flex items-center gap-3 min-w-0">
-                      <Video className="h-5 w-5 text-slate-450" />
+                      <Video className="h-5 w-5 text-slate-455" />
                       <div className="min-w-0">
                         <p className="text-[14px] font-bold text-slate-800 dark:text-slate-200 truncate">working drive folder</p>
                         <p className="text-xs text-slate-400 font-normal">google drive</p>
@@ -414,8 +737,8 @@ export default function ClientDashboard() {
                 )}
               </div>
 
-              {/* Deliverables */}
-              <div className="space-y-3 border-t border-border pt-4">
+              {/* Section 4: Deliverables */}
+              <div className="pt-6 space-y-3">
                 <span className="text-[12px] font-bold text-slate-450 uppercase tracking-wider block">final deliverables</span>
                 {getClientStatus(selectedProject.status) === 'delivered' && finalFiles.length > 0 ? (
                   <div className="space-y-2">
