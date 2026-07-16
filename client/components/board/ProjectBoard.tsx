@@ -754,11 +754,13 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   <input
                     type="date"
                     disabled={isSavingField === 'submissionDate'}
-                    defaultValue={selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toISOString().split('T')[0] : ''}
+                    value={selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toISOString().split('T')[0] : ''}
+                    onChange={(e) => {
+                      const newVal = e.target.value;
+                      setSelectedProject(prev => prev ? { ...prev, submissionDate: newVal || null } : null);
+                    }}
                     onBlur={(e) => {
-                      if (e.target.value !== (selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toISOString().split('T')[0] : '')) {
-                        handleUpdateField('submissionDate', e.target.value);
-                      }
+                      handleUpdateField('submissionDate', e.target.value);
                     }}
                     className="w-full text-[13px] p-2 rounded-lg border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-50 focus:outline-none"
                   />
@@ -774,11 +776,13 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   <input
                     type="date"
                     disabled={isSavingField === 'dueDate'}
-                    defaultValue={selectedProject.dueDate ? new Date(selectedProject.dueDate).toISOString().split('T')[0] : ''}
+                    value={selectedProject.dueDate ? new Date(selectedProject.dueDate).toISOString().split('T')[0] : ''}
+                    onChange={(e) => {
+                      const newVal = e.target.value;
+                      setSelectedProject(prev => prev ? { ...prev, dueDate: newVal || null } : null);
+                    }}
                     onBlur={(e) => {
-                      if (e.target.value !== (selectedProject.dueDate ? new Date(selectedProject.dueDate).toISOString().split('T')[0] : '')) {
-                        handleUpdateField('dueDate', e.target.value);
-                      }
+                      handleUpdateField('dueDate', e.target.value);
                     }}
                     className="w-full text-[13px] p-2 rounded-lg border border-slate-355 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-50 focus:outline-none"
                   />
