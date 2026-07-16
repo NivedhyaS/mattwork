@@ -757,7 +757,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                     value={selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toISOString().split('T')[0] : ''}
                     onChange={(e) => {
                       const newVal = e.target.value;
-                      setSelectedProject(prev => prev ? { ...prev, submissionDate: newVal || null } : null);
+                      setSelectedProject(prev => prev ? { ...prev, submissionDate: newVal || '' } : null);
                     }}
                     onBlur={(e) => {
                       handleUpdateField('submissionDate', e.target.value);
@@ -779,7 +779,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                     value={selectedProject.dueDate ? new Date(selectedProject.dueDate).toISOString().split('T')[0] : ''}
                     onChange={(e) => {
                       const newVal = e.target.value;
-                      setSelectedProject(prev => prev ? { ...prev, dueDate: newVal || null } : null);
+                      setSelectedProject(prev => prev ? { ...prev, dueDate: newVal || '' } : null);
                     }}
                     onBlur={(e) => {
                       handleUpdateField('dueDate', e.target.value);
