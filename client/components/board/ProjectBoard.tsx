@@ -754,8 +754,12 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   <input
                     type="date"
                     disabled={isSavingField === 'submissionDate'}
-                    value={selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toISOString().split('T')[0] : ''}
-                    onChange={(e) => handleUpdateField('submissionDate', e.target.value)}
+                    defaultValue={selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toISOString().split('T')[0] : ''}
+                    onBlur={(e) => {
+                      if (e.target.value !== (selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toISOString().split('T')[0] : '')) {
+                        handleUpdateField('submissionDate', e.target.value);
+                      }
+                    }}
                     className="w-full text-[13px] p-2 rounded-lg border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-50 focus:outline-none"
                   />
                 ) : (
@@ -770,8 +774,12 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   <input
                     type="date"
                     disabled={isSavingField === 'dueDate'}
-                    value={selectedProject.dueDate ? new Date(selectedProject.dueDate).toISOString().split('T')[0] : ''}
-                    onChange={(e) => handleUpdateField('dueDate', e.target.value)}
+                    defaultValue={selectedProject.dueDate ? new Date(selectedProject.dueDate).toISOString().split('T')[0] : ''}
+                    onBlur={(e) => {
+                      if (e.target.value !== (selectedProject.dueDate ? new Date(selectedProject.dueDate).toISOString().split('T')[0] : '')) {
+                        handleUpdateField('dueDate', e.target.value);
+                      }
+                    }}
                     className="w-full text-[13px] p-2 rounded-lg border border-slate-355 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-50 focus:outline-none"
                   />
                 ) : (
