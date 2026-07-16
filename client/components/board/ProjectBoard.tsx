@@ -52,7 +52,6 @@ interface Project {
   id: string;
   title: string;
   status: string;
-  priority: string;
   dueDate: string | null;
   clientPrice: number | string | null;
   editorPrice: number | string | null;
@@ -83,8 +82,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
   // Search & Filter States
   const [searchQuery, setSearchQuery] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState('ALL');
-  const [sortBy, setSortBy] = useState<'dueDate' | 'createdAt' | 'priority' | 'title'>('createdAt');
+  const [sortBy, setSortBy] = useState<'dueDate' | 'createdAt' | 'title'>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // File Upload State (for Editor workstation)
@@ -276,10 +274,6 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
       if (!matchesTitle && !matchesId && !matchesClient && !matchesEditor) return false;
     }
 
-    if (priorityFilter !== 'ALL') {
-      if (p.priority !== priorityFilter) return false;
-    }
-
     return true;
   });
 
@@ -291,9 +285,6 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
       comparison = new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
     } else if (sortBy === 'createdAt') {
       comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-    } else if (sortBy === 'priority') {
-      const priorityOrder: Record<string, number> = { URGENT: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
-      comparison = (priorityOrder[a.priority] ?? 2) - (priorityOrder[b.priority] ?? 2);
     } else if (sortBy === 'title') {
       comparison = a.title.localeCompare(b.title);
     }
@@ -357,21 +348,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             />
           </div>
 
-          {/* Priority filter */}
-          <div className="flex items-center gap-2">
-            <Filter className="h-4.5 w-4.5 text-slate-450 shrink-0" />
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              className="text-[15px] border border-slate-250 dark:border-slate-800 rounded-lg px-3 py-2.5 bg-transparent focus:outline-none"
-            >
-              <option value="ALL">All Priorities</option>
-              <option value="LOW">Low</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="HIGH">High</option>
-              <option value="URGENT">Urgent</option>
-            </select>
-          </div>
+
 
           {/* Sort selection */}
           <div className="flex items-center gap-2">
@@ -383,7 +360,6 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             >
               <option value="createdAt">Date Created</option>
               <option value="dueDate">Deadline</option>
-              <option value="priority">Priority Scale</option>
               <option value="title">Title Alphabetical</option>
             </select>
             <button
@@ -491,13 +467,6 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                         <span className="text-[11px] font-mono text-slate-400 font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/40 px-1.5 py-0.5 rounded">
                                           #{project.id.slice(-6).toUpperCase()}
                                         </span>
-                                        <span
-                                          className={`text-[11px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${
-                                            PRIORITY_COLORS[project.priority] || PRIORITY_COLORS.LOW
-                                          }`}
-                                        >
-                                          {project.priority.toLowerCase()}
-                                        </span>
                                       </div>
 
                                       {/* Video Title */}
@@ -597,9 +566,6 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded border border-slate-200/50">
                   ID: {selectedProject.id.toUpperCase()}
-                </span>
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${PRIORITY_COLORS[selectedProject.priority] || PRIORITY_COLORS.LOW}`}>
-                  {selectedProject.priority.toLowerCase()} priority
                 </span>
               </div>
               <div className="flex items-center gap-2">
