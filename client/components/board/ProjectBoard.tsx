@@ -3,16 +3,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { api } from '@/lib/api';
-import { 
-  Loader2, 
-  Clock, 
-  User, 
-  RefreshCw, 
-  FileText, 
-  ExternalLink, 
-  DollarSign, 
-  Search, 
-  Filter, 
+import {
+  Loader2,
+  Clock,
+  User,
+  RefreshCw,
+  FileText,
+  ExternalLink,
+  DollarSign,
+  Search,
+  Filter,
   SlidersHorizontal,
   ChevronRight,
   TrendingUp,
@@ -289,14 +289,14 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
     const isOverdue = d < today;
     const diffTime = d.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     let isUrgentHighlight = false;
     if (diffDays >= 0 && diffDays <= 2) {
       isUrgentHighlight = true;
     }
 
-    return { 
-      label: d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }), 
+    return {
+      label: d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
       isOverdue,
       isUrgentHighlight
     };
@@ -305,7 +305,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
   // Compile timeline for activity history
   const getActivityHistory = (project: Project) => {
     const historyList: { type: 'create' | 'file' | 'invoice' | 'note'; date: Date; title: string; desc: string }[] = [];
-    
+
     // 1. Creation
     historyList.push({
       type: 'create',
@@ -555,16 +555,15 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                         <div
                           ref={provided.innerRef}
                           {...provided.droppableProps}
-                          className={`flex-1 p-3 overflow-y-auto space-y-3 min-h-[220px] transition-colors duration-150 ${
-                            snapshot.isDraggingOver
+                          className={`flex-1 p-3 overflow-y-auto space-y-3 min-h-[220px] transition-colors duration-150 ${snapshot.isDraggingOver
                               ? 'bg-slate-50/70 dark:bg-slate-900/20'
                               : 'bg-transparent'
-                          }`}
+                            }`}
                         >
                           {columnProjects.map((project, index) => {
                             const dueDate = formatCardDate(project.dueDate);
                             const isUpdating = updatingId === project.id;
-                            
+
                             // Calculate project profit for ADMIN card view
                             let profitAmount: number | null = null;
                             if (role === 'ADMIN' && project.clientPrice && project.editorPrice) {
@@ -584,11 +583,10 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                     {...provided.draggableProps}
                                     {...provided.dragHandleProps}
                                     onClick={() => openProjectDetails(project)}
-                                    className={`relative bg-card p-3 rounded-xl border border-slate-200 dark:border-slate-850 transition-all select-none cursor-pointer flex flex-col gap-2 ${
-                                      snapshot.isDragging
+                                    className={`relative bg-card p-3 rounded-xl border border-slate-200 dark:border-slate-850 transition-all select-none cursor-pointer flex flex-col gap-2 ${snapshot.isDragging
                                         ? 'ring-1 ring-accent border-accent rotate-1 shadow-lg'
                                         : 'hover:border-slate-400 dark:hover:border-slate-750 hover:shadow-sm'
-                                    } ${isUpdating ? 'opacity-60' : ''}`}
+                                      } ${isUpdating ? 'opacity-60' : ''}`}
                                   >
                                     {/* Left accent color border */}
                                     <div className="absolute left-0 top-3 bottom-3 w-1 bg-accent/30 rounded-r" />
@@ -635,13 +633,12 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                       <div className="flex items-center justify-between pt-2 border-t border-slate-300 dark:border-slate-850 mt-1">
                                         {dueDate ? (
                                           <div
-                                            className={`flex items-center gap-1 text-[10px] font-semibold rounded px-1.5 py-0.5 border ${
-                                              dueDate.isOverdue
+                                            className={`flex items-center gap-1 text-[10px] font-semibold rounded px-1.5 py-0.5 border ${dueDate.isOverdue
                                                 ? 'text-rose-650 bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/40 dark:text-rose-450'
                                                 : dueDate.isUrgentHighlight
-                                                ? 'text-amber-700 bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/40 dark:text-amber-350'
-                                                : 'text-slate-650 bg-slate-50 border-slate-300 dark:bg-slate-900/30 dark:border-slate-750 dark:text-slate-300'
-                                            }`}
+                                                  ? 'text-amber-700 bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/40 dark:text-amber-350'
+                                                  : 'text-slate-650 bg-slate-50 border-slate-300 dark:bg-slate-900/30 dark:border-slate-750 dark:text-slate-300'
+                                              }`}
                                           >
                                             <Clock className="h-3 w-3" />
                                             {dueDate.label}
@@ -688,24 +685,18 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
       <Drawer
         isOpen={!!selectedProject}
         onClose={() => setSelectedProject(null)}
-        title={selectedProject ? selectedProject.title : 'Project Workspace'}
         size="lg"
       >
         {selectedProject ? (
           <div className="space-y-6 text-[15px] text-slate-800 dark:text-slate-200">
             {/* Upper Stage Header (Sleek Page Title & Stage status) */}
-            <div className="flex flex-wrap items-center justify-between gap-4 pb-2">
+            <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-slate-100 dark:border-slate-900">
               <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-mono font-bold bg-slate-100 dark:bg-slate-900 px-2.5 py-1 rounded border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-350">
-                    ID: {selectedProject.id.toUpperCase()}
-                  </span>
-                </div>
                 <h2 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
                   {selectedProject.title}
                 </h2>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Badge className="text-[12px] px-3.5 py-1.5 font-bold uppercase tracking-wider" variant={selectedProject.status === 'UPLOADED' ? 'success' : 'warning'}>
                   {selectedProject.status.replace(/_/g, ' ').toLowerCase()}
@@ -726,7 +717,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             {/* 1. Grouped Card: Project Details */}
             <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
               <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Project Details</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Client Section */}
                 <div className="space-y-2">
@@ -807,7 +798,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                     </p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block font-bold">Final Deadline</span>
                   {role === 'ADMIN' ? (
@@ -833,12 +824,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
               </div>
 
               {/* Description */}
-              <div className="space-y-2 pt-2">
-                <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block">Brief / Description</span>
-                <p className="bg-white dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-[15px] leading-relaxed whitespace-pre-line text-slate-850 dark:text-slate-200 shadow-inner">
-                  {selectedProject.description || 'No description provided.'}
-                </p>
-              </div>
+
             </div>
 
             {/* 2. Grouped Card: Resources & Deliverables */}
@@ -967,7 +953,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             {role === 'ADMIN' && (
               <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
                 <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Financial breakdown</h3>
-                
+
                 <div className="grid grid-cols-3 gap-4 bg-white dark:bg-slate-950 p-4 border border-slate-200 dark:border-slate-850 rounded-xl shadow-inner">
                   <div>
                     <span className="text-[12px] text-slate-500 dark:text-slate-400 block font-bold uppercase tracking-wider">Client budget</span>
@@ -1021,7 +1007,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             {role !== 'CLIENT' && (
               <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
                 <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Internal Comments</h3>
-                
+
                 {/* Thread */}
                 <div className="space-y-3.5 max-h-64 overflow-y-auto pr-1">
                   {comments.length === 0 ? (
@@ -1056,7 +1042,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                 </div>
 
                 {/* Input box */}
-                <form onSubmit={handleAddComment} className="flex gap-2 items-end pt-2">
+                <form onSubmit={handleAddComment} className="flex gap-2 items-center pt-2">
                   <textarea
                     rows={2}
                     required
@@ -1065,7 +1051,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                     onChange={(e) => setNewComment(e.target.value)}
                     className="flex-1 text-[14px] p-3 rounded-xl border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 focus:outline-none focus:ring-1 focus:ring-accent resize-none placeholder:text-slate-450 text-slate-900 dark:text-white shadow-inner"
                   />
-                  <Button type="submit" disabled={isSubmittingComment} size="sm" className="h-12 shrink-0 rounded-xl px-5 font-bold">
+                  <Button type="submit" disabled={isSubmittingComment} size="sm" className="h-11 shrink-0 rounded-xl px-5 font-bold flex items-center justify-center">
                     {isSubmittingComment ? 'Sending...' : 'Post'}
                   </Button>
                 </form>
@@ -1075,7 +1061,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             {/* 5. Grouped Card: Workstation Actions */}
             <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
               <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Available actions</h3>
-              
+
               {role === 'ADMIN' && (
                 <div className="flex flex-col gap-4">
                   <div className="space-y-2">
@@ -1085,11 +1071,10 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                         <button
                           key={s}
                           onClick={() => handleStatusUpdate(selectedProject.id, s)}
-                          className={`text-[12px] font-bold border px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
-                            selectedProject.status === s 
-                              ? 'bg-accent text-white border-accent shadow-sm' 
+                          className={`text-[12px] font-bold border px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${selectedProject.status === s
+                              ? 'bg-accent text-white border-accent shadow-sm'
                               : 'border-slate-350 dark:border-slate-700 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-900'
-                          }`}
+                            }`}
                         >
                           {s.replace(/_/g, ' ').toLowerCase()}
                         </button>
@@ -1115,11 +1100,10 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                         <button
                           key={s}
                           onClick={() => handleStatusUpdate(selectedProject.id, s)}
-                          className={`text-[12px] font-bold border px-4 py-2.5 rounded-xl transition-all cursor-pointer ${
-                            selectedProject.status === s
+                          className={`text-[12px] font-bold border px-4 py-2.5 rounded-xl transition-all cursor-pointer ${selectedProject.status === s
                               ? 'bg-accent text-white border-accent shadow-sm'
                               : 'border-slate-350 dark:border-slate-700 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-900'
-                          }`}
+                            }`}
                         >
                           {s.replace(/_/g, ' ').toLowerCase()}
                         </button>
