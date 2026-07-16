@@ -141,9 +141,9 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
     fetchMetadata();
   }, [fetchProjects, fetchMetadata]);
 
-  // Handle Drag & Drop status updates (ADMIN only)
+  // Handle Drag & Drop status updates (ADMIN and EDITOR)
   const onDragEnd = async (result: DropResult) => {
-    if (role !== 'ADMIN') return;
+    if (role !== 'ADMIN' && role !== 'EDITOR') return;
 
     const { destination, source, draggableId } = result;
     if (!destination) return;
@@ -562,7 +562,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                 key={project.id}
                                 draggableId={project.id}
                                 index={index}
-                                isDragDisabled={role !== 'ADMIN'}
+                                isDragDisabled={role !== 'ADMIN' && role !== 'EDITOR'}
                               >
                                 {(provided, snapshot) => (
                                   <div
