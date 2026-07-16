@@ -236,6 +236,20 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
     }
   };
 
+  const handleDeleteProject = async (projectId: string) => {
+    if (role !== 'ADMIN') return;
+    if (!confirm('Are you sure you want to delete this project completely? This action is permanent.')) return;
+    try {
+      await api.delete(`/projects/${projectId}`);
+      setProjects((prev) => prev.filter((p) => p.id !== projectId));
+      setSelectedProject(null);
+      alert('Project deleted successfully.');
+    } catch (err) {
+      console.error('Failed to delete project:', err);
+      alert('Failed to delete project.');
+    }
+  };
+
   // Comments handlers
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -678,327 +692,360 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
         size="lg"
       >
         {selectedProject ? (
-          <div className="space-y-6 text-[14px] text-slate-700 dark:text-slate-350">
-            {/* Upper Stage Header */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-300 dark:border-slate-750 pb-4">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono font-bold bg-slate-150 dark:bg-slate-800 px-2 py-1 rounded border border-slate-300 dark:border-slate-750 text-slate-700 dark:text-slate-200">
-                  ID: {selectedProject.id.toUpperCase()}
-                </span>
+          <div className="space-y-6 text-[15px] text-slate-800 dark:text-slate-200">
+            {/* Upper Stage Header (Sleek Page Title & Stage status) */}
+            <div className="flex flex-wrap items-center justify-between gap-4 pb-2">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono font-bold bg-slate-100 dark:bg-slate-900 px-2.5 py-1 rounded border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-350">
+                    ID: {selectedProject.id.toUpperCase()}
+                  </span>
+                </div>
+                <h2 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+                  {selectedProject.title}
+                </h2>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-350 uppercase font-bold">status:</span>
-                <Badge variant={selectedProject.status === 'UPLOADED' ? 'success' : 'warning'}>
+              
+              <div className="flex items-center gap-3">
+                <Badge className="text-[12px] px-3.5 py-1.5 font-bold uppercase tracking-wider" variant={selectedProject.status === 'UPLOADED' ? 'success' : 'warning'}>
                   {selectedProject.status.replace(/_/g, ' ').toLowerCase()}
                 </Badge>
-              </div>
-            </div>             {/* Profile grids (Admin editable, Client/Editor view constraints) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/50 dark:bg-slate-900/20 p-4 border border-slate-300 dark:border-slate-750 rounded-xl">
-              <div className="space-y-1.5">
-                <span className="text-slate-350 text-[12px] font-bold uppercase tracking-wider block">Client (Owner)</span>
-                {role === 'ADMIN' ? (
-                  <Select
-                    value={selectedProject.clientId}
-                    disabled={isSavingField === 'clientId'}
-                    onChange={(e) => handleUpdateField('clientId', e.target.value)}
-                    className="text-[13px] py-1.5 h-9 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-850 dark:text-slate-150"
+                {role === 'ADMIN' && (
+                  <button
+                    onClick={() => handleDeleteProject(selectedProject.id)}
+                    className="flex items-center gap-1.5 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border border-rose-500/20 px-3.5 py-2 rounded-xl transition-all cursor-pointer text-[13px] font-bold"
+                    title="Delete Project Completely"
                   >
-                    {clients.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.user.name} {c.company ? `(${c.company})` : ''}
-                      </option>
-                    ))}
-                  </Select>
-                ) : (
-                  <>
-                    <p className="font-bold text-[15px] text-slate-900 dark:text-slate-100">
-                      {selectedProject.client?.user?.name}
-                    </p>
-                    {selectedProject.client?.company && (
-                      <p className="text-[14px] text-slate-650 dark:text-slate-350 font-semibold">{selectedProject.client.company}</p>
-                    )}
-                  </>
+                    <Trash2 className="h-4.5 w-4.5" />
+                    Delete Project
+                  </button>
                 )}
               </div>
-              {role !== 'CLIENT' && (
-                <div className="space-y-1.5 border-t md:border-t-0 md:border-l border-slate-300 dark:border-slate-750 pt-3 md:pt-0 md:pl-4">
-                  <span className="text-slate-350 text-[12px] font-bold uppercase tracking-wider block">Assigned Editor</span>
+            </div>
+
+            {/* 1. Grouped Card: Project Details */}
+            <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+              <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Project Details</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Client Section */}
+                <div className="space-y-2">
+                  <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block">Client (Owner)</span>
                   {role === 'ADMIN' ? (
-                    <EditorCombobox
-                      editors={editors}
-                      value={selectedProject.editorId}
-                      isLoading={isSavingField === 'editorId'}
-                      onChange={(val) => handleUpdateField('editorId', val)}
-                    />
-                  ) : selectedProject.editor ? (
-                    <>
-                      <p className="font-bold text-[15px] text-slate-900 dark:text-slate-100">
-                        {selectedProject.editor.user.name}
-                      </p>
-                      {selectedProject.editor.user.email && (
-                        <p className="text-[13px] text-slate-650 dark:text-slate-350 font-normal">{selectedProject.editor.user.email}</p>
-                      )}
-                    </>
+                    <Select
+                      value={selectedProject.clientId}
+                      disabled={isSavingField === 'clientId'}
+                      onChange={(e) => handleUpdateField('clientId', e.target.value)}
+                      className="text-[14px] py-2 h-11 border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white w-full rounded-xl"
+                    >
+                      {clients.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.user.name} {c.company ? `(${c.company})` : ''}
+                        </option>
+                      ))}
+                    </Select>
                   ) : (
-                    <p className="text-[14px] text-slate-450 dark:text-slate-400 italic font-semibold">No editor assigned</p>
+                    <div className="py-1">
+                      <p className="font-bold text-[16px] text-slate-900 dark:text-white">
+                        {selectedProject.client?.user?.name}
+                      </p>
+                      {selectedProject.client?.company && (
+                        <p className="text-[14px] text-slate-650 dark:text-slate-350 font-bold">{selectedProject.client.company}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Editor Section */}
+                {role !== 'CLIENT' && (
+                  <div className="space-y-2">
+                    <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block">Assigned Editor</span>
+                    {role === 'ADMIN' ? (
+                      <EditorCombobox
+                        editors={editors}
+                        value={selectedProject.editorId}
+                        isLoading={isSavingField === 'editorId'}
+                        onChange={(val) => handleUpdateField('editorId', val)}
+                      />
+                    ) : selectedProject.editor ? (
+                      <div className="py-1">
+                        <p className="font-bold text-[16px] text-slate-900 dark:text-white">
+                          {selectedProject.editor.user.name}
+                        </p>
+                        {selectedProject.editor.user.email && (
+                          <p className="text-[14px] text-slate-650 dark:text-slate-350 font-normal">{selectedProject.editor.user.email}</p>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-[15px] text-slate-450 dark:text-slate-400 italic font-semibold py-1">No editor assigned</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Submission Date & Deadline Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                <div className="space-y-2">
+                  <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block font-bold">Submission Date</span>
+                  {role === 'ADMIN' ? (
+                    <input
+                      type="date"
+                      disabled={isSavingField === 'submissionDate'}
+                      value={selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toISOString().split('T')[0] : ''}
+                      onChange={(e) => {
+                        const newVal = e.target.value;
+                        setSelectedProject(prev => prev ? { ...prev, submissionDate: newVal || '' } : null);
+                      }}
+                      onBlur={(e) => {
+                        handleUpdateField('submissionDate', e.target.value);
+                      }}
+                      className="w-full text-[14px] p-2.5 rounded-xl border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  ) : (
+                    <p className="font-semibold text-slate-900 dark:text-white py-1">
+                      {selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
+                    </p>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block font-bold">Final Deadline</span>
+                  {role === 'ADMIN' ? (
+                    <input
+                      type="date"
+                      disabled={isSavingField === 'dueDate'}
+                      value={selectedProject.dueDate ? new Date(selectedProject.dueDate).toISOString().split('T')[0] : ''}
+                      onChange={(e) => {
+                        const newVal = e.target.value;
+                        setSelectedProject(prev => prev ? { ...prev, dueDate: newVal || '' } : null);
+                      }}
+                      onBlur={(e) => {
+                        handleUpdateField('dueDate', e.target.value);
+                      }}
+                      className="w-full text-[14px] p-2.5 rounded-xl border border-slate-355 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  ) : (
+                    <p className="font-semibold text-slate-900 dark:text-white py-1">
+                      {selectedProject.dueDate ? new Date(selectedProject.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2 pt-2">
+                <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block">Brief / Description</span>
+                <p className="bg-white dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-[15px] leading-relaxed whitespace-pre-line text-slate-850 dark:text-slate-200 shadow-inner">
+                  {selectedProject.description || 'No description provided.'}
+                </p>
+              </div>
+            </div>
+
+            {/* 2. Grouped Card: Resources & Deliverables */}
+            <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+              <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Resources & Workspace</h3>
+
+              {/* Raw Materials Folder */}
+              {(role === 'ADMIN' || selectedProject.rawMaterialsFolder) && (
+                <div className="space-y-2">
+                  <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block">Raw Materials Link</span>
+                  {isEditingRawMaterials ? (
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        placeholder="https://drive.google.com/drive/..."
+                        value={rawMaterialsUrlInput}
+                        onChange={(e) => setRawMaterialsUrlInput(e.target.value)}
+                        className="flex-1 text-[14px] p-2.5 rounded-xl border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 focus:outline-none text-slate-850 dark:text-slate-150 placeholder:text-slate-450"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          handleUpdateField('rawMaterialsFolder', rawMaterialsUrlInput);
+                          setIsEditingRawMaterials(false);
+                        }}
+                        className="rounded-xl px-4"
+                      >
+                        Save
+                      </Button>
+                      <Button size="sm" variant="secondary" onClick={() => setIsEditingRawMaterials(false)} className="rounded-xl px-4">
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : selectedProject.rawMaterialsFolder ? (
+                    <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+                      <a
+                        href={selectedProject.rawMaterialsFolder}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-2 text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-350 transition-colors font-bold text-[15px]"
+                      >
+                        <span>Google Drive Folder</span>
+                        <ExternalLink className="h-4.5 w-4.5" />
+                      </a>
+                      {role === 'ADMIN' && (
+                        <Button size="sm" variant="secondary" onClick={() => setIsEditingRawMaterials(true)} className="rounded-xl">
+                          Edit Link
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    role === 'ADMIN' && (
+                      <Button size="sm" onClick={() => setIsEditingRawMaterials(true)} className="rounded-xl w-full py-2.5">
+                        Add Google Drive Folder Link
+                      </Button>
+                    )
                   )}
                 </div>
               )}
-            </div>
 
-            {/* Submission Date & Deadline Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/50 dark:bg-slate-900/20 p-4 border border-slate-300 dark:border-slate-755 rounded-xl">
-              <div className="space-y-1.5">
-                <span className="text-slate-350 text-[12px] font-bold uppercase tracking-wider block font-bold">Submission Date</span>
-                {role === 'ADMIN' ? (
-                  <input
-                    type="date"
-                    disabled={isSavingField === 'submissionDate'}
-                    value={selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toISOString().split('T')[0] : ''}
-                    onChange={(e) => {
-                      const newVal = e.target.value;
-                      setSelectedProject(prev => prev ? { ...prev, submissionDate: newVal || '' } : null);
-                    }}
-                    onBlur={(e) => {
-                      handleUpdateField('submissionDate', e.target.value);
-                    }}
-                    className="w-full text-[13px] p-2 rounded-lg border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-50 focus:outline-none"
-                  />
-                ) : (
-                  <p className="font-semibold text-slate-900 dark:text-slate-100">
-                    {selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-1.5 border-t md:border-t-0 md:border-l border-slate-300 dark:border-slate-750 pt-3 md:pt-0 md:pl-4">
-                <span className="text-slate-350 text-[12px] font-bold uppercase tracking-wider block font-bold">Final Deadline</span>
-                {role === 'ADMIN' ? (
-                  <input
-                    type="date"
-                    disabled={isSavingField === 'dueDate'}
-                    value={selectedProject.dueDate ? new Date(selectedProject.dueDate).toISOString().split('T')[0] : ''}
-                    onChange={(e) => {
-                      const newVal = e.target.value;
-                      setSelectedProject(prev => prev ? { ...prev, dueDate: newVal || '' } : null);
-                    }}
-                    onBlur={(e) => {
-                      handleUpdateField('dueDate', e.target.value);
-                    }}
-                    className="w-full text-[13px] p-2 rounded-lg border border-slate-355 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-50 focus:outline-none"
-                  />
-                ) : (
-                  <p className="font-semibold text-slate-900 dark:text-slate-100">
-                    {selectedProject.dueDate ? new Date(selectedProject.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="space-y-1.5">
-              <h4 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 uppercase tracking-wide">Brief / Description</h4>
-              <p className="bg-white dark:bg-slate-950 p-4 rounded-xl border border-slate-300 dark:border-slate-750 text-[14px] leading-relaxed whitespace-pre-line text-slate-850 dark:text-slate-150">
-                {selectedProject.description || 'No description provided.'}
-              </p>
-            </div>
-
-            {/* Raw Materials Folder */}
-            {(role === 'ADMIN' || selectedProject.rawMaterialsFolder) && (
-              <div className="space-y-2 border-t border-slate-300 dark:border-slate-750 pt-4">
-                <h4 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 uppercase tracking-wide">Raw Materials</h4>
-                {isEditingRawMaterials ? (
-                  <div className="flex gap-2">
-                    <input
-                      type="url"
-                      placeholder="https://drive.google.com/drive/..."
-                      value={rawMaterialsUrlInput}
-                      onChange={(e) => setRawMaterialsUrlInput(e.target.value)}
-                      className="flex-1 text-[13px] p-2 rounded-lg border border-slate-350 dark:border-slate-750 bg-transparent focus:outline-none text-slate-850 dark:text-slate-150 placeholder:text-slate-450"
-                    />
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        handleUpdateField('rawMaterialsFolder', rawMaterialsUrlInput);
-                        setIsEditingRawMaterials(false);
-                      }}
-                    >
-                      Save
-                    </Button>
-                    <Button size="sm" variant="secondary" onClick={() => setIsEditingRawMaterials(false)}>
-                      Cancel
-                    </Button>
-                  </div>
-                ) : selectedProject.rawMaterialsFolder ? (
-                  <div className="flex items-center justify-between p-3 rounded-lg border border-slate-300 dark:border-slate-755 bg-white dark:bg-slate-950">
-                    <a
-                      href={selectedProject.rawMaterialsFolder}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-2 text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-350 transition-colors font-semibold"
-                    >
-                      <span>Google Drive Folder Link</span>
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                    {role === 'ADMIN' && (
-                      <Button size="sm" variant="secondary" onClick={() => setIsEditingRawMaterials(true)}>
-                        Edit Folder Link
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  role === 'ADMIN' && (
-                    <Button size="sm" onClick={() => setIsEditingRawMaterials(true)}>
-                      Add Folder Link
-                    </Button>
-                  )
-                )}
-              </div>
-            )}
-
-            {/* Deliverable drafts / Working Files */}
-            <div className="space-y-3 pt-4 border-t border-slate-300 dark:border-slate-750">
-              <h4 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 uppercase tracking-wide">
-                {role === 'CLIENT' ? 'Final Deliverables' : 'Working Files & Drafts'}
-              </h4>
-              <div className="space-y-2">
-                {loadingDetails ? (
-                  <div className="h-12 bg-slate-100 dark:bg-slate-900 rounded-lg animate-pulse" />
-                ) : !selectedProject.files || selectedProject.files.length === 0 ? (
-                  <p className="text-center py-6 border border-dashed border-slate-300 dark:border-slate-750 rounded-lg text-slate-400">
-                    No deliverables or working files uploaded.
-                  </p>
-                ) : (
-                  selectedProject.files
-                    .filter((file: any) => {
-                      if (role === 'CLIENT') {
-                        // Clients only see video outputs or images explicitly
-                        return file.fileType === 'VIDEO' || file.fileType === 'IMAGE';
-                      }
-                      return true;
-                    })
-                    .map((file: any) => (
-                      <div key={file.id} className="flex items-center justify-between p-3 border border-slate-300 dark:border-slate-755 rounded-xl bg-white dark:bg-slate-950">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <FileText className="h-4.5 w-4.5 text-accent" />
-                          <div className="min-w-0">
-                            <p className="font-semibold text-[14px] truncate text-slate-900 dark:text-slate-100">{file.originalName}</p>
-                            <p className="text-[13px] text-slate-500 dark:text-slate-350">Version {file.version} · {formatDate(file.createdAt)}</p>
+              {/* Deliverable drafts / Working Files */}
+              <div className="space-y-2 pt-2">
+                <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block">
+                  {role === 'CLIENT' ? 'Deliverable Output' : 'Working Files & Drafts'}
+                </span>
+                <div className="space-y-2.5">
+                  {loadingDetails ? (
+                    <div className="h-12 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+                  ) : !selectedProject.files || selectedProject.files.length === 0 ? (
+                    <p className="text-center py-8 border border-dashed border-slate-300 dark:border-slate-800 rounded-xl text-slate-400 text-[14px]">
+                      No deliverables or working files uploaded.
+                    </p>
+                  ) : (
+                    selectedProject.files
+                      .filter((file: any) => {
+                        if (role === 'CLIENT') {
+                          return file.fileType === 'VIDEO' || file.fileType === 'IMAGE';
+                        }
+                        return true;
+                      })
+                      .map((file: any) => (
+                        <div key={file.id} className="flex items-center justify-between p-3.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 shadow-sm hover:border-slate-450 dark:hover:border-slate-700 transition-colors">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <FileText className="h-5 w-5 text-accent shrink-0" />
+                            <div className="min-w-0">
+                              <p className="font-bold text-[14px] truncate text-slate-900 dark:text-white leading-normal">{file.originalName}</p>
+                              <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">Version {file.version} · {formatDate(file.createdAt)}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <a
+                              href={file.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900"
+                            >
+                              <ExternalLink className="h-4.5 w-4.5" />
+                            </a>
+                            {role === 'ADMIN' && (
+                              <button
+                                onClick={async () => {
+                                  if (confirm('Are you sure you want to delete this file?')) {
+                                    try {
+                                      await api.delete(`/projects/${selectedProject.id}/files/${file.id}`);
+                                      setSelectedProject(prev => prev ? { ...prev, files: prev.files?.filter(f => f.id !== file.id) } : null);
+                                    } catch (err) {
+                                      alert('Failed to delete file.');
+                                    }
+                                  }
+                                }}
+                                className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-lg cursor-pointer"
+                                title="Delete File"
+                              >
+                                <Trash className="h-4.5 w-4.5" />
+                              </button>
+                            )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <a
-                            href={file.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="p-1.5 text-slate-450 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                          {role === 'ADMIN' && (
-                            <button
-                              onClick={async () => {
-                                if (confirm('Are you sure you want to delete this file?')) {
-                                  try {
-                                    await api.delete(`/projects/${selectedProject.id}/files/${file.id}`);
-                                    setSelectedProject(prev => prev ? { ...prev, files: prev.files?.filter(f => f.id !== file.id) } : null);
-                                  } catch (err) {
-                                    alert('Failed to delete file.');
-                                  }
-                                }
-                              }}
-                              className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors"
-                            >
-                              <Trash className="h-4 w-4" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                )}
+                      ))
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Financial panel (ADMIN only) */}
+            {/* 3. Grouped Card: Financial Summary (ADMIN only) */}
             {role === 'ADMIN' && (
-              <div className="space-y-2.5 pt-4 border-t border-slate-300 dark:border-slate-750">
-                <h4 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 uppercase tracking-wide">Financial breakdown</h4>
-                <div className="grid grid-cols-3 gap-3 bg-slate-50/70 dark:bg-slate-900/30 p-4 border border-slate-300 dark:border-slate-750 rounded-xl">
+              <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+                <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Financial breakdown</h3>
+                
+                <div className="grid grid-cols-3 gap-4 bg-white dark:bg-slate-950 p-4 border border-slate-200 dark:border-slate-850 rounded-xl shadow-inner">
                   <div>
-                    <span className="text-[12px] text-slate-400 block font-bold uppercase">Client budget</span>
-                    <span className="font-bold text-slate-900 dark:text-white">
+                    <span className="text-[12px] text-slate-500 dark:text-slate-400 block font-bold uppercase tracking-wider">Client budget</span>
+                    <span className="font-extrabold text-[16px] text-slate-900 dark:text-white mt-1 block">
                       {selectedProject.clientPrice ? formatCurrency(selectedProject.clientPrice) : 'N/A'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[12px] text-slate-400 block font-bold uppercase">Editor payout</span>
-                    <span className="font-bold text-[15px] text-slate-900 dark:text-white">
+                    <span className="text-[12px] text-slate-500 dark:text-slate-400 block font-bold uppercase tracking-wider">Editor payout</span>
+                    <span className="font-extrabold text-[16px] text-slate-900 dark:text-white mt-1 block">
                       {selectedProject.editorPrice ? formatCurrency(selectedProject.editorPrice) : 'N/A'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[12px] text-slate-400 block font-bold uppercase">Net margins</span>
-                    <span className="font-bold text-[15px] text-emerald-600 dark:text-emerald-450 font-extrabold">
+                    <span className="text-[12px] text-slate-500 dark:text-slate-400 block font-bold uppercase tracking-wider">Net margins</span>
+                    <span className="font-black text-[16px] text-emerald-600 dark:text-emerald-400 mt-1 block">
                       {selectedProject.profit ? formatCurrency(selectedProject.profit) : 'N/A'}
                     </span>
                   </div>
                 </div>
-              </div>
-            )}
 
-            {/* Invoices panel */}
-            {role === 'ADMIN' && selectedProject.invoices && selectedProject.invoices.length > 0 && (
-              <div className="space-y-2.5 pt-4 border-t border-slate-300 dark:border-slate-750">
-                <h4 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 uppercase tracking-wide">Associated invoices</h4>
-                <div className="space-y-2">
-                  {selectedProject.invoices.map((inv: any) => (
-                    <div key={inv.id} className="flex items-center justify-between p-3 border border-slate-300 dark:border-slate-755 rounded-xl bg-white dark:bg-slate-950">
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-4.5 w-4.5 text-accent" />
-                        <div>
-                          <p className="font-semibold text-[14px] text-slate-900 dark:text-slate-100">{inv.number}</p>
-                          <p className="text-[13px] text-slate-505 dark:text-slate-350">Due {formatDate(inv.dueDate)}</p>
+                {/* Associated invoices inside financial card */}
+                {selectedProject.invoices && selectedProject.invoices.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400 text-[13px] font-bold uppercase tracking-wider block">Associated invoices</span>
+                    <div className="space-y-2">
+                      {selectedProject.invoices.map((inv: any) => (
+                        <div key={inv.id} className="flex items-center justify-between p-3.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 shadow-sm">
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="h-5 w-5 text-accent" />
+                            <div>
+                              <p className="font-bold text-[14px] text-slate-900 dark:text-white">{inv.number}</p>
+                              <p className="text-[12px] text-slate-450 dark:text-slate-400">Due {formatDate(inv.dueDate)}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-extrabold text-[14px] text-slate-900 dark:text-white">{formatCurrency(inv.total)}</p>
+                            <Badge className="text-[10px] py-0.5 px-2 font-bold capitalize mt-1" variant={inv.status === 'PAID' ? 'success' : 'secondary'}>
+                              {inv.status.toLowerCase()}
+                            </Badge>
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-slate-900 dark:text-slate-50">{formatCurrency(inv.total)}</p>
-                        <Badge className="text-[10px] py-0 px-2 font-semibold capitalize" variant={inv.status === 'PAID' ? 'success' : 'secondary'}>
-                          {inv.status.toLowerCase()}
-                        </Badge>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Internal Comments Thread (ADMIN and EDITOR only) */}
+            {/* 4. Grouped Card: Internal Comments Thread (ADMIN and EDITOR only) */}
             {role !== 'CLIENT' && (
-              <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
-                <h4 className="font-bold text-[14px] text-slate-850 dark:text-slate-200 uppercase tracking-wide">Internal Comments</h4>
+              <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+                <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Internal Comments</h3>
                 
                 {/* Thread */}
-                <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                <div className="space-y-3.5 max-h-64 overflow-y-auto pr-1">
                   {comments.length === 0 ? (
-                    <p className="text-slate-400 italic text-[13px]">No comments posted yet.</p>
+                    <p className="text-slate-450 italic text-[14px] py-4 text-center">No comments posted yet.</p>
                   ) : (
                     comments.map((c) => (
-                      <div key={c.id} className="flex items-start gap-2.5 bg-slate-50/70 dark:bg-slate-900/35 p-3 rounded-lg border border-slate-100 dark:border-slate-900">
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-[13px] text-slate-800 dark:text-slate-200">{c.author?.name}</span>
-                            <Badge className="text-[9px] px-1 py-0" variant={c.author?.role === 'ADMIN' ? 'warning' : 'secondary'}>
+                      <div key={c.id} className="flex items-start gap-3 bg-white dark:bg-slate-950 p-4 rounded-xl border border-slate-150 dark:border-slate-850 shadow-sm">
+                        <div className="flex-1 space-y-1.5">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-bold text-[14px] text-slate-900 dark:text-white">{c.author?.name}</span>
+                            <Badge className="text-[9px] px-1.5 py-0 font-bold" variant={c.author?.role === 'ADMIN' ? 'warning' : 'secondary'}>
                               {c.author?.role}
                             </Badge>
-                            <span className="text-[11px] text-slate-400 font-mono">
+                            <span className="text-[11px] text-slate-450 dark:text-slate-400 font-mono ml-auto">
                               {new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <p className="text-[13px] text-slate-650 dark:text-slate-300 leading-relaxed whitespace-pre-line">{c.content}</p>
+                          <p className="text-[14px] text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-line">{c.content}</p>
                         </div>
                         {role === 'ADMIN' && (
                           <button
                             onClick={() => handleDeleteComment(c.id)}
-                            className="p-1 text-slate-400 hover:text-rose-500 transition-colors"
+                            className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded transition-all cursor-pointer shrink-0"
+                            title="Delete Comment"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -1009,47 +1056,49 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                 </div>
 
                 {/* Input box */}
-                <form onSubmit={handleAddComment} className="flex gap-2 items-end">
+                <form onSubmit={handleAddComment} className="flex gap-2 items-end pt-2">
                   <textarea
                     rows={2}
                     required
                     placeholder="Post a production update or feedback..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    className="flex-1 text-[13px] p-2.5 rounded-lg border border-slate-250 dark:border-slate-800 bg-transparent focus:outline-none focus:ring-1 focus:ring-accent resize-none"
+                    className="flex-1 text-[14px] p-3 rounded-xl border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 focus:outline-none focus:ring-1 focus:ring-accent resize-none placeholder:text-slate-450 text-slate-900 dark:text-white shadow-inner"
                   />
-                  <Button type="submit" disabled={isSubmittingComment} size="sm" className="h-10 shrink-0">
+                  <Button type="submit" disabled={isSubmittingComment} size="sm" className="h-12 shrink-0 rounded-xl px-5 font-bold">
                     {isSubmittingComment ? 'Sending...' : 'Post'}
                   </Button>
                 </form>
               </div>
             )}
 
-            {/* Workstation Actions based on role */}
-            <div className="space-y-3 pt-4 border-t border-slate-300 dark:border-slate-750">
-              <h4 className="font-bold text-[14px] text-slate-900 dark:text-slate-100 uppercase tracking-wide">Available actions</h4>
+            {/* 5. Grouped Card: Workstation Actions */}
+            <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+              <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Available actions</h3>
               
               {role === 'ADMIN' && (
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-wrap gap-2">
-                    {/* Status selection for Admin workstation */}
-                    {['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW', 'FINAL_DRAFT', 'UPLOADED'].map((s) => (
-                      <button
-                        key={s}
-                        onClick={() => handleStatusUpdate(selectedProject.id, s)}
-                        className={`text-[10px] font-bold border px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                          selectedProject.status === s 
-                            ? 'bg-accent text-white border-accent' 
-                            : 'border-slate-350 dark:border-slate-700 text-slate-650 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/60'
-                        }`}
-                      >
-                        {s.replace(/_/g, ' ').toLowerCase()}
-                      </button>
-                    ))}
+                <div className="flex flex-col gap-4">
+                  <div className="space-y-2">
+                    <span className="text-[12px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block">Update workflow stage</span>
+                    <div className="flex flex-wrap gap-2">
+                      {['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW', 'FINAL_DRAFT', 'UPLOADED'].map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => handleStatusUpdate(selectedProject.id, s)}
+                          className={`text-[12px] font-bold border px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+                            selectedProject.status === s 
+                              ? 'bg-accent text-white border-accent shadow-sm' 
+                              : 'border-slate-350 dark:border-slate-700 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-900'
+                          }`}
+                        >
+                          {s.replace(/_/g, ' ').toLowerCase()}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   <a
                     href={`/admin/projects`}
-                    className="w-full flex items-center justify-center bg-slate-900 dark:bg-slate-800 text-white py-2 rounded-lg font-bold text-center hover:opacity-90 transition-opacity border border-slate-300 dark:border-slate-700"
+                    className="w-full flex items-center justify-center bg-slate-900 dark:bg-slate-800 text-white py-3 rounded-xl font-extrabold text-center hover:opacity-90 transition-opacity border border-slate-300 dark:border-slate-700 shadow-sm text-[15px]"
                   >
                     Edit Project Configurations
                   </a>
@@ -1057,19 +1106,19 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
               )}
 
               {role === 'EDITOR' && (
-                <div className="space-y-4">
+                <div className="space-y-5">
                   {/* Quick status progress buttons */}
                   <div className="space-y-2">
-                    <span className="text-[12px] text-slate-350 font-bold uppercase tracking-wider block">Update progress stage</span>
+                    <span className="text-[12px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block">Update progress stage</span>
                     <div className="flex flex-wrap gap-2">
                       {['EDITING', 'REVISION_1', 'REVISION_2'].map((s) => (
                         <button
                           key={s}
                           onClick={() => handleStatusUpdate(selectedProject.id, s)}
-                          className={`text-[12px] font-bold border px-3.5 py-2 rounded-lg transition-colors cursor-pointer ${
+                          className={`text-[12px] font-bold border px-4 py-2.5 rounded-xl transition-all cursor-pointer ${
                             selectedProject.status === s
-                              ? 'bg-accent text-white border-accent'
-                              : 'border-slate-350 dark:border-slate-700 text-slate-650 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/60'
+                              ? 'bg-accent text-white border-accent shadow-sm'
+                              : 'border-slate-350 dark:border-slate-700 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-900'
                           }`}
                         >
                           {s.replace(/_/g, ' ').toLowerCase()}
@@ -1079,8 +1128,8 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   </div>
 
                   {/* Upload Form */}
-                  <div className="space-y-2 border-t border-slate-100 dark:border-slate-900 pt-4">
-                    <span className="text-[12px] text-slate-400 font-bold uppercase tracking-wider block">Submit draft deliverable URL</span>
+                  <div className="space-y-2 border-t border-slate-200 dark:border-slate-850 pt-4">
+                    <span className="text-[12px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block">Submit draft deliverable URL</span>
                     <form onSubmit={handleEditorUpload} className="flex gap-2">
                       <input
                         type="url"
@@ -1088,12 +1137,12 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                         placeholder="Paste link to Google Drive draft export..."
                         value={uploadUrl}
                         onChange={(e) => setUploadUrl(e.target.value)}
-                        className="flex-1 text-[14px] p-2.5 rounded-lg border border-slate-250 dark:border-slate-800 bg-transparent focus:outline-none focus:ring-1 focus:ring-accent"
+                        className="flex-1 text-[14px] p-3 rounded-xl border border-slate-300 dark:border-slate-750 bg-white dark:bg-slate-950 focus:outline-none focus:ring-1 focus:ring-accent"
                       />
                       <button
                         type="submit"
                         disabled={isSubmittingFile}
-                        className="bg-accent text-white font-bold px-4 py-2.5 rounded-lg text-[14px] hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer shrink-0"
+                        className="bg-accent text-white font-black px-5 py-3 rounded-xl text-[14px] hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer shrink-0"
                       >
                         {isSubmittingFile ? 'Submitting...' : 'Upload Link'}
                       </button>
@@ -1103,9 +1152,9 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
               )}
 
               {role === 'CLIENT' && (
-                <div className="flex items-center gap-2 bg-slate-50/50 dark:bg-slate-900/10 p-3 rounded-lg border border-dashed border-slate-200 dark:border-slate-800">
-                  <Lock className="h-4.5 w-4.5 text-slate-400 shrink-0" />
-                  <span className="text-[14px] text-slate-550">
+                <div className="flex items-center gap-3 bg-slate-50/50 dark:bg-slate-900/10 p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-800">
+                  <Lock className="h-5 w-5 text-slate-400 shrink-0" />
+                  <span className="text-[14px] text-slate-550 leading-relaxed">
                     You have read-only permissions for this workspace. Changes can be updated by contacting the master account Admin.
                   </span>
                 </div>
