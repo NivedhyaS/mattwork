@@ -231,7 +231,7 @@ export default function ClientDashboard() {
 
   const [balanceData, setBalanceData] = useState<BalanceData | null>(null);
   const [breakdownCard, setBreakdownCard] = useState<'advance' | 'completed' | 'remaining' | 'videos' | null>(null);
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOARD'>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOARD'>('BOARD');
 
   const handleSelectProject = async (project: Project) => {
     setSelectedProject(project);
