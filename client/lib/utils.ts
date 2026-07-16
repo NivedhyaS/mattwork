@@ -19,6 +19,29 @@ export function formatCurrency(amount: number | string | undefined | null, curre
   }).format(parsed);
 }
 
+export function formatClientCurrency(amount: number | string | undefined | null): string {
+  if (amount === undefined || amount === null) return '$0.00';
+  const parsed = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (isNaN(parsed)) return '$0.00';
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(parsed);
+}
+
+export function formatEditorCurrency(amount: number | string | undefined | null): string {
+  if (amount === undefined || amount === null) return '₹0';
+  const parsed = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (isNaN(parsed)) return '₹0';
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(parsed);
+}
+
 export function formatDate(dateString: string | Date | undefined | null): string {
   if (!dateString) return 'N/A';
   const date = new Date(dateString);

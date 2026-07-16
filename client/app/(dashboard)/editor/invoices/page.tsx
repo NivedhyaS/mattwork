@@ -11,7 +11,7 @@ import {
   CheckCircle2,
   DollarSign
 } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatEditorCurrency, formatDate } from '@/lib/utils';
 import Button from '@/components/ui/button';
 
 interface Project {
@@ -124,7 +124,7 @@ export default function EditorInvoicesPage() {
             <div className="space-y-1.5 bg-slate-50 dark:bg-slate-900/30 p-3.5 rounded-lg border border-border">
               <span className="text-[12px] text-slate-400 block font-bold uppercase">Est. project rate</span>
               <span className="font-bold text-[15px] text-slate-800 dark:text-white">
-                {formatCurrency(ratePerVideo)} / video
+                {formatEditorCurrency(ratePerVideo)} / video
               </span>
             </div>
 
@@ -172,7 +172,7 @@ export default function EditorInvoicesPage() {
                     </div>
                     <div className="text-right shrink-0">
                       <span className="font-bold text-[15px] text-slate-800 dark:text-slate-200">
-                        {formatCurrency(ratePerVideo)}
+                        {formatEditorCurrency(ratePerVideo)}
                       </span>
                     </div>
                   </div>

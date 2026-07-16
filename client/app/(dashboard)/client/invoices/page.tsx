@@ -11,7 +11,7 @@ import {
   ExternalLink,
   DollarSign
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { formatClientCurrency } from '@/lib/utils';
 
 interface Project {
   id: string;
@@ -120,7 +120,7 @@ export default function ClientInvoicesPage() {
                   <tr key={inv.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10 transition-colors">
                     <td className="py-4 px-5 font-semibold text-[15px] text-slate-900 dark:text-slate-100">{inv.number}</td>
                     <td className="py-4 px-5 font-medium text-[14px] text-slate-650 dark:text-slate-300">{inv.projectTitle}</td>
-                    <td className="py-4 px-5 font-bold text-[15px] text-slate-950 dark:text-white">{formatCurrency(inv.total)}</td>
+                    <td className="py-4 px-5 font-bold text-[15px] text-slate-950 dark:text-white">{formatClientCurrency(inv.total)}</td>
                     <td className="py-4 px-5">
                       <span className={`px-2.5 py-1 rounded border text-[11px] font-semibold ${
                         inv.status === 'PAID' 

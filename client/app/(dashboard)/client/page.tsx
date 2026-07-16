@@ -19,7 +19,7 @@ import {
   Minus,
   Check
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatClientCurrency } from '@/lib/utils';
 
 interface Project {
   id: string;
@@ -91,7 +91,7 @@ function BreakdownModal({ isOpen, onClose, title, currency, balanceData, activeC
 
   if (!isOpen || !balanceData) return null;
 
-  const fmt = (n: number) => formatCurrency(n, currency);
+  const fmt = (n: number) => formatClientCurrency(n);
   const { advancePaid, completedWorkValue, remainingCredit, equivalentRemainingVideos, averageNote } = balanceData;
 
   return (
@@ -296,7 +296,7 @@ export default function ClientDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  const fmt = (n: number) => formatCurrency(n, currency);
+  const fmt = (n: number) => formatClientCurrency(n);
 
   const finalFiles = selectedProject?.files?.filter(f => 
     f.fileType === 'VIDEO' || f.fileType === 'IMAGE'
