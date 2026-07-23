@@ -38,6 +38,7 @@ import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label';
 import EditorCombobox from '@/components/ui/EditorCombobox';
 import { formatCurrency, formatDate, formatEditorCurrency } from '@/lib/utils';
+import { getCurrencySymbol } from '@/lib/currency';
 import { useExchangeRate, buildProfitDisplay, formatFetchedAgo } from '@/lib/exchangeRate';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -183,7 +184,7 @@ interface Project {
   clientId: string;
   editorId: string | null;
   createdAt: string;
-  client: { id: string; company: string | null; user: { id: string; name: string; email?: string } };
+  client: { id: string; company: string | null; currency?: string; user: { id: string; name: string; email?: string } };
   editor: { id: string; user: { id: string; name: string; email?: string } } | null;
   files?: any[];
   invoices?: any[];
@@ -1444,58 +1445,66 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                  
                  {/* 2-column input fields */}
                  <div className="grid grid-cols-2 gap-4 bg-white dark:bg-slate-950 p-4 border border-slate-200 dark:border-slate-850 rounded-xl shadow-inner">
-                   <div>
-                     <span className="text-[12px] text-slate-500 dark:text-slate-400 block font-bold uppercase tracking-wider">
-                       Client budget <span className="text-indigo-400 font-extrabold">USD</span>
-                     </span>
-                     <div className="relative mt-1.5">
-                       <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] font-extrabold text-slate-400 dark:text-slate-500 pointer-events-none">$</span>
-                       <input
-                         type="number"
-                         disabled={isSavingField === 'clientPrice'}
-                         value={selectedProject.clientPrice !== null && selectedProject.clientPrice !== undefined ? selectedProject.clientPrice : ''}
-                         onChange={(e) => {
-                           const newVal = e.target.value;
-                           setSelectedProject(prev => {
-                             if (!prev) return null;
-                             const clientPrice = newVal === '' ? null : Number(newVal);
-                             return { ...prev, clientPrice };
-                           });
-                         }}
-                         onBlur={(e) => {
-                           handleUpdateField('clientPrice', e.target.value === '' ? null : Number(e.target.value));
-                         }}
-                         className="w-full text-[14px] pl-[30px] pr-3 py-2.5 rounded-xl border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-accent font-extrabold"
-                         placeholder="0.00"
-                       />
-                     </div>
-                   </div>
-                   <div>
-                     <span className="text-[12px] text-slate-500 dark:text-slate-400 block font-bold uppercase tracking-wider">
-                       Editor payout <span className="text-amber-500 font-extrabold">INR</span>
-                     </span>
-                     <div className="relative mt-1.5">
-                       <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] font-extrabold text-slate-400 dark:text-slate-500 pointer-events-none">₹</span>
-                       <input
-                         type="number"
-                         disabled={isSavingField === 'editorPrice'}
-                         value={selectedProject.editorPrice !== null && selectedProject.editorPrice !== undefined ? selectedProject.editorPrice : ''}
-                         onChange={(e) => {
-                           const newVal = e.target.value;
-                           setSelectedProject(prev => {
-                             if (!prev) return null;
-                             const editorPrice = newVal === '' ? null : Number(newVal);
-                             return { ...prev, editorPrice };
-                           });
-                         }}
-                         onBlur={(e) => {
-                           handleUpdateField('editorPrice', e.target.value === '' ? null : Number(e.target.value));
-                         }}
-                         className="w-full text-[14px] pl-[30px] pr-3 py-2.5 rounded-xl border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-accent font-extrabold"
-                         placeholder="0"
-                       />
-                     </div>
-                   </div>
+                   {(() => {
+                      const clientCurr = (selectedProject.client?.currency || 'USD').toUpperCase();
+                      const clientCurrSym = getCurrencySymbol(clientCurr);
+                      return (
+                        <>
+                          <div>
+                            <span className="text-[12px] text-slate-500 dark:text-slate-400 block font-bold uppercase tracking-wider">
+                              Client budget <span className="text-indigo-400 font-extrabold">{clientCurr}</span>
+                            </span>
+                            <div className="relative mt-1.5">
+                              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] font-extrabold text-slate-400 dark:text-slate-500 pointer-events-none">{clientCurrSym}</span>
+                              <input
+                                type="number"
+                                disabled={isSavingField === 'clientPrice'}
+                                value={selectedProject.clientPrice !== null && selectedProject.clientPrice !== undefined ? selectedProject.clientPrice : ''}
+                                onChange={(e) => {
+                                  const newVal = e.target.value;
+                                  setSelectedProject(prev => {
+                                    if (!prev) return null;
+                                    const clientPrice = newVal === '' ? null : Number(newVal);
+                                    return { ...prev, clientPrice };
+                                  });
+                                }}
+                                onBlur={(e) => {
+                                  handleUpdateField('clientPrice', e.target.value === '' ? null : Number(e.target.value));
+                                }}
+                                className="w-full text-[14px] pl-[30px] pr-3 py-2.5 rounded-xl border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-accent font-extrabold"
+                                placeholder="0.00"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-[12px] text-slate-500 dark:text-slate-400 block font-bold uppercase tracking-wider">
+                              Editor payout <span className="text-amber-500 font-extrabold">INR</span>
+                            </span>
+                            <div className="relative mt-1.5">
+                              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] font-extrabold text-slate-400 dark:text-slate-500 pointer-events-none">₹</span>
+                              <input
+                                type="number"
+                                disabled={isSavingField === 'editorPrice'}
+                                value={selectedProject.editorPrice !== null && selectedProject.editorPrice !== undefined ? selectedProject.editorPrice : ''}
+                                onChange={(e) => {
+                                  const newVal = e.target.value;
+                                  setSelectedProject(prev => {
+                                    if (!prev) return null;
+                                    const editorPrice = newVal === '' ? null : Number(newVal);
+                                    return { ...prev, editorPrice };
+                                  });
+                                }}
+                                onBlur={(e) => {
+                                  handleUpdateField('editorPrice', e.target.value === '' ? null : Number(e.target.value));
+                                }}
+                                className="w-full text-[14px] pl-[30px] pr-3 py-2.5 rounded-xl border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-accent font-extrabold"
+                                placeholder="0"
+                              />
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
                  </div>
 
                  {/* Net Margin block */}
@@ -1882,9 +1891,9 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   </div>
 
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectEditorPrice" className="text-[13px] font-semibold text-slate-550 dark:text-slate-400">Editor Payout</Label>
+                    <Label htmlFor="projectEditorPrice" className="text-[13px] font-semibold text-slate-550 dark:text-slate-400">Editor Payout (INR)</Label>
                     <div className="relative w-full">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-450 font-bold text-[15px]">$</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-450 font-bold text-[15px]">₹</span>
                       <input
                         id="projectEditorPrice"
                         type="number"
