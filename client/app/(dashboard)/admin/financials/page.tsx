@@ -189,10 +189,9 @@ export default function FinancialsDashboard() {
   });
 
   // ── Dynamic KPIs ────────────────────────────────────────────────────────
-  // Total Revenue: sum of PAID or PARTIAL invoices
+  // Total Revenue: sum of all client payments
   const totalRevenue = filteredInvoices
-    .filter((inv: any) => ['PAID', 'PARTIAL'].includes(inv.status))
-    .reduce((s: number, inv: any) => s + Number(inv.amountPaid || inv.total || 0), 0);
+    .reduce((s: number, inv: any) => s + Number(inv.amountPaid || 0), 0);
 
   // Total Costs: sum of editorPrice for projects that are final/uploaded
   const totalCosts = filteredProjects
@@ -254,9 +253,9 @@ export default function FinancialsDashboard() {
   const monthlyRevenue = invoices
     .filter((inv: any) => {
       const invMonth = inv.createdAt.substring(0, 7);
-      return invMonth === currentMonthStr && ['PAID', 'PARTIAL'].includes(inv.status);
+      return invMonth === currentMonthStr;
     })
-    .reduce((s: number, inv: any) => s + Number(inv.amountPaid || inv.total || 0), 0);
+    .reduce((s: number, inv: any) => s + Number(inv.amountPaid || 0), 0);
 
   // ── Chart Data Generation ───────────────────────────────────────────────
   // Group by month
@@ -276,8 +275,7 @@ export default function FinancialsDashboard() {
     });
 
     const rev = monthInv
-      .filter((inv: any) => ['PAID', 'PARTIAL'].includes(inv.status))
-      .reduce((s: number, inv: any) => s + Number(inv.amountPaid || inv.total || 0), 0);
+      .reduce((s: number, inv: any) => s + Number(inv.amountPaid || 0), 0);
 
     const cost = monthProj
       .filter((p: any) => ['FINAL_DRAFT', 'UPLOADED', 'COMPLETED'].includes(p.status))
@@ -746,8 +744,7 @@ export default function FinancialsDashboard() {
                     const clientInv = invoices.filter((inv: any) => inv.clientId === cl.id);
                     
                     const clientRev = clientInv
-                      .filter((inv: any) => ['PAID', 'PARTIAL'].includes(inv.status))
-                      .reduce((s: number, inv: any) => s + Number(inv.amountPaid || inv.total || 0), 0);
+                      .reduce((s: number, inv: any) => s + Number(inv.amountPaid || 0), 0);
                     
                     const clientBalance = clientInv
                       .filter((inv: any) => !['PAID', 'CANCELLED'].includes(inv.status))

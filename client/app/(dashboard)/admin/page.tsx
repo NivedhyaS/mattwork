@@ -201,7 +201,8 @@ export default function AdminDashboard() {
     ['COMPLETED','FINAL_DRAFT','UPLOADED'].includes(p.status)
   ).length;
 
-  const totalRevenue  = invoices.reduce((s: number, inv: any) => s + Number(inv.total  || 0), 0);
+  // Revenue = sum of all client payments
+  const totalRevenue = invoices.reduce((s: number, inv: any) => s + Number(inv.amountPaid || 0), 0);
   const pendingCount  = invoices.filter((inv: any) => !['PAID','CANCELLED'].includes(inv.status)).length;
   
   // Real Cost: sum of completed project editor price payouts (INR)
@@ -252,8 +253,7 @@ export default function AdminDashboard() {
     });
 
     const mRev = mInvoices
-      .filter((inv: any) => ['PAID', 'PARTIAL'].includes(inv.status))
-      .reduce((s: number, inv: any) => s + Number(inv.amountPaid || inv.total || 0), 0);
+      .reduce((s: number, inv: any) => s + Number(inv.amountPaid || 0), 0);
 
     const mProjects = projects.filter((p: any) => {
       const d = new Date(p.createdAt || p.updatedAt);

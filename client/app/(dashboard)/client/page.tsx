@@ -311,7 +311,7 @@ export default function ClientDashboard() {
     .map((inv) => ({
       id: `PAY-${inv.id}`,
       invoiceNumber: inv.number,
-      amount: inv.status === 'PAID' ? inv.total : inv.amountPaid,
+      amount: Number(inv.amountPaid || 0),
       date: inv.paidAt || inv.updatedAt,
       method: 'Bank Transfer',
       status: 'Completed',
