@@ -454,59 +454,12 @@ export default function EditorInvoicesPage() {
                 </div>
               </div>
 
-              {/* Adjustments (Bonus / TDS) */}
-              <div className="space-y-3 pt-2 border-t border-border">
-                <span className="text-[12px] text-slate-400 font-bold uppercase tracking-wider block">
-                  Adjustments & Taxes
-                </span>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-[12px] text-slate-500 font-medium flex items-center gap-1">
-                      <PlusCircle className="h-3.5 w-3.5 text-emerald-500" /> Bonus (₹)
-                    </label>
-                    <input
-                      type="number"
-                      value={bonusAmount}
-                      onChange={(e) => setBonusAmount(e.target.value)}
-                      className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[12px] text-slate-500 font-medium flex items-center gap-1">
-                      <Percent className="h-3.5 w-3.5 text-indigo-500" /> TDS / Tax
-                    </label>
-                    <select
-                      value={tdsRate}
-                      onChange={(e) => setTdsRate(Number(e.target.value))}
-                      className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold"
-                    >
-                      <option value={0}>0% Tax</option>
-                      <option value={10}>10% TDS</option>
-                      <option value={5}>5% Tax</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
               {/* Live Calculation Ticker Box */}
               <div className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-border space-y-2">
                 <div className="flex justify-between text-[13px] text-slate-500">
                   <span>Selected Items Subtotal:</span>
                   <span className="font-bold text-slate-800 dark:text-slate-200">{formatEditorCurrency(subtotal)}</span>
                 </div>
-                {numBonus > 0 && (
-                  <div className="flex justify-between text-[13px] text-emerald-600 dark:text-emerald-400">
-                    <span>Performance Bonus:</span>
-                    <span className="font-bold">+{formatEditorCurrency(numBonus)}</span>
-                  </div>
-                )}
-                {tdsRate > 0 && (
-                  <div className="flex justify-between text-[13px] text-slate-500">
-                    <span>TDS Deduction ({tdsRate}%):</span>
-                    <span className="font-bold">-{formatEditorCurrency(tdsDeduction)}</span>
-                  </div>
-                )}
                 <div className="border-t border-border pt-2 flex justify-between items-center">
                   <span className="text-[14px] font-extrabold text-slate-900 dark:text-white">Net Payout:</span>
                   <span className="text-[20px] font-extrabold text-accent">{formatEditorCurrency(netPayable)}</span>
