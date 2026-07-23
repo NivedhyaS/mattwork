@@ -1,0 +1,10 @@
+version: "2"
+tunnels:
+  mattwork:
+    proto: http
+    addr: 5000
+    domain: party-strung-blinker.ngrok-free.dev
+    # ngrok tunnels port 5000 (Express backend).
+    # The Express backend proxies all non-API traffic to Next.js on port 3000.
+    # This means the single ngrok URL serves BOTH the frontend UI and the backend API.
+    # Pub/Sub webhook: https://party-strung-blinker.ngrok-free.dev/api/v1/webhooks/forms-pubsub

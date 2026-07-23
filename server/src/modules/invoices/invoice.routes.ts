@@ -29,11 +29,29 @@ router.post(
   invoiceController.createInvoice
 );
 
-// GET /api/v1/invoices/editor/pdf — Editor only
+// GET & POST /api/v1/invoices/editor/pdf — Editor only
 router.get(
   '/editor/pdf',
   authorize(Role.EDITOR),
   invoiceController.downloadEditorInvoicePdf
+);
+
+router.post(
+  '/editor/pdf',
+  authorize(Role.EDITOR),
+  invoiceController.downloadEditorInvoicePdf
+);
+
+router.post(
+  '/editor/email',
+  authorize(Role.EDITOR),
+  invoiceController.emailEditorInvoicePdf
+);
+
+router.post(
+  '/editor/dispute',
+  authorize(Role.EDITOR),
+  invoiceController.raiseDispute
 );
 
 // GET /api/v1/invoices/:id — Admin, Editor

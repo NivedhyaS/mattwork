@@ -31,6 +31,10 @@ export function formatClientCurrency(amount: number | string | undefined | null)
   }).format(parsed);
 }
 
+/**
+ * Formats an editor payout amount as Indian Rupees (INR).
+ * Editor payouts are ALWAYS in INR — do not use this for client-facing amounts.
+ */
 export function formatEditorCurrency(amount: number | string | undefined | null): string {
   if (amount === undefined || amount === null) return '₹0';
   const parsed = typeof amount === 'string' ? parseFloat(amount) : amount;

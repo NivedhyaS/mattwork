@@ -2,16 +2,19 @@ import { Role } from '@prisma/client';
 import { projectRepository } from './project.repository';
 import { ApiError } from '../../utils/ApiError';
 import { AuthUser } from '../../types/express';
+import { resolveProjectId } from '../../utils/project';
 
 export class CommentService {
   /**
    * Get all comments for a project.
    * CLIENT role is blocked at route level, but double-check here for safety.
    */
-  async getComments(projectId: string, requester: AuthUser) {
+  async getComments(projectIdOrSlug: string, requester: AuthUser) {
     if (requester.role === Role.CLIENT) {
       throw ApiError.forbidden('Clients cannot access internal comments');
     }
+
+    const projectId = await resolveProjectId(projectIdOrSlug);
 
     // Verify project exists
     const project = await projectRepository.findById(projectId);
@@ -35,10 +38,12 @@ export class CommentService {
    * Add a comment to a project.
    * ADMIN and EDITOR only.
    */
-  async addComment(projectId: string, content: string, requester: AuthUser) {
+  async addComment(projectIdOrSlug: string, content: string, requester: AuthUser) {
     if (requester.role === Role.CLIENT) {
       throw ApiError.forbidden('Clients cannot post comments');
     }
+
+    const projectId = await resolveProjectId(projectIdOrSlug);
 
     const project = await projectRepository.findById(projectId);
     if (!project) throw ApiError.notFound('Project not found');

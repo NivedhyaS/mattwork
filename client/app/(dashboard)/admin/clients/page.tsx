@@ -2,7 +2,8 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { Trash2, UserPlus, Briefcase, Search, Loader2, ExternalLink, Edit2, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Trash2, UserPlus, Briefcase, Search, Loader2, ExternalLink, Edit2, RefreshCw, AlertTriangle, DollarSign } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
 import { useState } from 'react';
 import Button from '@/components/ui/button';
 import Drawer from '@/components/ui/drawer';
@@ -21,6 +22,7 @@ interface Client {
   country?: string | null;
   notes?: string | null;
   currency?: string | null;
+  advancePaid?: number | null;
   createdAt: string;
   user: {
     id: string;
@@ -42,6 +44,7 @@ const clientSchema = z.object({
   country: z.string().optional(),
   notes: z.string().optional(),
   currency: z.string().length(3, 'Must be a 3-letter currency code'),
+  advancePaid: z.number().min(0, 'Must be a positive number').optional(),
 });
 
 type ClientFormValues = z.infer<typeof clientSchema>;
@@ -101,12 +104,12 @@ export default function ClientsPage() {
   // Forms
   const createForm = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
-    defaultValues: { name: '', email: '', password: '', company: '', phone: '', city: '', country: '', notes: '', currency: 'USD' },
+    defaultValues: { name: '', email: '', password: '', company: '', phone: '', city: '', country: '', notes: '', currency: 'USD', advancePaid: 0 },
   });
 
   const editForm = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
-    defaultValues: { name: '', email: '', password: '', company: '', phone: '', city: '', country: '', notes: '', currency: 'USD' },
+    defaultValues: { name: '', email: '', password: '', company: '', phone: '', city: '', country: '', notes: '', currency: 'USD', advancePaid: 0 },
   });
 
   const onCreateSubmit = (values: ClientFormValues) => {
@@ -124,6 +127,7 @@ export default function ClientsPage() {
       country: values.country,
       notes: values.notes,
       currency: values.currency,
+      advancePaid: values.advancePaid,
     };
     if (values.password) {
       updateData.password = values.password;
@@ -143,6 +147,7 @@ export default function ClientsPage() {
       country: client.country || '',
       notes: client.notes || '',
       currency: client.currency || 'USD',
+      advancePaid: client.advancePaid ?? 0,
     });
   };
 
@@ -176,7 +181,7 @@ export default function ClientsPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <input
           type="text"
-          placeholder="Search clients by name, email, or company..."
+          placeholder="Search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-[15px] focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -219,6 +224,7 @@ export default function ClientsPage() {
                   <th className="py-4 px-5">Client</th>
                   <th className="py-4 px-5">Company</th>
                   <th className="py-4 px-5">Location</th>
+                  <th className="py-4 px-5">Budget</th>
                   <th className="py-4 px-5">Joined</th>
                   <th className="py-4 px-5 text-right">Actions</th>
                 </tr>
@@ -242,6 +248,16 @@ export default function ClientsPage() {
                     </td>
                     <td className="py-4 px-5 text-[14px] text-slate-500">
                       {[client.city, client.country].filter(Boolean).join(', ') || '—'}
+                    </td>
+                    <td className="py-4 px-5">
+                      {client.advancePaid != null && client.advancePaid > 0 ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-semibold text-[13px]">
+                          <DollarSign className="h-3 w-3" />
+                          {formatCurrency(client.advancePaid, client.currency || 'USD')}
+                        </span>
+                      ) : (
+                        <span className="text-slate-300 dark:text-slate-700 italic text-[13px]">Not set</span>
+                      )}
                     </td>
                     <td className="py-4 px-5 text-[14px] text-slate-500">
                       {new Date(client.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -347,6 +363,17 @@ export default function ClientsPage() {
               <Label>Notes (Optional)</Label>
               <Input {...createForm.register('notes')} placeholder="Any internal notes about the client" />
             </div>
+            <div className="space-y-2">
+              <Label>Client Budget <span className="text-slate-400 font-normal">(Total advance paid, in client currency)</span></Label>
+              <Input
+                {...createForm.register('advancePaid')}
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="e.g. 500"
+              />
+              {createForm.formState.errors.advancePaid && <p className="text-xs text-rose-500">{createForm.formState.errors.advancePaid.message}</p>}
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
@@ -416,6 +443,17 @@ export default function ClientsPage() {
             <div className="space-y-2">
               <Label>Notes (Optional)</Label>
               <Input {...editForm.register('notes')} placeholder="Any internal notes about the client" />
+            </div>
+            <div className="space-y-2">
+              <Label>Client Budget <span className="text-slate-400 font-normal">(Total advance paid, in client currency)</span></Label>
+              <Input
+                {...editForm.register('advancePaid')}
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="e.g. 500"
+              />
+              {editForm.formState.errors.advancePaid && <p className="text-xs text-rose-500">{editForm.formState.errors.advancePaid.message}</p>}
             </div>
           </div>
 

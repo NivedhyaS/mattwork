@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #fafafa;
   --foreground: #09090b;
@@ -33,15 +35,13 @@
   --fs-38: 42px;   /* was 38px — large page h1 headings            */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #09090b;
-    --foreground: #f4f4f5;
-    --card: #18181b;
-    --border: #27272a;
-    --accent: #818cf8;
-    --accent-light: rgba(129, 140, 248, 0.15);
-  }
+html.dark {
+  --background: #09090b;
+  --foreground: #f4f4f5;
+  --card: #18181b;
+  --border: #27272a;
+  --accent: #818cf8;
+  --accent-light: rgba(129, 140, 248, 0.15);
 }
 
 @theme inline {

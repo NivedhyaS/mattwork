@@ -1,4 +1,4 @@
-import { Prisma, ProjectStatus } from '@prisma/client';
+import { Prisma, ProjectStatus, Priority } from '@prisma/client';
 import { BaseRepository } from '../../repositories/base.repository';
 import { PaginationParams } from '../../types';
 
@@ -7,6 +7,7 @@ const projectSelect = {
   title: true,
   description: true,
   status: true,
+  priority: true,
   dueDate: true,
   submissionDate: true,
   budget: true,
@@ -55,6 +56,7 @@ export class ProjectRepository extends BaseRepository<any, any, any> {
   async findAll(
     params: PaginationParams & {
       status?: ProjectStatus;
+      priority?: Priority;
       clientId?: string;
       editorId?: string;
       search?: string;
@@ -70,6 +72,7 @@ export class ProjectRepository extends BaseRepository<any, any, any> {
   ) {
     const {
       status,
+      priority,
       clientId,
       editorId,
       search,
@@ -87,6 +90,7 @@ export class ProjectRepository extends BaseRepository<any, any, any> {
     const andConditions: Prisma.ProjectWhereInput[] = [];
 
     if (status) andConditions.push({ status });
+    if (priority) andConditions.push({ priority });
     if (clientId) andConditions.push({ clientId });
     if (editorId) andConditions.push({ editorId });
     if (search) {

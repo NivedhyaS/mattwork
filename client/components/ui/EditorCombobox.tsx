@@ -185,7 +185,7 @@ export default function EditorCombobox({
               <input
                 ref={inputRef}
                 type="text"
-                placeholder="Search editors…"
+                placeholder="Search"
                 value={query}
                 onChange={(e) => { setQuery(e.target.value); setActiveIndex(-1); }}
                 onKeyDown={handleKeyDown}

@@ -66,8 +66,8 @@ export class ReportController {
       sheet.columns = [
         { header: 'Editor Name', key: 'editorName', width: 25 },
         { header: 'Completed Count', key: 'completedCount', width: 18 },
-        { header: 'Average Rate (USD)', key: 'averageRate', width: 20 },
-        { header: 'Total Payout (USD)', key: 'totalPayout', width: 20 },
+        { header: 'Average Rate (INR)', key: 'averageRate', width: 20 },
+        { header: 'Total Payout (INR)', key: 'totalPayout', width: 20 },
       ];
 
       sheet.getRow(1).font = { bold: true };

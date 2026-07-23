@@ -9,6 +9,8 @@ import paymentRoutes from '../modules/payments/payment.routes';
 import notificationRoutes from '../modules/notifications/notification.routes';
 import webhookRoutes from '../modules/webhooks/webhook.routes';
 import reportRoutes from '../modules/reports/report.routes';
+import exchangeRateRoutes from '../modules/exchangeRate/exchangeRate.routes';
+import formsRoutes from '../modules/forms/forms.routes';
 
 const router = Router();
 
@@ -22,5 +24,7 @@ router.use('/payments', paymentRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/webhooks', webhookRoutes);
 router.use('/reports', reportRoutes);
+router.use('/exchange-rate', exchangeRateRoutes);
+router.use('/forms', formsRoutes);
 
 export default router;

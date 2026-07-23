@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   TrendingUp,
+  Settings2,
 } from 'lucide-react';
 import { cn, checkActiveRoute } from '@/lib/utils';
 import { useState } from 'react';
@@ -35,6 +36,7 @@ export default function Sidebar() {
     { name: 'editors', href: '/admin/editors', icon: UserCheck },
     { name: 'invoices', href: '/admin/invoices', icon: FileSpreadsheet },
     { name: 'payments', href: '/admin/payments', icon: CreditCard },
+    { name: 'forms', href: '/admin/forms', icon: Settings2 },
   ];
 
   const editorLinks = [
@@ -85,8 +87,11 @@ export default function Sidebar() {
       )}
     >
       {/* Brand logo & collapse */}
-      <div className="flex h-16 items-center justify-between px-6 border-b border-border">
-        <div className="flex items-center gap-2 overflow-hidden">
+      <div className={cn(
+        "flex h-16 items-center border-b border-border transition-all duration-300 relative",
+        isCollapsed ? "justify-center px-4" : "justify-between px-6"
+      )}>
+        <div className="flex items-center gap-2 flex-shrink-0">
           <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium flex-shrink-0">
             mw
           </div>
@@ -98,7 +103,7 @@ export default function Sidebar() {
         </div>
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-5 h-6 w-6 rounded-full border border-border bg-card flex items-center justify-center text-slate-400 hover:text-slate-655 focus:outline-none cursor-pointer"
+          className="absolute -right-3 top-5 h-6 w-6 rounded-full border border-border bg-card flex items-center justify-center text-slate-400 hover:text-slate-655 focus:outline-none cursor-pointer z-10"
         >
           {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
@@ -119,8 +124,8 @@ export default function Sidebar() {
               className={cn(
                 'flex items-center gap-3 px-3.5 py-3 rounded-lg text-[16px] transition-all group relative',
                 isActive
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-semibold shadow-sm'
-                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white font-medium'
+                  ? 'bg-accent text-white font-semibold shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white font-medium'
               )}
             >
               <Icon className="h-5 w-5 flex-shrink-0" />

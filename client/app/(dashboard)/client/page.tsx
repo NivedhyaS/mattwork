@@ -19,7 +19,7 @@ import {
   Minus,
   Check
 } from 'lucide-react';
-import { formatCurrency, formatClientCurrency } from '@/lib/utils';
+import { cn, formatCurrency, formatClientCurrency } from '@/lib/utils';
 
 interface Project {
   id: string;
@@ -30,6 +30,11 @@ interface Project {
   driveFolder: string | null;
   formLink: string | null;
   files: { url: string; fileType: string; filename: string }[];
+  projectNumber?: string;
+  standardName?: string;
+  standardSlug?: string;
+  clientPrice?: number | string | null;
+  budget?: number | string | null;
 }
 
 interface BalanceData {
@@ -38,6 +43,7 @@ interface BalanceData {
   remainingCredit: number;
   equivalentRemainingVideos: number | null;
   averageNote?: string;
+  completedProjects: { id: string; title: string; clientPrice: number; deliveredAt: string }[];
 }
 
 const customFormatDate = (dateString: string | Date | undefined | null): string => {
@@ -60,11 +66,11 @@ const getClientStatus = (status: string) => {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  submitted: 'bg-slate-50 text-slate-650 border-border',
-  'in production': 'bg-status-amber/10 text-status-amber border-status-amber/20',
-  'in review': 'bg-accent/10 text-accent border-accent/20',
-  delivered: 'bg-status-green/10 text-status-green border-status-green/20',
-  inactive: 'bg-slate-50 text-slate-500 border-border',
+  submitted: 'bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600',
+  'in production': 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700',
+  'in review': 'bg-indigo-100 text-indigo-700 border-indigo-300 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-700',
+  delivered: 'bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700',
+  inactive: 'bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
 };
 
 // ── Breakdown Modal ──────────────────────────────────────────────────────────
@@ -75,7 +81,7 @@ interface BreakdownModalProps {
   title: string;
   currency: string;
   balanceData: BalanceData | null;
-  activeCard: 'advance' | 'completed' | 'remaining' | 'videos' | null;
+  activeCard: 'money_used' | 'videos' | null;
 }
 
 function BreakdownModal({ isOpen, onClose, title, currency, balanceData, activeCard }: BreakdownModalProps) {
@@ -91,8 +97,13 @@ function BreakdownModal({ isOpen, onClose, title, currency, balanceData, activeC
 
   if (!isOpen || !balanceData) return null;
 
-  const fmt = (n: number) => formatClientCurrency(n);
-  const { advancePaid, completedWorkValue, remainingCredit, equivalentRemainingVideos, averageNote } = balanceData;
+  const fmt = (n: number) => formatCurrency(n, currency);
+  const { advancePaid, completedWorkValue, remainingCredit, equivalentRemainingVideos, averageNote, completedProjects } = balanceData;
+
+  const fmtDate = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
 
   return (
     <div
@@ -101,7 +112,7 @@ function BreakdownModal({ isOpen, onClose, title, currency, balanceData, activeC
     >
       <div
         ref={ref}
-        className="bg-white dark:bg-slate-950 border border-border rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 space-y-5"
+        className="bg-white dark:bg-slate-950 border border-border rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 space-y-5 max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
         <div className="flex items-start justify-between">
@@ -114,106 +125,98 @@ function BreakdownModal({ isOpen, onClose, title, currency, balanceData, activeC
           </button>
         </div>
 
-        {/* Calculation breakdown */}
-        <div className="space-y-3">
-          {activeCard === 'advance' && (
-            <>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                This is the total advance payment credited to your account by the admin. 
-                It represents the funds paid upfront before video delivery.
-              </p>
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Total Advance Paid</span>
-                <span className="text-[20px] font-black text-slate-900 dark:text-white">{fmt(advancePaid)}</span>
+        {/* Money Used breakdown */}
+        {activeCard === 'money_used' && (
+          <>
+            {/* Formula row */}
+            <div className="space-y-2">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-emerald-500" />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">Advance Paid</span>
+                </div>
+                <span className="font-bold text-slate-900 dark:text-white">{fmt(advancePaid)}</span>
               </div>
-              <p className="text-xs text-slate-400">
-                This value is updated by your account manager whenever a new payment is received.
-              </p>
-            </>
-          )}
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingDown className="h-4 w-4 text-amber-500" />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">Work Completed</span>
+                </div>
+                <span className="font-bold text-slate-900 dark:text-white">− {fmt(completedWorkValue)}</span>
+              </div>
+              <div className="border-t border-border pt-2 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-lg p-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Minus className="h-4 w-4 text-indigo-400" />
+                  <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">Remaining Credit</span>
+                </div>
+                <span className="font-black text-indigo-600 dark:text-indigo-400 text-[18px]">{fmt(remainingCredit)}</span>
+              </div>
+            </div>
 
-          {activeCard === 'completed' && (
-            <>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                The total value of all videos that have been delivered (status: <span className="font-semibold text-status-green">UPLOADED</span> or <span className="font-semibold text-status-green">COMPLETED</span>), summed from each project's quoted price.
-              </p>
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Sum of delivered project prices</span>
-                <span className="text-[20px] font-black text-slate-900 dark:text-white">{fmt(completedWorkValue)}</span>
-              </div>
-              <p className="text-xs text-slate-400">
-                Only projects with a confirmed delivery status and a set client price are included in this total.
-              </p>
-            </>
-          )}
-
-          {activeCard === 'remaining' && (
-            <>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                Your remaining credit is calculated as:
-              </p>
-              <div className="space-y-2">
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-status-green" />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">Advance Paid</span>
-                  </div>
-                  <span className="font-bold text-slate-900 dark:text-white">{fmt(advancePaid)}</span>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <TrendingDown className="h-4 w-4 text-status-amber" />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">Work Completed</span>
-                  </div>
-                  <span className="font-bold text-slate-900 dark:text-white">− {fmt(completedWorkValue)}</span>
-                </div>
-                <div className="border-t border-border pt-2 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-lg p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Minus className="h-4 w-4 text-indigo-400" />
-                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">Remaining Credit</span>
-                  </div>
-                  <span className="font-black text-indigo-600 dark:text-indigo-400 text-[18px]">{fmt(remainingCredit)}</span>
-                </div>
-              </div>
-            </>
-          )}
-
-          {activeCard === 'videos' && (
-            <>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                Estimated videos you can still commission with your remaining credit.
-              </p>
-              <div className="space-y-2">
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 flex items-center justify-between">
-                  <span className="text-sm text-slate-700 dark:text-slate-300">Remaining Credit</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{fmt(remainingCredit)}</span>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 flex items-center justify-between">
-                  <span className="text-sm text-slate-700 dark:text-slate-300">Per-video price used</span>
-                  <span className="font-bold text-slate-900 dark:text-white">
-                    {equivalentRemainingVideos !== null && remainingCredit > 0
-                      ? fmt(Math.round(remainingCredit / equivalentRemainingVideos))
-                      : '—'}
-                  </span>
-                </div>
-                <div className="border-t border-border pt-2 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-lg p-3 flex items-center justify-between">
-                  <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">Estimated Remaining Videos</span>
-                  <span className="font-black text-indigo-600 dark:text-indigo-400 text-[18px]">
-                    {equivalentRemainingVideos !== null ? equivalentRemainingVideos : '—'}
-                  </span>
-                </div>
-              </div>
-              {averageNote && (
-                <p className="text-xs text-slate-400 italic">{averageNote}</p>
-              )}
-              {!averageNote && (
-                <p className="text-xs text-slate-400">
-                  Based on the average price of your completed projects. Floored to the nearest whole video.
+            {/* Line-item list */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Delivered Projects</p>
+              {completedProjects.length === 0 ? (
+                <p className="text-sm text-slate-400 italic text-center py-4">
+                  No delivered projects yet — amounts will appear here once a video reaches the final stage.
                 </p>
+              ) : (
+                <div className="divide-y divide-slate-100 dark:divide-slate-900 rounded-lg border border-slate-100 dark:border-slate-900 overflow-hidden">
+                  {completedProjects.map(p => (
+                    <div key={p.id} className="flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-950">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-white">{p.title}</p>
+                        <p className="text-xs text-slate-400">{fmtDate(p.deliveredAt)}</p>
+                      </div>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">{fmt(p.clientPrice)}</span>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-900">
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Total Used</span>
+                    <span className="font-black text-slate-900 dark:text-white">{fmt(completedWorkValue)}</span>
+                  </div>
+                </div>
               )}
-            </>
-          )}
-        </div>
+            </div>
+          </>
+        )}
+
+        {/* Videos Remaining breakdown */}
+        {activeCard === 'videos' && (
+          <>
+            <p className="text-sm text-slate-500 leading-relaxed">
+              Estimated videos you can still commission with your remaining credit.
+            </p>
+            <div className="space-y-2">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 flex items-center justify-between">
+                <span className="text-sm text-slate-700 dark:text-slate-300">Remaining Credit</span>
+                <span className="font-bold text-slate-900 dark:text-white">{fmt(remainingCredit)}</span>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 flex items-center justify-between">
+                <span className="text-sm text-slate-700 dark:text-slate-300">Avg price per video</span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {equivalentRemainingVideos !== null && remainingCredit > 0 && equivalentRemainingVideos > 0
+                    ? fmt(Math.round(remainingCredit / equivalentRemainingVideos))
+                    : '—'}
+                </span>
+              </div>
+              <div className="border-t border-border pt-2 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-lg p-3 flex items-center justify-between">
+                <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">Estimated Remaining Videos</span>
+                <span className="font-black text-indigo-600 dark:text-indigo-400 text-[18px]">
+                  {equivalentRemainingVideos !== null ? equivalentRemainingVideos : '—'}
+                </span>
+              </div>
+            </div>
+            {averageNote && (
+              <p className="text-xs text-slate-400 italic">{averageNote}</p>
+            )}
+            {!averageNote && (
+              <p className="text-xs text-slate-400">
+                Based on the average price of your completed projects. Floored to the nearest whole video.
+              </p>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -230,7 +233,7 @@ export default function ClientDashboard() {
   const [currency, setCurrency] = useState('USD');
 
   const [balanceData, setBalanceData] = useState<BalanceData | null>(null);
-  const [breakdownCard, setBreakdownCard] = useState<'advance' | 'completed' | 'remaining' | 'videos' | null>(null);
+  const [breakdownCard, setBreakdownCard] = useState<'money_used' | 'videos' | null>(null);
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOARD'>('BOARD');
 
   const handleSelectProject = async (project: Project) => {
@@ -269,20 +272,20 @@ export default function ClientDashboard() {
               remainingCredit: Number(bal.remainingCredit),
               equivalentRemainingVideos: bal.equivalentRemainingVideos !== null ? Number(bal.equivalentRemainingVideos) : null,
               averageNote: bal.averageNote,
+              completedProjects: Array.isArray(bal.completedProjects) ? bal.completedProjects : [],
             });
           } catch (balErr) {
             console.error('Failed to load dynamic client balance:', balErr);
-            // Fallback with delivered projects count heuristic
-            const fallbackCompleted = projData.filter((p: Project) => getClientStatus(p.status) === 'delivered').length * 1000;
             setBalanceData({
               advancePaid: 0,
-              completedWorkValue: fallbackCompleted,
-              remainingCredit: -fallbackCompleted,
+              completedWorkValue: 0,
+              remainingCredit: 0,
               equivalentRemainingVideos: 0,
+              completedProjects: [],
             });
           }
         } else {
-          setBalanceData({ advancePaid: 0, completedWorkValue: 0, remainingCredit: 0, equivalentRemainingVideos: 0 });
+          setBalanceData({ advancePaid: 0, completedWorkValue: 0, remainingCredit: 0, equivalentRemainingVideos: 0, completedProjects: [] });
         }
 
         try {
@@ -296,7 +299,7 @@ export default function ClientDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  const fmt = (n: number) => formatClientCurrency(n);
+  const fmt = (n: number) => formatCurrency(n, currency);
 
   const finalFiles = selectedProject?.files?.filter(f => 
     f.fileType === 'VIDEO' || f.fileType === 'IMAGE'
@@ -315,31 +318,53 @@ export default function ClientDashboard() {
     }))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  // Videos Completed: only terminal UPLOADED status per schema (= 'delivered' in getClientStatus)
+  const completedVideosCount = projects.filter(
+    (p) => getClientStatus(p.status) === 'delivered'
+  ).length;
+
+  // Active (non-terminal) projects: status is not terminal ('delivered') and not CANCELLED/ON_HOLD/inactive
+  const activeProjects = projects.filter((p) => {
+    const s = getClientStatus(p.status);
+    return s !== 'delivered' && s !== 'inactive' && p.status !== 'CANCELLED' && p.status !== 'ON_HOLD';
+  });
+
+  const activeProjectsCount = activeProjects.length;
+
+  const activeProjectsValue = activeProjects.reduce((sum, p) => {
+    const price = typeof p.clientPrice === 'string' ? parseFloat(p.clientPrice) : p.clientPrice;
+    return sum + (price || 0);
+  }, 0);
+
+  const remainingVideosCount = balanceData?.equivalentRemainingVideos !== null
+    ? (balanceData?.equivalentRemainingVideos ?? 0)
+    : 0;
+
   const stats = balanceData ? [
     {
-      key: 'advance' as const,
-      label: 'advance paid',
-      value: fmt(balanceData.advancePaid),
-      isPrimary: false,
-    },
-    {
-      key: 'completed' as const,
-      label: 'work completed',
+      key: 'money_used' as const,
+      label: 'Money Used',
+      // PRD §7: completedWorkValue = sum of clientPrice for UPLOADED projects
       value: fmt(balanceData.completedWorkValue),
-      isPrimary: false,
+      description: 'Used',
+      isClickable: true,
+      secondary: `+ ${fmt(activeProjectsValue)} in progress (${activeProjectsCount} active project${activeProjectsCount === 1 ? '' : 's'})`,
     },
     {
-      key: 'remaining' as const,
-      label: 'remaining credit',
-      value: fmt(balanceData.remainingCredit),
-      isPrimary: true,
+      key: 'completed_videos' as const,
+      label: 'Videos Completed',
+      value: String(completedVideosCount),
+      description: 'Videos',
+      isClickable: false,
+      secondary: `${activeProjectsCount} in progress`,
     },
     {
       key: 'videos' as const,
-      label: 'remaining videos',
-      value: balanceData.equivalentRemainingVideos !== null ? `${balanceData.equivalentRemainingVideos} videos` : '—',
-      subtitle: 'Based on remaining credit',
-      isPrimary: false,
+      label: 'Videos Remaining',
+      value: balanceData.advancePaid > 0 ? String(remainingVideosCount) : '—',
+      description: balanceData.advancePaid > 0 ? 'Videos' : 'Set budget to calculate',
+      isClickable: balanceData.advancePaid > 0,
+      secondary: balanceData.advancePaid > 0 ? `${activeProjectsCount} in production` : undefined,
     },
   ] : [];
 
@@ -379,10 +404,9 @@ export default function ClientDashboard() {
         isOpen={breakdownCard !== null}
         onClose={() => setBreakdownCard(null)}
         title={
-          breakdownCard === 'advance' ? 'Advance Paid'
-          : breakdownCard === 'completed' ? 'Work Completed'
-          : breakdownCard === 'remaining' ? 'Remaining Credit'
-          : 'Remaining Videos'
+          breakdownCard === 'money_used' ? 'Money Used Breakdown'
+          : breakdownCard === 'videos' ? 'Videos Remaining Calculation'
+          : 'Breakdown'
         }
         currency={currency}
         balanceData={balanceData}
@@ -402,59 +426,54 @@ export default function ClientDashboard() {
       </div>
 
       {/* Financial Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {loading ? (
-          Array.from({ length: 4 }).map((_, i) => (
+          Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="flat-card bg-card/40 p-6 border border-border animate-pulse">
               <div className="h-3 w-20 bg-slate-200 dark:bg-slate-800 rounded mb-3" />
               <div className="h-8 w-28 bg-slate-200 dark:bg-slate-800 rounded" />
             </div>
           ))
         ) : stats.map((stat) => {
-          if (stat.isPrimary) {
-            return (
-              <button
-                key={stat.key}
-                onClick={() => setBreakdownCard(stat.key)}
-                className="flat-card bg-gradient-to-br from-indigo-600/15 via-indigo-650/5 to-transparent p-6 border border-indigo-500/40 dark:border-indigo-400/30 shadow-[0_4px_25px_rgba(99,102,241,0.08)] relative overflow-hidden text-left w-full hover:border-indigo-400/60 dark:hover:border-indigo-400/50 hover:shadow-[0_4px_30px_rgba(99,102,241,0.15)] transition-all duration-200 cursor-pointer group"
-              >
-                {/* Glowing decorative background blur */}
-                <div className="absolute top-[-20%] right-[-20%] w-[60%] h-[60%] bg-indigo-500/10 rounded-full blur-[35px] pointer-events-none" />
-                
-                <div>
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-2">
-                    Primary Balance
-                  </span>
-                  <p className="text-[12px] uppercase font-bold text-indigo-300 dark:text-indigo-400 tracking-wider">
-                    {stat.label}
-                  </p>
-                  <h3 className="kpi-figure text-[42px] font-black mt-1.5 text-indigo-600 dark:text-indigo-400 leading-none">
-                    {stat.value}
-                  </h3>
-                  <p className="text-[10px] text-indigo-400/60 mt-2 group-hover:text-indigo-400/80 transition-colors">
-                    Click to see breakdown →
-                  </p>
-                </div>
-              </button>
-            );
-          }
+          const isClickable = stat.isClickable;
+          const CardElement = isClickable ? 'button' : 'div';
           return (
-            <button
+            <CardElement
               key={stat.key}
-              onClick={() => setBreakdownCard(stat.key)}
-              className="flat-card bg-card/40 p-6 border border-border text-left w-full hover:border-accent/40 hover:bg-accent/[0.03] transition-all duration-200 cursor-pointer group"
+              {...(isClickable && {
+                onClick: () => setBreakdownCard(stat.key as any),
+              })}
+              className={cn(
+                "flat-card bg-card/45 p-6 border border-border text-left w-full transition-all duration-200",
+                isClickable
+                  ? "hover:border-accent/40 hover:bg-accent/[0.02] cursor-pointer group"
+                  : ""
+              )}
             >
               <div>
-                <p className="text-[12px] uppercase font-bold text-slate-450 tracking-wider">{stat.label}</p>
-                <h3 className="kpi-figure text-[32px] font-extrabold mt-2 text-slate-800 dark:text-slate-200">{stat.value}</h3>
-                {stat.subtitle && (
-                  <p className="text-[11px] text-slate-400 mt-1">{stat.subtitle}</p>
-                )}
-                <p className="text-[10px] text-slate-400/50 mt-2 group-hover:text-slate-400/80 transition-colors">
-                  Click to see breakdown →
+                <p className="text-[12px] uppercase font-bold text-slate-450 tracking-wider">
+                  {stat.label}
                 </p>
+                <h3 className="kpi-figure text-[40px] font-black mt-2 text-slate-900 dark:text-white leading-none">
+                  {stat.value}
+                  <span className="text-[18px] font-semibold text-slate-450 ml-1.5 font-normal normal-case">
+                    {stat.description}
+                  </span>
+                </h3>
+                {stat.secondary && (
+                  <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-2 font-medium">
+                    {stat.secondary}
+                  </p>
+                )}
+                {isClickable ? (
+                  <p className="text-[10px] text-slate-400/50 mt-2.5 group-hover:text-slate-450 transition-colors">
+                    Click to see breakdown →
+                  </p>
+                ) : (
+                  <div className="h-[15px] mt-2.5" />
+                )}
               </div>
-            </button>
+            </CardElement>
           );
         })}
       </div>
@@ -658,7 +677,7 @@ export default function ClientDashboard() {
                   {getClientStatus(selectedProject.status)}
                 </span>
                 <h3 className="text-[18px] font-bold text-slate-900 dark:text-white mt-4 leading-tight">
-                  {selectedProject.title}
+                  {selectedProject.standardName}
                 </h3>
               </div>
 
@@ -706,36 +725,27 @@ export default function ClientDashboard() {
                 </div>
               </div>
 
-              {/* Section 3: Source materials */}
-              <div className="py-6 space-y-3">
-                <span className="text-[12px] font-bold text-slate-450 uppercase tracking-wider block">materials</span>
-                {selectedProject.driveFolder && (
-                  <a href={selectedProject.driveFolder} target="_blank" rel="noreferrer"
-                    className="flex items-center justify-between p-3.5 rounded-lg border border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+              {/* Section 3: Google Drive Link */}
+              {selectedProject.driveFolder && (
+                <div className="py-6 space-y-3">
+                  <span className="text-[12px] font-bold text-slate-450 uppercase tracking-wider block">Google Drive</span>
+                  <a
+                    href={selectedProject.driveFolder}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between p-3.5 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
+                  >
                     <div className="flex items-center gap-3 min-w-0">
-                      <Video className="h-5 w-5 text-slate-455" />
+                      <ExternalLink className="h-5 w-5 text-indigo-500 flex-shrink-0" />
                       <div className="min-w-0">
-                        <p className="text-[14px] font-bold text-slate-800 dark:text-slate-200 truncate">working drive folder</p>
-                        <p className="text-xs text-slate-400 font-normal">google drive</p>
+                        <p className="text-[14px] font-bold text-indigo-700 dark:text-indigo-300 truncate">Open Google Drive Folder</p>
+                        <p className="text-xs text-indigo-400 font-normal">Your project workspace</p>
                       </div>
                     </div>
-                    <ExternalLink className="h-4 w-4 text-slate-400" />
+                    <ExternalLink className="h-4 w-4 text-indigo-400" />
                   </a>
-                )}
-                {selectedProject.formLink && (
-                  <a href={selectedProject.formLink} target="_blank" rel="noreferrer"
-                    className="flex items-center justify-between p-3.5 rounded-lg border border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <FileText className="h-5 w-5 text-slate-455" />
-                      <div className="min-w-0">
-                        <p className="text-[14px] font-bold text-slate-800 dark:text-slate-200 truncate">script instructions</p>
-                        <p className="text-xs text-slate-400 font-normal">google doc</p>
-                      </div>
-                    </div>
-                    <ExternalLink className="h-4 w-4 text-slate-400" />
-                  </a>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Section 4: Deliverables */}
               <div className="pt-6 space-y-3">

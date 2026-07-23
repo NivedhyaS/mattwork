@@ -18,19 +18,25 @@ export default function DashboardLayout({
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    console.log('[DashboardLayout] mounted');
     setIsMounted(true);
   }, []);
 
   useEffect(() => {
+    console.log('[DashboardLayout] auth state checked:', { isMounted, isAuthenticated, role: user?.role, pathname });
     if (isMounted) {
       if (!isAuthenticated) {
-        router.replace('/login');
+        console.log('[DashboardLayout] Unauthenticated -> Redirecting to /login via window.location');
+        window.location.href = '/login';
       } else if (pathname.startsWith('/admin') && user?.role !== 'ADMIN') {
-        router.replace('/unauthorized');
+        console.log('[DashboardLayout] Unauthorized role -> Redirecting');
+        window.location.href = '/unauthorized';
       } else if (pathname.startsWith('/client') && user?.role !== 'CLIENT') {
-        router.replace('/unauthorized');
+        console.log('[DashboardLayout] Unauthorized role -> Redirecting');
+        window.location.href = '/unauthorized';
       } else if (pathname.startsWith('/editor') && user?.role !== 'EDITOR') {
-        router.replace('/unauthorized');
+        console.log('[DashboardLayout] Unauthorized role -> Redirecting');
+        window.location.href = '/unauthorized';
       }
     }
   }, [isMounted, isAuthenticated, user, router, pathname]);

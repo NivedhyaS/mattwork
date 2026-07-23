@@ -261,7 +261,7 @@ export default function InvoicesPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <input
           type="text"
-          placeholder="Search by invoice number, client, or project..."
+          placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-[15px] focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
@@ -392,138 +392,186 @@ export default function InvoicesPage() {
         size="lg"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
-          <div className="space-y-4">
+          <div className="space-y-5">
 
-            {/* Client selector */}
-            <div className="space-y-2">
-              <Label htmlFor="clientId">Client</Label>
-              <Select id="clientId" error={errors.clientId?.message} {...register('clientId')}>
-                <option value="">Select a client…</option>
-                {clients.map((c: any) => (
-                  <option key={c.id} value={c.id}>
-                    {c.company ? `${c.company} (${c.user.name})` : c.user.name}
-                  </option>
-                ))}
-              </Select>
+            {/* Card 1: Invoice details */}
+            <div className="bg-slate-50/40 dark:bg-slate-900/10 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 space-y-4">
+              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Invoice Parameters</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Client selector */}
+                <div className="space-y-1.5 text-left">
+                  <Label htmlFor="clientId" className="text-[12px] font-bold uppercase tracking-wider text-slate-450">Client</Label>
+                  <Select 
+                    id="clientId" 
+                    error={errors.clientId?.message} 
+                    {...register('clientId')}
+                    className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 transition-all rounded-xl text-[15px] focus:ring-1 focus:ring-accent"
+                  >
+                    <option value="" className="bg-white dark:bg-slate-950 text-slate-900 dark:text-white">Select a client…</option>
+                    {clients.map((c: any) => (
+                      <option key={c.id} value={c.id} className="bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+                        {c.company ? `${c.company} (${c.user.name})` : c.user.name}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+
+                {/* Due date */}
+                <div className="space-y-1.5 text-left">
+                  <Label htmlFor="dueDate" className="text-[12px] font-bold uppercase tracking-wider text-slate-450">Due Date</Label>
+                  <Input 
+                    id="dueDate" 
+                    type="date" 
+                    error={errors.dueDate?.message} 
+                    {...register('dueDate')}
+                    className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 transition-all rounded-xl text-[15px] focus:ring-1 focus:ring-accent"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Tax Rate */}
+                <div className="space-y-1.5 text-left">
+                  <Label htmlFor="taxRate" className="text-[12px] font-bold uppercase tracking-wider text-slate-450">Tax Rate (%)</Label>
+                  <Input 
+                    id="taxRate" 
+                    type="number" 
+                    step="0.1" 
+                    error={errors.taxRate?.message} 
+                    {...register('taxRate', { valueAsNumber: true })}
+                    className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 transition-all rounded-xl text-[15px] focus:ring-1 focus:ring-accent"
+                  />
+                </div>
+
+                {/* Discount */}
+                <div className="space-y-1.5 text-left">
+                  <Label htmlFor="discount" className="text-[12px] font-bold uppercase tracking-wider text-slate-455">Discount ({curSymbol})</Label>
+                  <Input 
+                    id="discount" 
+                    type="number" 
+                    step="0.01" 
+                    error={errors.discount?.message} 
+                    {...register('discount', { valueAsNumber: true })}
+                    className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 transition-all rounded-xl text-[15px] focus:ring-1 focus:ring-accent"
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Due date / Tax / Discount */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="dueDate">Due Date</Label>
-                <Input id="dueDate" type="date" error={errors.dueDate?.message} {...register('dueDate')} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="taxRate">Tax Rate (%)</Label>
-                <Input id="taxRate" type="number" step="0.1" error={errors.taxRate?.message} {...register('taxRate', { valueAsNumber: true })} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="discount">Discount ({curSymbol})</Label>
-                <Input id="discount" type="number" step="0.01" error={errors.discount?.message} {...register('discount', { valueAsNumber: true })} />
-              </div>
-            </div>
-
-            {/* Line Items */}
-            <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+            {/* Card 2: Line Items */}
+            <div className="bg-slate-50/40 dark:bg-slate-900/10 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 space-y-4">
               <div className="flex justify-between items-center">
-                <Label className="text-sm font-bold">
+                <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">
                   Line Items
                   {clientSelected && !loadingProjects && (
-                    <span className="ml-2 text-[11px] font-normal text-slate-400">
+                    <span className="ml-2 text-[10px] font-normal text-slate-400 normal-case tracking-normal">
                       (auto-populated from Uploaded projects)
                     </span>
                   )}
-                </Label>
+                </h4>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => append({ description: '', quantity: 1, unitPrice: 0 })}
-                  className="h-8 text-[11px] cursor-pointer"
+                  className="h-8 text-[11px] rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors font-bold px-3"
                   disabled={!clientSelected}
                 >
-                  Add Item
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Item
                 </Button>
               </div>
 
               {errors.items && (
-                <p className="text-xs text-rose-500 font-medium">{errors.items.message}</p>
+                <p className="text-xs text-rose-500 font-medium text-left">{errors.items.message}</p>
               )}
 
               {/* Before client is chosen */}
               {!clientSelected && (
-                <div className="py-6 text-center text-[14px] text-slate-400">
-                  Select a client above to auto-load their completed projects.
+                <div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/20">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-400 mb-3">
+                    <Search className="h-5 w-5" />
+                  </div>
+                  <p className="font-semibold text-slate-700 dark:text-slate-350 text-[14px]">No Client Selected</p>
+                  <p className="text-[12px] text-slate-400 max-w-xs mt-1">Select a client from the dropdown above to load completed projects and build this invoice.</p>
                 </div>
               )}
 
               {/* Loading */}
               {clientSelected && loadingProjects && (
-                <div className="flex items-center gap-2 py-6 justify-center text-slate-400">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  <span className="text-[14px]">Loading completed projects…</span>
+                <div className="flex flex-col items-center gap-2 py-8 justify-center text-slate-400 bg-white dark:bg-slate-950/20 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                  <Loader2 className="h-6 w-6 animate-spin text-accent" />
+                  <span className="text-[13px] font-medium">Fetching completed projects…</span>
                 </div>
               )}
 
               {/* Empty state */}
               {clientSelected && !loadingProjects && !hasItems && (
-                <div className="flex flex-col items-center gap-2 py-8 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
-                  <PackageOpen className="h-8 w-8 text-slate-300 dark:text-slate-700" />
-                  <p className="font-semibold text-[14px] text-slate-600 dark:text-slate-400">
-                    No completed projects to invoice
-                  </p>
-                  <p className="text-[13px] text-slate-400 max-w-xs">
-                    This client has no Uploaded projects that haven&apos;t been invoiced yet.
-                    Use &ldquo;Add Item&rdquo; to create a manual line item.
-                  </p>
+                <div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/20 shadow-sm">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-400 dark:text-slate-650 mb-4">
+                    <PackageOpen className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-[15px] text-slate-800 dark:text-slate-200">
+                      No completed projects to invoice
+                    </p>
+                    <p className="text-xs text-slate-400 max-w-xs mt-1 leading-normal">
+                      This client has no Uploaded projects that haven&apos;t been invoiced yet. 
+                      Click <strong className="text-accent font-extrabold">&ldquo;Add Item&rdquo;</strong> to add manual line items.
+                    </p>
+                  </div>
                 </div>
               )}
 
               {/* Auto-populated + manual items */}
               {!loadingProjects && hasItems && (
-                <div className="space-y-3 max-h-[260px] overflow-y-auto pr-1">
+                <div className="space-y-3.5 max-h-[300px] overflow-y-auto pr-1">
                   {fields.map((field, index) => {
                     const qty = Number(watchedItems[index]?.quantity) || 0;
                     const rate = Number(watchedItems[index]?.unitPrice) || 0;
                     const lineTotal = qty * rate;
 
                     return (
-                      <div key={field.id} className="flex gap-3 items-start bg-slate-50/50 dark:bg-slate-900/30 p-3 rounded-lg border border-slate-100 dark:border-slate-850">
-                        <div className="flex-1 space-y-1">
-                          <Label className="text-[10px] uppercase text-slate-400">Description</Label>
+                      <div key={field.id} className="group relative flex flex-col md:flex-row gap-3 items-end bg-white dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-850 hover:border-slate-350 dark:hover:border-slate-750 transition-all shadow-sm">
+                        <div className="flex-1 w-full space-y-1.5 text-left">
+                          <Label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Description</Label>
                           <Input
-                            placeholder="Project title or service"
+                            placeholder="Project title or service description"
                             error={errors.items?.[index]?.description?.message}
                             {...register(`items.${index}.description` as const)}
+                            className="rounded-xl border-slate-200 dark:border-slate-800 bg-slate-50/20 focus:bg-white transition-all text-[14px]"
                           />
                         </div>
-                        <div className="w-20 space-y-1">
-                          <Label className="text-[10px] uppercase text-slate-400">Qty</Label>
+                        <div className="w-full md:w-20 space-y-1.5 text-left">
+                          <Label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Qty</Label>
                           <Input
                             type="number"
                             error={errors.items?.[index]?.quantity?.message}
                             {...register(`items.${index}.quantity` as const, { valueAsNumber: true })}
+                            className="rounded-xl border-slate-200 dark:border-slate-800 bg-slate-50/20 focus:bg-white text-center font-semibold text-[14px]"
                           />
                         </div>
-                        <div className="w-28 space-y-1">
-                          <Label className="text-[10px] uppercase text-slate-400">Rate ({curSymbol})</Label>
+                        <div className="w-full md:w-28 space-y-1.5 text-left">
+                          <Label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Rate ({curSymbol})</Label>
                           <Input
                             type="number"
                             step="0.01"
                             error={errors.items?.[index]?.unitPrice?.message}
                             {...register(`items.${index}.unitPrice` as const, { valueAsNumber: true })}
+                            className="rounded-xl border-slate-200 dark:border-slate-800 bg-slate-50/20 focus:bg-white font-semibold text-right text-[14px]"
                           />
                         </div>
-                        <div className="w-24 space-y-1">
-                          <Label className="text-[10px] uppercase text-slate-400">Total</Label>
-                          <div className="h-10 flex items-center px-3 border border-slate-200 dark:border-slate-850 bg-slate-100 dark:bg-slate-900 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300">
+                        <div className="w-full md:w-28 space-y-1.5 text-left">
+                          <Label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total</Label>
+                          <div className="h-10 flex items-center justify-end px-3 border border-slate-200 dark:border-slate-850 bg-slate-100/50 dark:bg-slate-900 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-350">
                             {formatCurrency(lineTotal, activeCurrency)}
                           </div>
                         </div>
                         <button
                           type="button"
                           onClick={() => remove(index)}
-                          className="mt-6 p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer"
+                          className="p-2.5 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer transition-colors shrink-0 mb-0.5"
+                          title="Remove Item"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -534,47 +582,62 @@ export default function InvoicesPage() {
               )}
             </div>
 
-            {/* Notes / Terms */}
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes</Label>
-                <textarea
-                  id="notes"
-                  {...register('notes')}
-                  placeholder="Notes shown on invoice..."
-                  className="w-full h-20 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="terms">Terms</Label>
-                <textarea
-                  id="terms"
-                  {...register('terms')}
-                  placeholder="Payment terms..."
-                  className="w-full h-20 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+            {/* Card 3: Notes / Terms */}
+            <div className="bg-slate-50/40 dark:bg-slate-900/10 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 space-y-4">
+              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Notes & Terms</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5 text-left">
+                  <Label htmlFor="notes" className="text-[12px] font-bold uppercase tracking-wider text-slate-450">Notes</Label>
+                  <textarea
+                    id="notes"
+                    {...register('notes')}
+                    placeholder="Notes shown on invoice..."
+                    className="w-full h-20 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm focus:outline-none focus:ring-1 focus:ring-accent text-slate-900 dark:text-white shadow-inner resize-none transition-all"
+                  />
+                </div>
+                <div className="space-y-1.5 text-left">
+                  <Label htmlFor="terms" className="text-[12px] font-bold uppercase tracking-wider text-slate-450">Terms</Label>
+                  <textarea
+                    id="terms"
+                    {...register('terms')}
+                    placeholder="Payment terms..."
+                    className="w-full h-20 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm focus:outline-none focus:ring-1 focus:ring-accent text-slate-900 dark:text-white shadow-inner resize-none transition-all"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Totals */}
-            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 border border-slate-150 dark:border-slate-850 rounded-xl space-y-2 text-sm font-semibold">
-              <div className="flex justify-between text-slate-500">
-                <span>Subtotal</span>
-                <span>{formatCurrency(subtotal, activeCurrency)}</span>
-              </div>
-              <div className="flex justify-between text-slate-500">
-                <span>Tax ({watchedTaxRate}%)</span>
-                <span>{formatCurrency(taxAmount, activeCurrency)}</span>
-              </div>
-              <div className="flex justify-between text-slate-500">
-                <span>Discount</span>
-                <span>-{formatCurrency(watchedDiscount, activeCurrency)}</span>
-              </div>
-              <div className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-2 text-base font-black text-slate-900 dark:text-white">
-                <span>Grand Total</span>
-                <span>{formatCurrency(total, activeCurrency)}</span>
+            {/* Card 4: Prominent Summary card */}
+            <div className="bg-gradient-to-br from-indigo-500/[0.08] via-indigo-650/[0.03] to-transparent dark:from-indigo-500/10 p-6 border border-indigo-500/20 dark:border-indigo-400/20 rounded-2xl space-y-4 shadow-sm relative overflow-hidden">
+              <div className="absolute top-[-30%] right-[-30%] w-[60%] h-[60%] bg-indigo-500/5 rounded-full blur-[35px] pointer-events-none" />
+              
+              <div className="space-y-3 text-sm font-semibold relative z-10">
+                <div className="flex justify-between text-slate-550 dark:text-slate-400">
+                  <span className="font-medium text-slate-550 dark:text-slate-400">Subtotal</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-bold">{formatCurrency(subtotal, activeCurrency)}</span>
+                </div>
+                <div className="flex justify-between text-slate-550 dark:text-slate-400">
+                  <span className="font-medium text-slate-550 dark:text-slate-400">Tax ({watchedTaxRate}%)</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-bold">{formatCurrency(taxAmount, activeCurrency)}</span>
+                </div>
+                <div className="flex justify-between text-slate-550 dark:text-slate-400">
+                  <span className="font-medium text-slate-550 dark:text-slate-400">Discount</span>
+                  <span className="text-rose-500 font-bold">-{formatCurrency(watchedDiscount, activeCurrency)}</span>
+                </div>
+                
+                <div className="border-t border-indigo-500/20 pt-4 flex justify-between items-center text-slate-900 dark:text-white">
+                  <div>
+                    <span className="text-base font-extrabold text-slate-800 dark:text-slate-200 leading-tight block">Grand Total</span>
+                    <span className="text-[10px] text-slate-450 dark:text-slate-500 font-normal normal-case">Calculated in {activeCurrency}</span>
+                  </div>
+                  <span className="text-[32px] font-black text-indigo-600 dark:text-indigo-400 tracking-tight leading-none">
+                    {formatCurrency(total, activeCurrency)}
+                  </span>
+                </div>
               </div>
             </div>
+
           </div>
 
           <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
@@ -585,6 +648,7 @@ export default function InvoicesPage() {
                 setIsCreateDrawerOpen(false);
                 reset();
               }}
+              className="rounded-xl cursor-pointer font-bold"
             >
               Cancel
             </Button>
@@ -592,6 +656,7 @@ export default function InvoicesPage() {
               type="submit"
               isLoading={createInvoiceMutation.isPending}
               disabled={createInvoiceMutation.isPending}
+              className="bg-accent hover:bg-accent/90 border-transparent text-white font-bold rounded-xl px-5 focus:ring-accent"
             >
               Create Invoice
             </Button>

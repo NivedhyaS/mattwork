@@ -24,6 +24,7 @@ model User {
   editor               Editor?
   notifications        Notification[]
   projectComments      ProjectComment[]
+  connectedForms       ConnectedForm[]
 
   @@index([email])
   @@index([role])
@@ -72,6 +73,7 @@ model Project {
   title               String
   description         String?
   status              ProjectStatus    @default(NEW_VIDEO)
+  priority            Priority         @default(MEDIUM)
   clientId            String
   editorId            String?
   dueDate             DateTime?
@@ -97,7 +99,14 @@ model Project {
   @@index([clientId])
   @@index([editorId])
   @@index([status])
+  @@index([priority])
   @@map("projects")
+}
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
 }
 
 model ProjectComment {
@@ -288,4 +297,84 @@ enum FileType {
   PRESENTATION
   ARCHIVE
   OTHER
+}
+
+enum FormSyncStatus {
+  ACTIVE
+  WATCH_EXPIRING
+  WATCH_EXPIRED
+  ERROR
+}
+
+enum MattworkFormField {
+  CLIENT_NAME
+  VIDEO_TITLE
+  PROJECT_TYPE
+  ASSIGNED_DATE
+  DEADLINE_DATE
+  MATERIALS_LINK
+}
+
+model ConnectedForm {
+  id                             String                  @id @default(cuid())
+  googleFormId                   String                  @unique
+  formTitle                      String
+  connectedByAdminId             String
+  createdAt                      DateTime                @default(now())
+  updatedAt                      DateTime                @updatedAt
+  lastSyncedAt                   DateTime?
+  lastProcessedResponseTimestamp DateTime?
+  syncStatus                     FormSyncStatus          @default(ACTIVE)
+  connectedByAdmin               User                    @relation(fields: [connectedByAdminId], references: [id])
+  mappings                       FormFieldMapping[]
+  watches                        FormWatch[]
+  processedResponses             ProcessedFormResponse[]
+
+  @@index([googleFormId])
+  @@index([connectedByAdminId])
+  @@map("connected_forms")
+}
+
+model FormFieldMapping {
+  id                 String            @id @default(cuid())
+  connectedFormId    String
+  mattworkField      MattworkFormField
+  googleQuestionId   String
+  googleQuestionType String
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  connectedForm      ConnectedForm     @relation(fields: [connectedFormId], references: [id], onDelete: Cascade)
+
+  @@unique([connectedFormId, mattworkField])
+  @@index([connectedFormId])
+  @@map("form_field_mappings")
+}
+
+model FormWatch {
+  id              String        @id @default(cuid())
+  connectedFormId String
+  watchId         String        @unique
+  expireTime      DateTime
+  pubsubTopic     String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  connectedForm   ConnectedForm @relation(fields: [connectedFormId], references: [id], onDelete: Cascade)
+
+  @@index([connectedFormId])
+  @@index([watchId])
+  @@index([expireTime])
+  @@map("form_watches")
+}
+
+model ProcessedFormResponse {
+  id               String        @id @default(cuid())
+  connectedFormId  String
+  googleResponseId String
+  processedAt      DateTime      @default(now())
+  projectId        String?       // ID of the Mattwork project created for this response
+  connectedForm    ConnectedForm @relation(fields: [connectedFormId], references: [id], onDelete: Cascade)
+
+  @@unique([connectedFormId, googleResponseId])
+  @@index([connectedFormId])
+  @@map("processed_form_responses")
 }

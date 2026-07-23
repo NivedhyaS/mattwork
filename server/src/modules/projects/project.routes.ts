@@ -8,6 +8,7 @@ import {
   createProjectSchema,
   updateProjectSchema,
   updateProjectStatusSchema,
+  updateProjectPrioritySchema,
   listProjectsSchema,
   reassignEditorSchema,
   addCommentSchema,
@@ -42,6 +43,14 @@ router.patch(
   authorize(Role.ADMIN),
   validate(reassignEditorSchema),
   projectController.reassignEditor
+);
+
+// PATCH /api/v1/projects/:id/priority — Admin only (must be before /:id PATCH)
+router.patch(
+  '/:id/priority',
+  authorize(Role.ADMIN),
+  validate(updateProjectPrioritySchema),
+  projectController.updatePriority
 );
 
 // PATCH /api/v1/projects/:id — Admin, Editor

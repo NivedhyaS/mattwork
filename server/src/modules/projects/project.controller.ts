@@ -29,6 +29,11 @@ export class ProjectController {
     ApiResponse.success(res, project, 'Project status updated successfully');
   });
 
+  updatePriority = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const project = await projectService.updateProjectPriority(req.params.id as string, req.body, req.user!);
+    ApiResponse.success(res, project, 'Project priority updated successfully');
+  });
+
   reassignEditor = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const project = await projectService.reassignEditor(req.params.id as string, req.body, req.user!);
     ApiResponse.success(res, project, 'Editor reassigned successfully');

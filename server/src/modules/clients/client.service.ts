@@ -171,11 +171,33 @@ export class ClientService {
       }
     }
 
+    // ── completedProjects: line items for the breakdown modal ─────────────
+    const completedProjects = await prisma.project.findMany({
+      where: {
+        clientId,
+        status: { in: COMPLETED_STATUSES },
+        clientPrice: { not: null },
+      },
+      select: {
+        id: true,
+        title: true,
+        clientPrice: true,
+        updatedAt: true,
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
+
     return {
       advancePaid,
       completedWorkValue,
       remainingCredit,
       equivalentRemainingVideos,
+      completedProjects: completedProjects.map(p => ({
+        id: p.id,
+        title: p.title,
+        clientPrice: Number(p.clientPrice),
+        deliveredAt: p.updatedAt.toISOString(),
+      })),
       ...(averageNote && { averageNote }),
     };
   }

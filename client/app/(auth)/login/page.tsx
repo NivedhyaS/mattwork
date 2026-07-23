@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,7 +9,7 @@ import { useAuthStore } from '@/store/authStore';
 import { api } from '@/lib/api';
 import Button from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { KeyRound, Mail, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { KeyRound, Mail, AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 const loginSchema = z.object({
@@ -19,8 +19,9 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+function LoginFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,37 +30,60 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: searchParams?.get('email') || '',
+      password: searchParams?.get('password') || '',
     },
   });
+
+  useEffect(() => {
+    const emailParam = searchParams?.get('email');
+    const passwordParam = searchParams?.get('password');
+    if (emailParam) setValue('email', emailParam);
+    if (passwordParam) setValue('password', passwordParam);
+  }, [searchParams, setValue]);
+
+  const onInvalid = (errors: any) => {
+    console.warn('[LoginForm] Validation failed:', errors);
+    if (errors.email) {
+      setError(errors.email.message || 'Please enter a valid email address.');
+    } else if (errors.password) {
+      setError(errors.password.message || 'Password is required.');
+    } else {
+      setError('Please check form fields and try again.');
+    }
+  };
 
   const onSubmit = async (values: LoginFormValues) => {
     setIsLoading(true);
     setError(null);
     try {
+      console.log('[LoginForm] Submitting login payload:', { email: values.email });
       const response = await api.post('/auth/login', values);
-      const { user, tokens } = response.data.data;
+      const resData = response.data?.data || response.data;
+      const { user, tokens } = resData;
+
+      if (!user || !tokens?.accessToken) {
+        throw new Error('Invalid authentication response from server');
+      }
 
       login(user, tokens.accessToken, tokens.refreshToken);
 
       if (user.role === 'ADMIN') {
-        router.replace('/admin');
+        window.location.href = '/admin';
       } else if (user.role === 'EDITOR') {
-        router.replace('/editor');
+        window.location.href = '/editor';
       } else if (user.role === 'CLIENT') {
-        router.replace('/client');
-      } else {
-        router.replace('/unauthorized');
+        window.location.href = '/client';
       }
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || 'Login failed. Please check your credentials.'
-      );
+      const errorMessage =
+        err.response?.data?.message || err.message || 'Login failed. Please check your credentials.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -113,7 +137,15 @@ export default function LoginPage() {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          action="javascript:void(0)"
+          method="POST"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit(onSubmit, onInvalid)(e);
+          }}
+          className="space-y-6"
+        >
           <div className="space-y-2">
             <Label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
               Email Address
@@ -187,19 +219,21 @@ export default function LoginPage() {
             Sign In
           </Button>
         </form>
-
-        <div className="text-center mt-8">
-          <p className="text-xs text-slate-400">
-            Need an account?{' '}
-            <Link
-              href="/register"
-              className="font-semibold text-blue-400 hover:text-blue-300 transition-colors underline-offset-4 hover:underline"
-            >
-              Create one
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen w-screen items-center justify-center bg-slate-950">
+          <Loader2 className="h-8 w-8 animate-spin text-white" />
+        </div>
+      }
+    >
+      <LoginFormContent />
+    </Suspense>
   );
 }

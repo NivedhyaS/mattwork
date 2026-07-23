@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
@@ -17,7 +17,8 @@ import {
   RefreshCw,
   Search,
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatEditorCurrency } from '@/lib/utils';
+import { useExchangeRate, buildProfitDisplay, formatFetchedAgo } from '@/lib/exchangeRate';
 import {
   ResponsiveContainer,
   BarChart,
@@ -43,6 +44,25 @@ const V = {
 };
 
 export default function FinancialsDashboard() {
+  const { rate: exchangeRate } = useExchangeRate(true);
+  const queryClient = useQueryClient();
+
+  const [displayCurrency, setDisplayCurrency] = useState<'USD' | 'INR'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('admin_display_currency');
+      if (saved === 'USD' || saved === 'INR') {
+        return saved;
+      }
+    }
+    return 'USD';
+  });
+
+  const handleCurrencyChange = (curr: 'USD' | 'INR') => {
+    setDisplayCurrency(curr);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('admin_display_currency', curr);
+    }
+  };
   // ── Filters ──────────────────────────────────────────────────────────────
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedEditor, setSelectedEditor] = useState('');
@@ -200,6 +220,35 @@ export default function FinancialsDashboard() {
     ['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW'].includes(p.status)
   ).length;
 
+  const rate = exchangeRate ? exchangeRate.usdToInr : 83.5;
+
+  // Revenue (native USD)
+  const revenueFormatted = displayCurrency === 'USD'
+    ? formatCurrency(totalRevenue)
+    : `≈ ${formatEditorCurrency(totalRevenue * rate)}`;
+
+  // Costs (native INR)
+  const costsFormatted = displayCurrency === 'INR'
+    ? formatEditorCurrency(totalCosts)
+    : `≈ ${formatCurrency(totalCosts / rate)}`;
+
+  // Outstanding Balance (native USD)
+  const outstandingFormatted = displayCurrency === 'USD'
+    ? formatCurrency(outstandingBalance)
+    : `≈ ${formatEditorCurrency(outstandingBalance * rate)}`;
+
+  // Pending Editor Payments (native INR)
+  const pendingPaymentsFormatted = displayCurrency === 'INR'
+    ? formatEditorCurrency(pendingEditorPayments)
+    : `≈ ${formatCurrency(pendingEditorPayments / rate)}`;
+
+  // Profit (cross-currency, always estimated with ≈)
+  const profitInUsd = totalRevenue - (totalCosts / rate);
+  const profitInInr = (totalRevenue * rate) - totalCosts;
+  const profitFormatted = displayCurrency === 'USD'
+    ? `≈ ${formatCurrency(profitInUsd)}`
+    : `≈ ${formatEditorCurrency(profitInInr)}`;
+
   // Monthly Revenue: current month's revenue (uses today's month)
   const currentMonthStr = new Date().toISOString().substring(0, 7); // "YYYY-MM"
   const monthlyRevenue = invoices
@@ -234,11 +283,17 @@ export default function FinancialsDashboard() {
       .filter((p: any) => ['FINAL_DRAFT', 'UPLOADED', 'COMPLETED'].includes(p.status))
       .reduce((s: number, p: any) => s + Number(p.editorPrice || 0), 0);
 
+    const convertedRev = displayCurrency === 'USD' ? rev : rev * rate;
+    const convertedCost = displayCurrency === 'INR' ? cost : cost / rate;
+    const convertedProfit = displayCurrency === 'USD'
+      ? rev - (cost / rate)
+      : (rev * rate) - cost;
+
     return {
       name: monthName,
-      revenue: rev,
-      costs: cost,
-      profit: rev - cost,
+      revenue: Math.round(convertedRev),
+      costs: Math.round(convertedCost),
+      profit: Math.round(convertedProfit),
     };
   }).filter((d) => d.revenue > 0 || d.costs > 0); // Only show months with data
 
@@ -280,10 +335,40 @@ export default function FinancialsDashboard() {
             Real-time profit tracking, client balances, and editor payout performance.
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          {exchangeRate && (
+            <div className="text-[12px] text-slate-450 dark:text-slate-500 font-medium">
+              1 USD = ₹{exchangeRate.usdToInr.toFixed(2)} · {formatFetchedAgo(exchangeRate.fetchedAt)}
+            </div>
+          )}
+
+          {/* Currency Toggle */}
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
+            <button
+              onClick={() => handleCurrencyChange('USD')}
+              className={`px-3 py-1.5 rounded-md text-[13px] font-extrabold transition-all cursor-pointer ${
+                displayCurrency === 'USD'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
+                  : 'text-slate-450 hover:text-slate-750 dark:text-slate-450 dark:hover:text-slate-250'
+              }`}
+            >
+              USD ($)
+            </button>
+            <button
+              onClick={() => handleCurrencyChange('INR')}
+              className={`px-3 py-1.5 rounded-md text-[13px] font-extrabold transition-all cursor-pointer ${
+                displayCurrency === 'INR'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
+                  : 'text-slate-450 hover:text-slate-750 dark:text-slate-450 dark:hover:text-slate-250'
+              }`}
+            >
+              INR (₹)
+            </button>
+          </div>
+
           <button
             onClick={handleRefresh}
-            className="flex items-center gap-2 px-4 py-2 text-[15px] font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg transition-all"
+            className="flex items-center gap-2 px-4 py-2 text-[15px] font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg transition-all cursor-pointer"
           >
             <RefreshCw size={16} /> Refresh
           </button>
@@ -429,7 +514,7 @@ export default function FinancialsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
-              {formatCurrency(totalRevenue)}
+              {revenueFormatted}
             </div>
             <p className="text-[12px] mt-2 text-slate-500">Gross cleared client income</p>
           </CardContent>
@@ -444,7 +529,7 @@ export default function FinancialsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
-              {formatCurrency(totalCosts)}
+              {costsFormatted}
             </div>
             <p className="text-[12px] mt-2 text-slate-500">Editor service payouts</p>
           </CardContent>
@@ -459,7 +544,7 @@ export default function FinancialsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
-              {formatCurrency(totalProfit)}
+              {profitFormatted}
             </div>
             <p className="text-[12px] mt-2 text-slate-500">Net operating margin</p>
           </CardContent>
@@ -474,7 +559,7 @@ export default function FinancialsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
-              {formatCurrency(outstandingBalance)}
+              {outstandingFormatted}
             </div>
             <p className="text-[12px] mt-2 text-slate-500">Unpaid invoice amounts</p>
           </CardContent>
@@ -489,7 +574,7 @@ export default function FinancialsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
-              {formatCurrency(pendingEditorPayments)}
+              {pendingPaymentsFormatted}
             </div>
             <p className="text-[12px] mt-2 text-slate-500">Owed to editors for finished videos</p>
           </CardContent>
@@ -733,13 +818,21 @@ export default function FinancialsDashboard() {
                       .filter((p: any) => ['FINAL_DRAFT', 'UPLOADED', 'COMPLETED'].includes(p.status))
                       .reduce((s: number, p: any) => s + Number(p.editorPrice || 0), 0); // Owed for finished videos
 
+                    const totalEarningsFormatted = displayCurrency === 'INR'
+                      ? formatEditorCurrency(totalEarnings)
+                      : `≈ ${formatCurrency(totalEarnings / rate)}`;
+
+                    const pendingPaymentsFormatted = displayCurrency === 'INR'
+                      ? formatEditorCurrency(pendingPayments)
+                      : `≈ ${formatCurrency(pendingPayments / rate)}`;
+
                     return (
                       <tr key={ed.id} className="border-b border-slate-100 dark:border-slate-850 hover:bg-slate-50/50 dark:hover:bg-slate-900/20">
                         <td className="p-4 font-medium text-slate-900 dark:text-white">{ed.user?.name || 'Unknown'}</td>
                         <td className="p-4 text-center font-bold text-slate-700 dark:text-slate-300">{completedCount}</td>
                         <td className="p-4 text-center font-bold text-violet-500">{activeCount}</td>
-                        <td className="p-4 text-right font-medium text-slate-900 dark:text-white">{formatCurrency(totalEarnings)}</td>
-                        <td className="p-4 text-right font-medium text-amber-500">{formatCurrency(pendingPayments)}</td>
+                        <td className="p-4 text-right font-medium text-slate-900 dark:text-white">{totalEarningsFormatted}</td>
+                        <td className="p-4 text-right font-medium text-amber-500">{pendingPaymentsFormatted}</td>
                       </tr>
                     );
                   })}

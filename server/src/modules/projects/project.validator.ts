@@ -20,6 +20,7 @@ export const createProjectSchema = z.object({
 export const updateProjectSchema = z.object({
   title: z.string().min(2).max(200).optional(),
   description: z.string().optional().nullable(),
+  priority: z.enum(['HIGH', 'MEDIUM', 'LOW']).optional(),
   clientId: z.string().optional(),
   editorId: z.string().optional().nullable(),
   dueDate: z.coerce.date().optional().nullable(),
@@ -50,6 +51,10 @@ export const updateProjectStatusSchema = z.object({
   ]),
 });
 
+export const updateProjectPrioritySchema = z.object({
+  priority: z.enum(['HIGH', 'MEDIUM', 'LOW']),
+});
+
 export const listProjectsSchema = z.object({
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(1000).default(10),
@@ -70,6 +75,7 @@ export const listProjectsSchema = z.object({
       'ON_HOLD',
     ])
     .optional(),
+  priority: z.enum(['HIGH', 'MEDIUM', 'LOW']).optional(),
   clientId: z.string().optional(),
   editorId: z.string().optional(),
   search: z.string().optional(),
@@ -86,6 +92,7 @@ export const listProjectsSchema = z.object({
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 export type UpdateProjectStatusInput = z.infer<typeof updateProjectStatusSchema>;
+export type UpdateProjectPriorityInput = z.infer<typeof updateProjectPrioritySchema>;
 export type ListProjectsQuery = z.infer<typeof listProjectsSchema>;
 
 export const reassignEditorSchema = z.object({

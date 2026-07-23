@@ -17,7 +17,7 @@ import {
   Layers,
   CircleCheck,
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatEditorCurrency } from '@/lib/utils';
 
 export default function ReportsPage() {
   const [reportType, setReportType] = useState<'revenue' | 'editor-payments' | 'client-utilization' | 'profit'>('revenue');
@@ -269,7 +269,7 @@ export default function ReportsPage() {
                   <div className="p-5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/20">
                     <div className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">Total Editor Payouts</div>
                     <div className="text-[28px] font-extrabold text-slate-950 dark:text-white mt-1">
-                      {formatCurrency(report.totalPayout || 0)}
+                      {formatEditorCurrency(report.totalPayout || 0)}
                     </div>
                   </div>
                 )}
@@ -311,7 +311,7 @@ export default function ReportsPage() {
                     </thead>
                     <tbody>
                       {getFilteredRevenueData().map((item: any, idx: number) => (
-                        <tr key={idx} className="border-b border-slate-100 dark:border-slate-850 hover:bg-slate-50/50">
+                        <tr key={idx} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                           <td className="p-4 font-medium text-slate-900 dark:text-white">{item.clientName}</td>
                           <td className="p-4 text-slate-500">{item.company || '—'}</td>
                           <td className="p-4 text-right font-medium text-emerald-500">{formatCurrency(item.totalRevenue)}</td>
@@ -332,17 +332,17 @@ export default function ReportsPage() {
                       <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
                         <th className="p-4 font-bold text-slate-500 uppercase tracking-wider">Editor Name</th>
                         <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-center">Completed Count</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Avg Rate (USD)</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Total Payout (USD)</th>
+                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Avg Rate (INR)</th>
+                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Total Payout (INR)</th>
                       </tr>
                     </thead>
                     <tbody>
                       {getFilteredEditorData().map((item: any, idx: number) => (
-                        <tr key={idx} className="border-b border-slate-100 dark:border-slate-850 hover:bg-slate-50/50">
+                        <tr key={idx} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                           <td className="p-4 font-medium text-slate-900 dark:text-white">{item.editorName}</td>
                           <td className="p-4 text-center font-semibold text-slate-600 dark:text-slate-400">{item.completedCount}</td>
-                          <td className="p-4 text-right text-slate-500">{formatCurrency(item.averageRate || 0)}</td>
-                          <td className="p-4 text-right font-medium text-emerald-500">{formatCurrency(item.totalPayout)}</td>
+                          <td className="p-4 text-right text-slate-500">{formatEditorCurrency(item.averageRate || 0)}</td>
+                          <td className="p-4 text-right font-medium text-emerald-500">{formatEditorCurrency(item.totalPayout)}</td>
                         </tr>
                       ))}
                       {getFilteredEditorData().length === 0 && (
@@ -367,7 +367,7 @@ export default function ReportsPage() {
                     </thead>
                     <tbody>
                       {getFilteredUtilizationData().map((item: any, idx: number) => (
-                        <tr key={idx} className="border-b border-slate-100 dark:border-slate-850 hover:bg-slate-50/50">
+                        <tr key={idx} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                           <td className="p-4 font-medium text-slate-900 dark:text-white">{item.clientName}</td>
                           <td className="p-4 text-slate-500">{item.company || '—'}</td>
                           <td className="p-4 text-center font-semibold text-slate-650">{item.projectsSubmitted}</td>

@@ -57,13 +57,13 @@ export default function RegisterPage() {
       login(user, tokens.accessToken, tokens.refreshToken);
 
       if (user.role === 'ADMIN') {
-        router.replace('/admin');
+        window.location.href = '/admin';
       } else if (user.role === 'EDITOR') {
-        router.replace('/editor');
+        window.location.href = '/editor';
       } else if (user.role === 'CLIENT') {
-        router.replace('/client');
+        window.location.href = '/client';
       } else {
-        router.replace('/unauthorized');
+        window.location.href = '/unauthorized';
       }
     } catch (err: any) {
       setError(

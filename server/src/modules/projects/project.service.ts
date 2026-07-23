@@ -1,6 +1,7 @@
-import { Role } from '@prisma/client';
+import { Role, Priority } from '@prisma/client';
 import { projectRepository } from './project.repository';
 import { serializeProject, serializeProjects, RawProject } from './project.serializer';
+import { resolveProjectId } from '../../utils/project';
 import { ApiError } from '../../utils/ApiError';
 import prisma from '../../config/database';
 import { AuthUser } from '../../../src/types/express';
@@ -8,6 +9,7 @@ import {
   CreateProjectInput,
   UpdateProjectInput,
   UpdateProjectStatusInput,
+  UpdateProjectPriorityInput,
   ListProjectsQuery,
   ReassignEditorInput,
 } from './project.validator';
@@ -17,6 +19,20 @@ import { notificationService } from '../notifications/notification.service';
 import { logger } from '../../config/logger';
 
 export class ProjectService {
+  private async getProjectNumberStr(project: { id: string; createdAt: Date }): Promise<string> {
+    const countBefore = await prisma.project.count({
+      where: {
+        OR: [
+          { createdAt: { lt: project.createdAt } },
+          {
+            createdAt: project.createdAt,
+            id: { lt: project.id }
+          }
+        ]
+      }
+    });
+    return String(countBefore + 1).padStart(3, '0');
+  }
   // ── Sheets sync helper (fire-and-forget) ─────────────────────────────────
 
   private syncToSheets(raw: RawProject): void {
@@ -157,17 +173,31 @@ export class ProjectService {
 
     const result = await projectRepository.findAll(repositoryParams);
 
+    // Get sequential numbers for all projects to build the map
+    const allProjects = await prisma.project.findMany({
+      orderBy: [
+        { createdAt: 'asc' },
+        { id: 'asc' }
+      ],
+      select: { id: true }
+    });
+    const projectNumbersMap = new Map<string, string>();
+    allProjects.forEach((p, idx) => {
+      projectNumbersMap.set(p.id, String(idx + 1).padStart(3, '0'));
+    });
+
     // Apply role-scoped serialization to every item in the list
     return {
-      data: serializeProjects(result.data, requester),
+      data: serializeProjects(result.data, requester, projectNumbersMap),
       meta: result.meta,
     };
   }
 
   // ── Detail ────────────────────────────────────────────────────────────────
 
-  async getProjectById(id: string, requester: AuthUser) {
-    const project = await projectRepository.findById(id) as RawProject | null;
+  async getProjectById(idOrSlug: string, requester: AuthUser) {
+    const realId = await resolveProjectId(idOrSlug);
+    const project = await projectRepository.findById(realId) as RawProject | null;
     if (!project) throw ApiError.notFound('Project not found');
 
     // Access control — done before serialization so error messages are consistent
@@ -181,8 +211,9 @@ export class ProjectService {
       throw ApiError.forbidden('Access denied');
     }
 
+    const num = await this.getProjectNumberStr(project);
     // Strip forbidden fields per role — happens in the service, not the controller
-    return serializeProject(project, requester);
+    return serializeProject(project, requester, num);
   }
 
   // ── Create ────────────────────────────────────────────────────────────────
@@ -216,13 +247,15 @@ export class ProjectService {
 
     this.syncToSheets(project);
 
-    return serializeProject(project, { id: '', email: '', name: '', role: Role.ADMIN });
+    const num = await this.getProjectNumberStr(project);
+    return serializeProject(project, { id: '', email: '', name: '', role: Role.ADMIN }, num);
   }
 
   // ── Update ────────────────────────────────────────────────────────────────
 
-  async updateProject(id: string, input: UpdateProjectInput, requester: AuthUser) {
-    const project = await projectRepository.findById(id);
+  async updateProject(idOrSlug: string, input: UpdateProjectInput, requester: AuthUser) {
+    const realId = await resolveProjectId(idOrSlug);
+    const project = await projectRepository.findById(realId);
     if (!project) throw ApiError.notFound('Project not found');
 
     // Access control for Editors
@@ -230,11 +263,20 @@ export class ProjectService {
       if (project.editor?.user?.id !== requester.id) {
         throw ApiError.forbidden('Access denied');
       }
+      if (input.priority !== undefined) {
+        throw ApiError.forbidden('Only administrators can modify project priority');
+      }
       if (input.editorId !== undefined) {
         throw ApiError.forbidden('Only administrators can assign or reassign editors');
       }
       if (input.clientId !== undefined) {
         throw ApiError.forbidden('Only administrators can reassign clients');
+      }
+      if (input.editorPrice !== undefined) {
+        throw ApiError.forbidden('Editors cannot modify the editor payout amount');
+      }
+      if (input.clientPrice !== undefined || input.budget !== undefined) {
+        throw ApiError.forbidden('Only administrators can modify client pricing details');
       }
     }
 
@@ -251,7 +293,7 @@ export class ProjectService {
 
     const { editorId, clientId, ...updateData } = input;
 
-    const updated = await projectRepository.update(id, {
+    const updated = await projectRepository.update(realId, {
       ...updateData,
       ...(editorId !== undefined && {
         editor: editorId ? { connect: { id: editorId } } : { disconnect: true },
@@ -274,21 +316,51 @@ export class ProjectService {
 
     this.syncToSheets(updated);
 
+    const num = await this.getProjectNumberStr(updated);
     // Return serialized project using the requester's actual role to avoid leaking restricted fields
-    return serializeProject(updated, requester);
+    return serializeProject(updated, requester, num);
   }
 
   // ── Status ────────────────────────────────────────────────────────────────
 
-  async updateProjectStatus(id: string, input: UpdateProjectStatusInput, requester: AuthUser) {
-    const project = await projectRepository.findById(id);
+  async updateProjectStatus(idOrSlug: string, input: UpdateProjectStatusInput, requester: AuthUser) {
+    const realId = await resolveProjectId(idOrSlug);
+    const project = await projectRepository.findById(realId);
     if (!project) throw ApiError.notFound('Project not found');
 
     if (requester.role === Role.EDITOR && project.editor?.user?.id !== requester.id) {
       throw ApiError.forbidden('Editors can only update their own assigned projects');
     }
 
-    const updated = await projectRepository.update(id, { status: input.status }) as RawProject;
+    if (requester.role === Role.EDITOR) {
+      const cur = project.status as string;
+      const tgt = input.status as string;
+
+      // Editors may only advance along their currently active revision stage.
+      // Review columns are frozen — no movement is allowed once inside one.
+      // All other transitions (backward, skip-ahead, admin-only columns) are forbidden.
+      const EDITOR_ALLOWED: Record<string, string[]> = {
+        NEW_VIDEO:  ['EDITING'],
+        EDITING:    ['EDITING_REVIEW'],
+        // EDITING_REVIEW is frozen — no entry here
+        REVISION_1: ['REVISION_1_REVIEW'],
+        // REVISION_1_REVIEW is frozen — no entry here
+        REVISION_2: ['REVISION_2_REVIEW'],
+        // REVISION_2_REVIEW, FINAL_DRAFT, UPLOADED — all frozen
+      };
+
+      const allowedTargets = EDITOR_ALLOWED[cur] ?? [];
+      const isAllowed = cur === tgt || allowedTargets.includes(tgt);
+
+      if (!isAllowed) {
+        throw ApiError.forbidden(
+          `Editors cannot move a project from "${cur}" to "${tgt}". ` +
+          `Allowed next states: [${allowedTargets.join(', ') || 'none — awaiting Admin'}].`
+        );
+      }
+    }
+
+    const updated = await projectRepository.update(realId, { status: input.status }) as RawProject;
 
     // Automate: Notify client of status change
     if (updated.client?.user?.id) {
@@ -318,13 +390,35 @@ export class ProjectService {
 
     this.syncToSheets(updated);
 
-    return serializeProject(updated, { id: '', email: '', name: '', role: Role.ADMIN });
+    const num = await this.getProjectNumberStr(updated);
+    return serializeProject(updated, { id: '', email: '', name: '', role: Role.ADMIN }, num);
+  }
+
+  // ── Priority (Admin-only) ──────────────────────────────────────────────────
+
+  async updateProjectPriority(idOrSlug: string, input: UpdateProjectPriorityInput, requester: AuthUser) {
+    const realId = await resolveProjectId(idOrSlug);
+    const project = await projectRepository.findById(realId);
+    if (!project) throw ApiError.notFound('Project not found');
+
+    if (requester.role !== Role.ADMIN) {
+      throw ApiError.forbidden('Only administrators can update project priority');
+    }
+
+    const updated = await projectRepository.update(realId, {
+      priority: input.priority as any,
+    }) as RawProject;
+
+    this.syncToSheets(updated);
+    const num = await this.getProjectNumberStr(updated);
+    return serializeProject(updated, requester, num);
   }
 
   // ── Reassign Editor (Admin-only, with audit log) ──────────────────────────
 
-  async reassignEditor(id: string, input: ReassignEditorInput, requester: AuthUser) {
-    const project = await projectRepository.findById(id) as RawProject | null;
+  async reassignEditor(idOrSlug: string, input: ReassignEditorInput, requester: AuthUser) {
+    const realId = await resolveProjectId(idOrSlug);
+    const project = await projectRepository.findById(realId) as RawProject | null;
     if (!project) throw ApiError.notFound('Project not found');
 
     const previousEditorId = project.editorId ?? null;
@@ -339,14 +433,14 @@ export class ProjectService {
     // Write audit log (fire-and-forget safe — use await so errors surface)
     await prisma.editorAssignmentLog.create({
       data: {
-        projectId: id,
+        projectId: realId,
         previousEditorId,
         newEditorId,
         changedById: requester.id,
       },
     });
 
-    const updated = await projectRepository.update(id, {
+    const updated = await projectRepository.update(realId, {
       ...(newEditorId
         ? { editor: { connect: { id: newEditorId } } }
         : { editor: { disconnect: true } }),
@@ -362,36 +456,38 @@ export class ProjectService {
     );
 
     this.syncToSheets(updated);
-    return serializeProject(updated, requester);
+    const num = await this.getProjectNumberStr(updated);
+    return serializeProject(updated, requester, num);
   }
 
   // ── Delete ────────────────────────────────────────────────────────────────
 
-  async deleteProject(id: string) {
-    const project = await projectRepository.findById(id);
+  async deleteProject(idOrSlug: string) {
+    const realId = await resolveProjectId(idOrSlug);
+    const project = await projectRepository.findById(realId);
     if (!project) throw ApiError.notFound('Project not found');
 
     // 1. Dissociate from single-project invoices by setting projectId to null
     // (Preserves the invoice financial audit history intact)
     await prisma.invoice.updateMany({
-      where: { projectId: id },
+      where: { projectId: realId },
       data: { projectId: null },
     });
 
     // 2. Delete EditorAssignmentLog records referencing this project
     await prisma.editorAssignmentLog.deleteMany({
-      where: { projectId: id },
+      where: { projectId: realId },
     });
 
     // 3. Delete Notification records referencing this project
     await prisma.notification.deleteMany({
-      where: { projectId: id },
+      where: { projectId: realId },
     });
 
-    logger.info(`[ProjectService] Cleaned up and dissociated dependent records for project: ${id}`);
+    logger.info(`[ProjectService] Cleaned up and dissociated dependent records for project: ${realId}`);
 
     // 4. Perform the hard delete of the project itself (Prisma handles cascade for project files)
-    return projectRepository.delete(id);
+    return projectRepository.delete(realId);
   }
 }
 

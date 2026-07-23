@@ -2,6 +2,8 @@ import app from './app';
 import { env } from './config/env';
 import { logger } from './config/logger';
 import prisma from './config/database';
+import { schedulerService } from './services/scheduler.service';
+// Restart server process 2
 
 const startServer = async () => {
   try {
@@ -13,9 +15,13 @@ const startServer = async () => {
       logger.info(`🚀 Server running in ${env.NODE_ENV} mode on port ${env.PORT}`);
     });
 
+    // Start background scheduler (watch renewal, etc.)
+    schedulerService.init();
+
     // Graceful shutdown
     const shutdown = async () => {
       logger.info('Shutting down gracefully...');
+      schedulerService.stop();
       server.close(async () => {
         await prisma.$disconnect();
         logger.info('Closed out remaining connections.');

@@ -1,5 +1,7 @@
 import PDFDocument from 'pdfkit';
 import { Writable } from 'stream';
+import fs from 'fs';
+import path from 'path';
 
 export function getCurrencyConfig(isoCode?: string) {
   switch (isoCode?.toUpperCase()) {
@@ -51,67 +53,66 @@ export class PDFService {
 
     const cur = getCurrencyConfig(params.currency);
     const curCode = (params.currency || 'USD').toUpperCase();
+    const formatCurrency = (val: number) =>
+      `${cur.symbol}${val.toLocaleString(cur.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-    // 1. Premium Header Layout
-    // Brand Badge: MW indigo logo
-    doc.roundedRect(45, 45, 32, 32, 6).fill('#4f46e5');
-    doc.fillColor('#ffffff').fontSize(14).font('Arial-Bold').text('MW', 51, 54);
-
-    // Brand Meta Information
-    doc.font('Arial-Bold').fontSize(14).fillColor('#0f172a').text('MATTWORK', 88, 45);
-    doc.font('Arial').fontSize(8.5).fillColor('#64748b')
-      .text('Premium Post-Production Services', 88, 60)
-      .text('billing@mattwork.com  |  www.mattwork.com', 88, 72);
-
-    // Right-aligned Invoice Title
-    doc.fontSize(22).font('Arial-Bold').fillColor('#0f172a').text('INVOICE', 380, 45, { align: 'right', width: 170 });
-
-    // Divider Line
-    doc.moveTo(45, 95).lineTo(550, 95).strokeColor('#e2e8f0').lineWidth(0.75).stroke();
-
-    // 2. Info Cards Grid (Side-by-Side)
-    const cardY = 110;
-    const cardHeight = 76;
-    
-    // Left card: Client details
-    doc.roundedRect(45, cardY, 242, cardHeight, 6).fill('#f8fafc');
-    doc.roundedRect(45, cardY, 242, cardHeight, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
-    
-    // Right card: Invoice Details
-    doc.roundedRect(308, cardY, 242, cardHeight, 6).fill('#f8fafc');
-    doc.roundedRect(308, cardY, 242, cardHeight, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
-
-    // Fill Client Info
-    doc.fillColor('#64748b').fontSize(7.5).font('Arial-Bold').text('BILLED TO', 57, cardY + 10);
-    doc.fillColor('#0f172a').fontSize(10).font('Arial-Bold').text(params.clientName, 57, cardY + 23, { width: 220, ellipsis: true });
-    if (params.clientCompany) {
-      doc.fillColor('#475569').fontSize(8.5).font('Arial').text(params.clientCompany, 57, cardY + 37, { width: 220, ellipsis: true });
+    // 1. Header Section (Invoice Generator style)
+    const logoPath = path.join(__dirname, '../assets/logo.png');
+    if (fs.existsSync(logoPath)) {
+      doc.image(logoPath, 45, 38, { fit: [150, 48] });
+    } else {
+      doc.roundedRect(45, 40, 32, 32, 6).fill('#4f46e5');
+      doc.fillColor('#ffffff').fontSize(14).font('Arial-Bold').text('MW', 51, 49);
+      doc.font('Arial-Bold').fontSize(14).fillColor('#0f172a').text('MATTWORK', 88, 40);
     }
-    doc.fillColor('#64748b').fontSize(8).font('Arial').text(`Client Account (${curCode})`, 57, cardY + 51);
 
-    // Fill Invoice Details
-    doc.fillColor('#64748b').fontSize(7.5).font('Arial-Bold').text('INVOICE DETAILS', 320, cardY + 10);
-    
-    let infoRowY = cardY + 23;
-    const drawInfoRow = (label: string, val: string, valColor = '#0f172a', valBold = true) => {
-      doc.fillColor('#64748b').fontSize(8.5).font('Arial').text(label, 320, infoRowY);
-      doc.fillColor(valColor).fontSize(8.5).font(valBold ? 'Arial-Bold' : 'Arial').text(val, 420, infoRowY, { align: 'right', width: 120 });
-      infoRowY += 14;
-    };
-    drawInfoRow('Invoice No:', params.invoiceNumber);
-    drawInfoRow('Issued Date:', new Date().toLocaleDateString(cur.locale, { day: 'numeric', month: 'short', year: 'numeric' }), '#0f172a', false);
-    drawInfoRow('Due Date:', params.dueDate, '#4f46e5', true);
+    doc.fontSize(26).font('Arial-Bold').fillColor('#0f172a').text('INVOICE', 350, 36, { align: 'right', width: 200 });
+
+    doc.moveTo(45, 98).lineTo(550, 98).strokeColor('#e2e8f0').lineWidth(0.75).stroke();
+
+    // 2. Info Cards Grid (Side-by-Side 245pt each)
+    const cardY = 112;
+    const cardHeight = 78;
+    const cardWidth = 245;
+
+    doc.roundedRect(45, cardY, cardWidth, cardHeight, 6).fill('#f8fafc');
+    doc.roundedRect(45, cardY, cardWidth, cardHeight, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+
+    doc.roundedRect(305, cardY, cardWidth, cardHeight, 6).fill('#f8fafc');
+    doc.roundedRect(305, cardY, cardWidth, cardHeight, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+
+    // Left card: Client Info
+    doc.fillColor('#64748b').fontSize(7.5).font('Arial-Bold').text('BILLED TO', 57, cardY + 10);
+    doc.fillColor('#0f172a').fontSize(11).font('Arial-Bold').text(params.clientName, 57, cardY + 23, { width: 220, ellipsis: true });
+    if (params.clientCompany) {
+      doc.fillColor('#475569').fontSize(8.5).font('Arial').text(params.clientCompany, 57, cardY + 39, { width: 220, ellipsis: true });
+    }
+    doc.fillColor('#94a3b8').fontSize(7.5).font('Arial').text(`Account Currency: ${curCode}`, 57, cardY + 54);
+
+    // Right card: Invoice Meta & Balance Due
+    let infoRowY = cardY + 10;
+    doc.fillColor('#64748b').fontSize(8.5).font('Arial').text('Date:', 317, infoRowY);
+    doc.fillColor('#0f172a').fontSize(8.5).font('Arial').text(new Date().toLocaleDateString(cur.locale, { day: 'numeric', month: 'short', year: 'numeric' }), 415, infoRowY, { align: 'right', width: 123 });
+    infoRowY += 14;
+
+    doc.fillColor('#64748b').fontSize(8.5).font('Arial').text('Due Date:', 317, infoRowY);
+    doc.fillColor('#4f46e5').fontSize(8.5).font('Arial-Bold').text(params.dueDate, 415, infoRowY, { align: 'right', width: 123 });
+
+    const balY = cardY + 46;
+    doc.roundedRect(315, balY, 225, 24, 4).fill('#f5f3ff');
+    doc.roundedRect(315, balY, 225, 24, 4).strokeColor('#e0e7ff').lineWidth(0.5).stroke();
+    doc.fillColor('#0f172a').fontSize(9).font('Arial-Bold').text('Balance Due:', 323, balY + 6);
+    doc.fillColor('#4f46e5').fontSize(11).font('Arial-Bold').text(formatCurrency(params.total), 415, balY + 5, { align: 'right', width: 117 });
 
     // 3. Line Items Table
-    let y = 205;
-    
+    let y = 208;
     const drawTableHeader = (posY: number) => {
-      doc.rect(45, posY, 505, 22).fill('#0f172a');
+      doc.rect(45, posY, 505, 22).fill('#1e293b');
       doc.fillColor('#ffffff').fontSize(8.5).font('Arial-Bold')
         .text('Description', 55, posY + 6)
-        .text('Qty', 315, posY + 6, { width: 30, align: 'center' })
-        .text(`Unit Price (${curCode})`, 360, posY + 6, { width: 95, align: 'right' })
-        .text(`Amount (${curCode})`, 465, posY + 6, { width: 80, align: 'right' });
+        .text('Qty', 295, posY + 6, { width: 50, align: 'center' })
+        .text(`Unit Price (${curCode})`, 350, posY + 6, { width: 95, align: 'right' })
+        .text(`Amount (${curCode})`, 450, posY + 6, { width: 95, align: 'right' });
     };
 
     drawTableHeader(y);
@@ -119,8 +120,7 @@ export class PDFService {
 
     doc.font('Arial');
     params.items.forEach((item, index) => {
-      // Dynamic Page Break check
-      if (y > 700) {
+      if (y > 680) {
         doc.addPage();
         y = 50;
         drawTableHeader(y);
@@ -128,79 +128,68 @@ export class PDFService {
         doc.font('Arial');
       }
 
-      // Alternating row backgrounds for better readability
       if (index % 2 === 1) {
         doc.rect(45, y, 505, 24).fill('#f8fafc');
       }
-      
-      // Bottom border line for row
       doc.moveTo(45, y + 24).lineTo(550, y + 24).strokeColor('#f1f5f9').lineWidth(0.5).stroke();
 
       doc.fillColor('#0f172a')
-        .text(item.description, 55, y + 7, { width: 250, ellipsis: true })
-        .text(item.quantity.toString(), 315, y + 7, { width: 30, align: 'center' })
-        .text(item.amount.toLocaleString(cur.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 360, y + 7, { width: 95, align: 'right' })
-        .text(item.total.toLocaleString(cur.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 465, y + 7, { width: 80, align: 'right' });
-      
+        .text(item.description, 55, y + 7, { width: 235, ellipsis: true })
+        .text(item.quantity.toString(), 295, y + 7, { width: 50, align: 'center' })
+        .text(formatCurrency(item.amount), 350, y + 7, { width: 95, align: 'right' })
+        .text(formatCurrency(item.total), 450, y + 7, { width: 95, align: 'right' });
+
       y += 24;
     });
 
-    // 4. Totals Block & Payment Details (Side-by-Side layout)
-    y += 18;
-    
-    // Page break safety before calculations block
-    if (y > 670) {
+    // 4. Parallel Grid: Payment Details (Left) & Totals Block (Right)
+    y += 20;
+    if (y > 650) {
       doc.addPage();
       y = 50;
     }
 
-    const calcWidth = 205;
-    const calcX = 345;
-    const initialCalcY = y;
+    const calcY = y;
 
-    // Subtotal Row
-    doc.font('Arial').fontSize(9).fillColor('#64748b').text('Subtotal:', calcX, y);
-    doc.font('Arial-Bold').fontSize(9).fillColor('#0f172a').text(`${cur.symbol}${params.subtotal.toLocaleString(cur.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, calcX + 100, y, { align: 'right', width: 100 });
+    // Right Block (Subtotal, Tax, Discount, Total)
+    doc.font('Arial').fontSize(9).fillColor('#64748b').text('Subtotal:', 315, y);
+    doc.font('Arial-Bold').fontSize(9).fillColor('#0f172a').text(formatCurrency(params.subtotal), 445, y, { align: 'right', width: 95 });
     y += 16;
 
-    // Taxes Row
-    doc.font('Arial').fontSize(9).fillColor('#64748b').text('Taxes & Fees:', calcX, y);
-    doc.font('Arial-Bold').fontSize(9).fillColor('#0f172a').text(`${cur.symbol}${params.taxAmount.toLocaleString(cur.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, calcX + 100, y, { align: 'right', width: 100 });
+    doc.font('Arial').fontSize(9).fillColor('#64748b').text('Taxes & Fees:', 315, y);
+    doc.font('Arial-Bold').fontSize(9).fillColor('#0f172a').text(formatCurrency(params.taxAmount), 445, y, { align: 'right', width: 95 });
     y += 16;
 
-    // Discount Row (Optional)
     if (params.discount && params.discount > 0) {
-      doc.font('Arial').fontSize(9).fillColor('#64748b').text('Discount:', calcX, y);
-      doc.font('Arial-Bold').fontSize(9).fillColor('#10b981').text(`-${cur.symbol}${params.discount.toLocaleString(cur.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, calcX + 100, y, { align: 'right', width: 100 });
+      doc.font('Arial').fontSize(9).fillColor('#64748b').text('Discount:', 315, y);
+      doc.font('Arial-Bold').fontSize(9).fillColor('#10b981').text(`-${formatCurrency(params.discount)}`, 445, y, { align: 'right', width: 95 });
       y += 16;
     }
 
-    // Highlighted Total Row
-    y += 6;
-    doc.roundedRect(calcX - 10, y - 5, calcWidth + 15, 26, 4).fill('#f5f3ff');
-    doc.roundedRect(calcX - 10, y - 5, calcWidth + 15, 26, 4).strokeColor('#e0e7ff').lineWidth(1).stroke();
-    
-    doc.font('Arial-Bold').fontSize(9.5).fillColor('#0f172a').text('Total Payable:', calcX, y + 4);
-    doc.font('Arial-Bold').fontSize(11.5).fillColor('#4f46e5').text(`${cur.symbol}${params.total.toLocaleString(cur.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, calcX + 100, y + 3, { align: 'right', width: 100 });
+    // Total Container
+    y += 4;
+    doc.roundedRect(305, y - 4, 245, 26, 6).fill('#f5f3ff');
+    doc.roundedRect(305, y - 4, 245, 26, 6).strokeColor('#e0e7ff').lineWidth(0.5).stroke();
 
-    // 5. Payment Details Card (Left aligned, parallel to calculations)
-    const noteY = initialCalcY;
-    const noteHeight = (params.discount && params.discount > 0) ? 80 : 64;
-    
-    doc.roundedRect(45, noteY, 270, noteHeight, 6).fill('#fafafa');
-    doc.roundedRect(45, noteY, 270, noteHeight, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
-    
-    doc.fontSize(7.5).font('Arial-Bold').fillColor('#64748b').text('PAYMENT & BILLING INFO', 55, noteY + 10);
+    doc.font('Arial-Bold').fontSize(9.5).fillColor('#0f172a').text('Total Payable:', 317, y + 3);
+    doc.font('Arial-Bold').fontSize(11.5).fillColor('#4f46e5').text(formatCurrency(params.total), 445, y + 2, { align: 'right', width: 95 });
+
+    // Left Payment Instructions Card
+    const noteHeight = (params.discount && params.discount > 0) ? 78 : 62;
+    doc.roundedRect(45, calcY, 245, noteHeight, 6).fill('#fafafa');
+    doc.roundedRect(45, calcY, 245, noteHeight, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+
+    doc.fontSize(7.5).font('Arial-Bold').fillColor('#64748b').text('PAYMENT & BILLING INFO', 57, calcY + 10);
     doc.font('Arial').fontSize(7.5).fillColor('#475569').lineGap(2)
-      .text('1. Reconciliations are managed via automated credit accounts.', 55, noteY + 22, { width: 250 })
-      .text('2. Email support@mattwork.com for custom queries.', 55, noteY + 34, { width: 250 })
-      .text('3. Payment Terms: Under standard agreement, due on statement.', 55, noteY + 46, { width: 250 });
+      .text('1. Reconciliations managed via credit accounts.', 57, calcY + 22, { width: 220 })
+      .text('2. Email billing@mattwork.com for custom queries.', 57, calcY + 34, { width: 220 })
+      .text('3. Terms: Payment due upon invoice receipt.', 57, calcY + 46, { width: 220 });
 
-    // 6. Footer
-    doc.moveTo(45, 755).lineTo(550, 755).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+    // 5. Footer
+    doc.moveTo(45, 760).lineTo(550, 760).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
     doc.fontSize(8).font('Arial').fillColor('#94a3b8')
-      .text('Mattwork Inc.  |  Automated Billing Statement', 45, 765)
-      .text(`Generated: ${new Date().toLocaleString()}`, 380, 765, { align: 'right', width: 170 });
+      .text('Mattwork Inc.  |  Automated Billing Statement', 45, 768)
+      .text(`Generated: ${new Date().toLocaleString()}`, 380, 768, { align: 'right', width: 170 });
 
     return this.streamToBuffer(doc);
   }
@@ -218,147 +207,142 @@ export class PDFService {
     doc.registerFont('Arial', 'C:\\Windows\\Fonts\\arial.ttf');
     doc.registerFont('Arial-Bold', 'C:\\Windows\\Fonts\\arialbd.ttf');
 
-    // 1. Premium Header Layout
-    doc.roundedRect(45, 45, 32, 32, 6).fill('#4f46e5');
-    doc.fillColor('#ffffff').fontSize(14).font('Arial-Bold').text('MW', 51, 54);
+    const formatINR = (val: number) =>
+      `₹${val.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-    doc.font('Arial-Bold').fontSize(14).fillColor('#0f172a').text('MATTWORK', 88, 45);
-    doc.font('Arial').fontSize(8.5).fillColor('#64748b')
-      .text('Editor Service Invoice & Statement', 88, 60)
-      .text('support@mattwork.com  |  www.mattwork.com', 88, 72);
+    const totalINR = params.completedProjects.reduce(
+      (sum, p) => sum + Number(p.rate ?? params.ratePerProject ?? 0),
+      0
+    );
+    const finalTotal = totalINR > 0 ? totalINR : params.totalAmount;
 
-    doc.fontSize(18).font('Arial-Bold').fillColor('#0f172a').text('PAYOUT STATEMENT', 320, 45, { align: 'right', width: 230 });
+    // 1. Header Layout with Mattwork Logo (Invoice Generator style)
+    const logoPath = path.join(__dirname, '../assets/logo.png');
+    if (fs.existsSync(logoPath)) {
+      doc.image(logoPath, 45, 38, { fit: [150, 48] });
+    } else {
+      doc.roundedRect(45, 40, 32, 32, 6).fill('#4f46e5');
+      doc.fillColor('#ffffff').fontSize(14).font('Arial-Bold').text('MW', 51, 49);
+      doc.font('Arial-Bold').fontSize(14).fillColor('#0f172a').text('MATTWORK', 88, 40);
+    }
 
-    doc.moveTo(45, 95).lineTo(550, 95).strokeColor('#e2e8f0').lineWidth(0.75).stroke();
+    doc.fontSize(26).font('Arial-Bold').fillColor('#0f172a').text('INVOICE', 350, 36, { align: 'right', width: 200 });
 
-    // 2. Info Cards Grid (Side-by-Side)
-    const cardY = 110;
-    const cardHeight = 76;
+    doc.moveTo(45, 98).lineTo(550, 98).strokeColor('#e2e8f0').lineWidth(0.75).stroke();
 
-    // Left Card: Editor Info
-    doc.roundedRect(45, cardY, 242, cardHeight, 6).fill('#f8fafc');
-    doc.roundedRect(45, cardY, 242, cardHeight, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+    // 2. Info Cards Grid (Equal Width: 245pt each with 15pt gap)
+    const cardY = 112;
+    const cardHeight = 78;
+    const cardWidth = 245;
 
-    // Right Card: Payout Details
-    doc.roundedRect(308, cardY, 242, cardHeight, 6).fill('#f8fafc');
-    doc.roundedRect(308, cardY, 242, cardHeight, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+    doc.roundedRect(45, cardY, cardWidth, cardHeight, 6).fill('#f8fafc');
+    doc.roundedRect(45, cardY, cardWidth, cardHeight, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
 
-    // Fill Editor details
-    doc.fillColor('#64748b').fontSize(7.5).font('Arial-Bold').text('EDITOR INFORMATION', 57, cardY + 10);
-    doc.fillColor('#0f172a').fontSize(10).font('Arial-Bold').text(params.editorName, 57, cardY + 23, { width: 220, ellipsis: true });
-    doc.fillColor('#64748b').fontSize(8.5).font('Arial').text('Mattwork Contract Editor', 57, cardY + 39);
-    doc.fillColor('#94a3b8').fontSize(7.5).font('Arial').text('Reconciled monthly payout', 57, cardY + 52);
+    doc.roundedRect(305, cardY, cardWidth, cardHeight, 6).fill('#f8fafc');
+    doc.roundedRect(305, cardY, cardWidth, cardHeight, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
 
-    // Fill Statement details
-    doc.fillColor('#64748b').fontSize(7.5).font('Arial-Bold').text('STATEMENT DETAILS', 320, cardY + 10);
-    
-    let infoRowY = cardY + 23;
-    const drawInfoRow = (label: string, val: string, highlight = false) => {
-      doc.fillColor('#64748b').fontSize(8.5).font('Arial').text(label, 320, infoRowY);
-      doc.fillColor(highlight ? '#4f46e5' : '#0f172a').fontSize(8.5).font(highlight ? 'Arial-Bold' : 'Arial').text(val, 420, infoRowY, { align: 'right', width: 120 });
-      infoRowY += 14;
+    // Fill Left Card (Bill To)
+    doc.fillColor('#64748b').fontSize(7.5).font('Arial-Bold').text('BILL TO', 57, cardY + 14);
+    doc.fillColor('#0f172a').fontSize(11).font('Arial-Bold').text(params.editorName, 57, cardY + 30, { width: 220, ellipsis: true });
+
+    // Fill Right Card details (Date / Due Date / Balance Due)
+    let infoRowY = cardY + 10;
+    doc.fillColor('#64748b').fontSize(8.5).font('Arial').text('Date:', 317, infoRowY);
+    doc.fillColor('#0f172a').fontSize(8.5).font('Arial').text(new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }), 415, infoRowY, { align: 'right', width: 123 });
+    infoRowY += 14;
+
+    doc.fillColor('#64748b').fontSize(8.5).font('Arial').text('Due Date:', 317, infoRowY);
+    doc.fillColor('#0f172a').fontSize(8.5).font('Arial').text('Upon Receipt', 415, infoRowY, { align: 'right', width: 123 });
+
+    // Highlighted Balance Due inside Card
+    const balY = cardY + 46;
+    doc.roundedRect(315, balY, 225, 24, 4).fill('#f5f3ff');
+    doc.roundedRect(315, balY, 225, 24, 4).strokeColor('#e0e7ff').lineWidth(0.5).stroke();
+    doc.fillColor('#0f172a').fontSize(9).font('Arial-Bold').text('Balance Due:', 323, balY + 6);
+    doc.fillColor('#4f46e5').fontSize(11).font('Arial-Bold').text(formatINR(finalTotal), 415, balY + 5, { align: 'right', width: 117 });
+
+    // 3. Line Items Table (Sleek Dark Header #1e293b, 100% INR)
+    let y = 208;
+
+    const drawTableHeader = (posY: number) => {
+      doc.rect(45, posY, 505, 22).fill('#1e293b');
+      doc.fillColor('#ffffff').fontSize(8.5).font('Arial-Bold')
+        .text('Item', 55, posY + 6)
+        .text('Quantity', 295, posY + 6, { width: 50, align: 'center' })
+        .text('Rate', 350, posY + 6, { width: 95, align: 'right' })
+        .text('Amount', 450, posY + 6, { width: 95, align: 'right' });
     };
-    drawInfoRow('Statement No:', params.invoiceNumber);
-    drawInfoRow('Period:', params.month);
-    drawInfoRow('Compiled Date:', new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }), true);
 
-    // 3. Currency-Grouped Line Items
-    const groups = new Map<string, typeof params.completedProjects>();
-    params.completedProjects.forEach(proj => {
-      const c = (proj.currency || 'USD').toUpperCase();
-      if (!groups.has(c)) groups.set(c, []);
-      groups.get(c)!.push(proj);
+    drawTableHeader(y);
+    y += 22;
+
+    doc.font('Arial');
+    params.completedProjects.forEach((proj, idx) => {
+      if (y > 680) {
+        doc.addPage();
+        y = 50;
+        drawTableHeader(y);
+        y += 22;
+        doc.font('Arial');
+      }
+
+      if (idx % 2 === 1) {
+        doc.rect(45, y, 505, 24).fill('#f8fafc');
+      }
+
+      doc.moveTo(45, y + 24).lineTo(550, y + 24).strokeColor('#f1f5f9').lineWidth(0.5).stroke();
+
+      const rateVal = Number(proj.rate ?? params.ratePerProject ?? 0);
+
+      doc.fillColor('#0f172a')
+        .text(proj.title, 55, y + 7, { width: 235, ellipsis: true })
+        .text('1', 295, y + 7, { width: 50, align: 'center' })
+        .text(formatINR(rateVal), 350, y + 7, { width: 95, align: 'right' })
+        .text(formatINR(rateVal), 450, y + 7, { width: 95, align: 'right' });
+
+      y += 24;
     });
 
-    let y = 205;
-    let groupIndex = 0;
-    
-    for (const [curCode, projects] of groups.entries()) {
-      const cur = getCurrencyConfig(curCode);
-
-      // Check if we need to add a page (page boundary safety)
-      if (y > 620) {
-        doc.addPage();
-        y = 50;
-      }
-
-      // Group section heading
-      doc.fillColor('#0f172a').fontSize(10.5).font('Arial-Bold').text(`${curCode} Projects & Earnings`, 45, y);
-      y += 16;
-
-      // Table Header for group
-      doc.rect(45, y, 505, 20).fill('#4f46e5');
-      doc.fillColor('#ffffff').fontSize(8.5).font('Arial-Bold')
-        .text('Project Title', 55, y + 5)
-        .text('Completion Date', 320, y + 5, { width: 100, align: 'center' })
-        .text(`Amount (${curCode})`, 445, y + 5, { width: 100, align: 'right' });
-      y += 20;
-
-      // Table Body
-      doc.font('Arial');
-      projects.forEach((proj, idx) => {
-        if (y > 700) {
-          doc.addPage();
-          y = 50;
-          
-          // Redraw table header on new page
-          doc.rect(45, y, 505, 20).fill('#4f46e5');
-          doc.fillColor('#ffffff').fontSize(8.5).font('Arial-Bold')
-            .text('Project Title', 55, y + 5)
-            .text('Completion Date', 320, y + 5, { width: 100, align: 'center' })
-            .text(`Amount (${curCode})`, 445, y + 5, { width: 100, align: 'right' });
-          y += 20;
-          doc.font('Arial');
-        }
-
-        // Row background line
-        doc.moveTo(45, y + 20).lineTo(550, y + 20).strokeColor('#f1f5f9').lineWidth(0.5).stroke();
-
-        if (idx % 2 === 1) {
-          doc.rect(45, y, 505, 20).fill('#f8fafc');
-        }
-
-        doc.fillColor('#0f172a')
-          .text(proj.title, 55, y + 5, { width: 250, ellipsis: true })
-          .text(proj.completedDate, 320, y + 5, { width: 100, align: 'center' })
-          .text((proj.rate ?? params.ratePerProject).toLocaleString(cur.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 445, y + 5, { width: 100, align: 'right' });
-        
-        y += 20;
-      });
-
-      // Group subtotal highlight block
-      y += 6;
-      const groupTotal = projects.reduce((sum, p) => sum + Number(p.rate ?? params.ratePerProject), 0);
-      
-      doc.roundedRect(340, y - 2, 210, 22, 4).fill('#f5f3ff');
-      doc.roundedRect(340, y - 2, 210, 22, 4).strokeColor('#e0e7ff').lineWidth(0.5).stroke();
-      
-      doc.fillColor('#0f172a').fontSize(8.5).font('Arial-Bold').text(`Total ${curCode} Payout:`, 350, y + 4);
-      doc.fillColor('#4f46e5').fontSize(9.5).font('Arial-Bold').text(`${cur.symbol}${groupTotal.toLocaleString(cur.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 440, y + 4, { align: 'right', width: 100 });
-      
-      y += 35;
-      groupIndex++;
+    // 4. Parallel Grid: Payment Details Card (Left) & Totals Block (Right)
+    y += 20;
+    if (y > 650) {
+      doc.addPage();
+      y = 50;
     }
 
-    // 4. Payment instructions card
+    const calcY = y;
+
+    // Right Block (Subtotal, Tax, Total)
+    doc.font('Arial').fontSize(9).fillColor('#64748b').text('Subtotal:', 315, y);
+    doc.font('Arial-Bold').fontSize(9).fillColor('#0f172a').text(formatINR(finalTotal), 445, y, { align: 'right', width: 95 });
+    y += 16;
+
+    doc.font('Arial').fontSize(9).fillColor('#64748b').text('Tax (0%):', 315, y);
+    doc.font('Arial-Bold').fontSize(9).fillColor('#0f172a').text('₹0.00', 445, y, { align: 'right', width: 95 });
+    y += 16;
+
+    // Highlighted Total Box (Right)
+    y += 4;
+    doc.roundedRect(305, y - 4, 245, 26, 6).fill('#f5f3ff');
+    doc.roundedRect(305, y - 4, 245, 26, 6).strokeColor('#e0e7ff').lineWidth(0.5).stroke();
+
+    doc.font('Arial-Bold').fontSize(9.5).fillColor('#0f172a').text('Total:', 317, y + 3);
+    doc.font('Arial-Bold').fontSize(11.5).fillColor('#4f46e5').text(formatINR(finalTotal), 445, y + 2, { align: 'right', width: 95 });
+
+    // Left Bank & Payout Details Card (Parallel to Totals Block)
     if (params.paymentDetails) {
-      if (y > 670) {
-        doc.addPage();
-        y = 50;
-      }
-      const noteY = y;
-      doc.roundedRect(45, noteY, 270, 56, 6).fill('#fafafa');
-      doc.roundedRect(45, noteY, 270, 56, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
-      
-      doc.fontSize(7.5).font('Arial-Bold').fillColor('#64748b').text('BANK INSTRUCTIONS', 55, noteY + 10);
-      doc.font('Arial').fontSize(8).fillColor('#475569').text(params.paymentDetails, 55, noteY + 22, { width: 250, lineGap: 1.5 });
+      doc.roundedRect(45, calcY, 245, 62, 6).fill('#fafafa');
+      doc.roundedRect(45, calcY, 245, 62, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+
+      doc.fontSize(7.5).font('Arial-Bold').fillColor('#64748b').text('BANK & PAYOUT DETAILS', 57, calcY + 10);
+      doc.font('Arial').fontSize(8).fillColor('#475569').text(params.paymentDetails, 57, calcY + 23, { width: 220, lineGap: 2 });
     }
 
-    // 5. Footer
-    doc.moveTo(45, 755).lineTo(550, 755).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+    // 5. Footer (Tightened bottom whitespace)
+    doc.moveTo(45, 760).lineTo(550, 760).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
     doc.fontSize(8).font('Arial').fillColor('#94a3b8')
-      .text('Mattwork Payout Statement  |  Confidential statement', 45, 765)
-      .text(`Generated: ${new Date().toLocaleString()}`, 380, 765, { align: 'right', width: 170 });
+      .text('Mattwork Editor Payout Statement  |  All amounts in INR (₹)', 45, 768)
+      .text(`Generated: ${new Date().toLocaleString('en-IN')}`, 380, 768, { align: 'right', width: 170 });
 
     return this.streamToBuffer(doc);
   }
@@ -450,7 +434,7 @@ export class PDFService {
     y += 25;
     doc.fillColor('#0f172a').font('Arial');
 
-    const baseCur = getCurrencyConfig('USD');
+    const baseCur = getCurrencyConfig('INR');
     params.editorPayments.forEach((item, index) => {
       if (index % 2 === 0) {
         doc.rect(50, y, 500, 25).fill('#f5f3ff');
@@ -600,7 +584,7 @@ export class PDFService {
       const changeAbs = params.profitReport.profitChangeAbsolute ?? 0;
       const changePct = params.profitReport.profitChangePercentage ?? 0;
       const sign = changeAbs >= 0 ? '+' : '';
-      const color = changeAbs >= 0 ? '#10b981' : '#ef4444'; // Green or Red
+      const color = changeAbs >= 0 ? '#10b981' : '#ef4444';
 
       doc.text('Net Profit Change:', 60, y)
         .fillColor(color).font('Arial-Bold')

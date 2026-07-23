@@ -1,11 +1,17 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ShieldAlert } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 export default function UnauthorizedPage() {
+  const router = useRouter();
   const { logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900 px-4">
@@ -21,7 +27,7 @@ export default function UnauthorizedPage() {
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
           <button
-            onClick={() => logout()}
+            onClick={handleLogout}
             className="w-full inline-flex justify-center items-center px-4 py-2 text-sm font-semibold rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
           >
             Sign Out & Re-login

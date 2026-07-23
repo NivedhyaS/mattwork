@@ -2,21 +2,25 @@ import { Request, Response } from 'express';
 import { clientService } from './client.service';
 import { ApiResponse } from '../../utils/ApiResponse';
 import { asyncHandler } from '../../utils/asyncHandler';
+import { serializeClient, serializeClients } from './client.serializer';
 
 export class ClientController {
   listClients = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const result = await clientService.listClients(req.query as any);
-    ApiResponse.paginated(res, result.data, result.meta, 'Clients retrieved successfully');
+    const serializedData = serializeClients(result.data, req.user!);
+    ApiResponse.paginated(res, serializedData, result.meta, 'Clients retrieved successfully');
   });
 
   getClientById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const client = await clientService.getClientById(req.params.id as string);
-    ApiResponse.success(res, client, 'Client retrieved successfully');
+    const serializedClient = serializeClient(client, req.user!);
+    ApiResponse.success(res, serializedClient, 'Client retrieved successfully');
   });
 
   getMyProfile = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const client = await clientService.getClientByUserId(req.user!.id);
-    ApiResponse.success(res, client, 'Client profile retrieved');
+    const serializedClient = serializeClient(client, req.user!);
+    ApiResponse.success(res, serializedClient, 'Client profile retrieved');
   });
 
   createClient = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -26,7 +30,8 @@ export class ClientController {
 
   updateClient = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const client = await clientService.updateClient(req.params.id as string, req.body);
-    ApiResponse.success(res, client, 'Client updated successfully');
+    const serializedClient = serializeClient(client, req.user!);
+    ApiResponse.success(res, serializedClient, 'Client updated successfully');
   });
 
   deleteClient = asyncHandler(async (req: Request, res: Response): Promise<void> => {
