@@ -63,7 +63,10 @@ export default function EditorInvoicesPage() {
   // Selection & Config state
   const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
   const [editorName, setEditorName] = useState('Test Editor');
-  const [paymentAccount, setPaymentAccount] = useState('UPI: editor@upi / HDFC 50100987654321');
+  const [accountName, setAccountName] = useState('Test Editor');
+  const [accountNumber, setAccountNumber] = useState('50100987654321');
+  const [ifscCode, setIfscCode] = useState('HDFC0001234');
+  const [bankName, setBankName] = useState('HDFC Bank');
   const [panNumber, setPanNumber] = useState('ABCDE1234F');
   const [currency, setCurrency] = useState('INR');
   const [bonusAmount, setBonusAmount] = useState<number | string>(0);
@@ -220,7 +223,7 @@ export default function EditorInvoicesPage() {
       month: selectedMonth,
       projectIds: selectedProjectIds,
       editorName,
-      paymentDetails: `${paymentAccount} | PAN: ${panNumber}`,
+      paymentDetails: `Bank: ${bankName} | A/C Name: ${accountName} | A/C No: ${accountNumber} | IFSC: ${ifscCode} | PAN: ${panNumber}`,
       bonusAmount: numBonus,
       tdsRate,
       currency
@@ -419,14 +422,70 @@ export default function EditorInvoicesPage() {
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[12px] text-slate-500 font-medium">UPI / Bank Account</label>
-                  <input
-                    type="text"
-                    value={paymentAccount}
-                    onChange={(e) => setPaymentAccount(e.target.value)}
-                    className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-medium"
-                  />
+                {/* Bank Account Payment Details */}
+                <div className="space-y-3 pt-3 border-t border-border">
+                  <span className="text-[12px] text-slate-400 font-bold uppercase tracking-wider block flex items-center gap-1.5">
+                    <Building2 className="h-3.5 w-3.5 text-indigo-400" />
+                    Bank Account Details
+                  </span>
+
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3 shadow-xs">
+                    {/* Account Name */}
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-slate-500 font-bold uppercase tracking-wide">
+                        Account Name
+                      </label>
+                      <input
+                        type="text"
+                        value={accountName}
+                        onChange={(e) => setAccountName(e.target.value)}
+                        className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-semibold focus:ring-1 focus:ring-accent outline-none"
+                        placeholder="e.g. Test Editor"
+                      />
+                    </div>
+
+                    {/* Account Number */}
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-slate-500 font-bold uppercase tracking-wide">
+                        Account Number
+                      </label>
+                      <input
+                        type="text"
+                        value={accountNumber}
+                        onChange={(e) => setAccountNumber(e.target.value)}
+                        className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-mono font-semibold focus:ring-1 focus:ring-accent outline-none"
+                        placeholder="e.g. 50100987654321"
+                      />
+                    </div>
+
+                    {/* 2-column: IFSC Code & Bank Name */}
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <div className="space-y-1">
+                        <label className="text-[11px] text-slate-500 font-bold uppercase tracking-wide">
+                          IFSC Code
+                        </label>
+                        <input
+                          type="text"
+                          value={ifscCode}
+                          onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
+                          className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-mono uppercase font-semibold focus:ring-1 focus:ring-accent outline-none"
+                          placeholder="e.g. HDFC0001234"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] text-slate-500 font-bold uppercase tracking-wide">
+                          Bank Name
+                        </label>
+                        <input
+                          type="text"
+                          value={bankName}
+                          onChange={(e) => setBankName(e.target.value)}
+                          className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-semibold focus:ring-1 focus:ring-accent outline-none"
+                          placeholder="e.g. HDFC Bank"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">

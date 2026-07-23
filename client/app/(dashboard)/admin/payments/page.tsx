@@ -37,7 +37,6 @@ const METHOD_LABELS: Record<string, string> = {
   STRIPE: 'Stripe / Card',
   PAYPAL: 'PayPal',
   CASH: 'Cash',
-  UPI: 'UPI',
   CREDIT_CARD: 'Credit Card',
   DEBIT_CARD: 'Debit Card',
   OTHER: 'Other',
@@ -312,7 +311,6 @@ export default function PaymentsPage() {
                 <option value="BANK_TRANSFER">Bank Transfer</option>
                 <option value="STRIPE">Stripe / Card</option>
                 <option value="PAYPAL">PayPal</option>
-                <option value="UPI">UPI</option>
                 <option value="CASH">Cash</option>
                 <option value="CREDIT_CARD">Credit Card</option>
                 <option value="DEBIT_CARD">Debit Card</option>

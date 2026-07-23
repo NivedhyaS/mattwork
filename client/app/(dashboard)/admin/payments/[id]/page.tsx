@@ -33,7 +33,6 @@ const METHOD_LABELS: Record<string, string> = {
   STRIPE: 'Stripe / Card',
   PAYPAL: 'PayPal',
   CASH: 'Cash',
-  UPI: 'UPI',
   CREDIT_CARD: 'Credit Card',
   DEBIT_CARD: 'Debit Card',
   OTHER: 'Other',
