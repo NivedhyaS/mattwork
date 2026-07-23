@@ -18,8 +18,7 @@ import {
   Smile,
   CornerDownRight,
   Eye,
-  FileVideo,
-  CheckCheck
+  FileVideo
 } from 'lucide-react';
 
 function getAvailableTabs(status: string, commentsList: any[]): string[] {
@@ -63,6 +62,19 @@ function formatFriendlyTime(dateStr: string): string {
   return `${datePart}, ${timeStr}`;
 }
 
+function formatShortTime(dateStr: string): string {
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+function isSameSenderGroup(c1: any, c2: any): boolean {
+  if (!c1 || !c2) return false;
+  if (c1.author?.id !== c2.author?.id) return false;
+  const t1 = new Date(c1.createdAt).getTime();
+  const t2 = new Date(c2.createdAt).getTime();
+  return Math.abs(t2 - t1) < 5 * 60 * 1000; // within 5 minutes
+}
+
 // Returns accent color tokens per discussion type
 function getDiscussionColors(discussionType: string) {
   if (discussionType === 'revision-1') return {
@@ -71,8 +83,6 @@ function getDiscussionColors(discussionType: string) {
     badge: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
     ring: 'focus-within:ring-amber-500/40',
     btnBg: 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold',
-    borderLeft: 'border-l-amber-500',
-    cardBg: 'bg-amber-500/5 border-amber-500/20',
   };
   if (discussionType === 'revision-2') return {
     icon: 'text-rose-400',
@@ -80,8 +90,6 @@ function getDiscussionColors(discussionType: string) {
     badge: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
     ring: 'focus-within:ring-rose-500/40',
     btnBg: 'bg-rose-500 hover:bg-rose-400 text-white font-bold',
-    borderLeft: 'border-l-rose-500',
-    cardBg: 'bg-rose-500/5 border-rose-500/20',
   };
   return {
     icon: 'text-indigo-400',
@@ -89,8 +97,6 @@ function getDiscussionColors(discussionType: string) {
     badge: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
     ring: 'focus-within:ring-indigo-500/40',
     btnBg: 'bg-indigo-500 hover:bg-indigo-400 text-white font-bold',
-    borderLeft: 'border-l-indigo-500',
-    cardBg: 'bg-indigo-500/5 border-indigo-500/20',
   };
 }
 
@@ -214,19 +220,19 @@ export default function DiscussionPage() {
   };
 
   const handleTimestampClick = (ts: string) => {
-    setActiveTimestampToast(`Jumping to ${ts} in video player preview...`);
-    setTimeout(() => setActiveTimestampToast(null), 3500);
+    setActiveTimestampToast(`Jumping to ${ts} in video player...`);
+    setTimeout(() => setActiveTimestampToast(null), 3000);
   };
 
-  const insertQuickTag = (tag: string) => {
-    setNewComment((prev) => (prev ? `${prev} ${tag}` : tag));
+  const insertChip = (chipText: string) => {
+    setNewComment((prev) => (prev ? `${prev} ${chipText}` : chipText));
   };
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-amber-400" />
-        <p className="text-sm font-semibold text-slate-400">Loading revision thread...</p>
+        <p className="text-sm font-semibold text-slate-400">Loading conversation...</p>
       </div>
     );
   }
@@ -248,27 +254,18 @@ export default function DiscussionPage() {
     : `/editor/board?open=${projectId}`;
   const handleBack = () => router.push(boardUrl);
 
-  const renderCommentBody = (content: string, isResolved: boolean) => {
+  const renderBubbleContent = (content: string, isResolved: boolean) => {
     const cleaned = cleanCommentContent(content);
     const lines = cleaned.split('\n');
 
+    const timestampRegex = /(:\d{2}(?:-\:\d{2})?|\b\d{1,2}:\d{2}(?:-\d{1,2}:\d{2})?\b)/g;
+
     return (
-      <div className={`space-y-1.5 ${isResolved ? 'opacity-50 line-through' : ''}`}>
+      <div className={`space-y-1 ${isResolved ? 'opacity-50 line-through' : ''}`}>
         {lines.map((line, lIdx) => {
-          const timestampRegex = /(:\d{2}(?:-\:\d{2})?|\b\d{1,2}:\d{2}(?:-\d{1,2}:\d{2})?\b)/g;
-          const hasTimestamps = line.match(timestampRegex);
-
-          if (!hasTimestamps) {
-            return (
-              <p key={lIdx} className="text-[14.5px] text-slate-200 leading-relaxed font-medium">
-                {line}
-              </p>
-            );
-          }
-
           const parts = line.split(timestampRegex);
           return (
-            <div key={lIdx} className="flex flex-wrap items-center gap-1.5 my-1 bg-amber-500/10 p-2 rounded-xl border border-amber-500/20">
+            <p key={lIdx} className="text-[14.5px] leading-relaxed font-medium text-slate-100">
               {parts.map((part, pIdx) => {
                 if (part.match(/^(:\d{2}(?:-\:\d{2})?|\b\d{1,2}:\d{2}(?:-\d{1,2}:\d{2})?\b)$/)) {
                   return (
@@ -276,21 +273,17 @@ export default function DiscussionPage() {
                       key={pIdx}
                       type="button"
                       onClick={() => handleTimestampClick(part)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 text-[12px] font-bold transition-all cursor-pointer shadow-xs"
-                      title="Click to jump to video timestamp"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 mx-1 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 text-[12px] font-bold transition-all cursor-pointer shadow-xs"
+                      title="Click to jump in video player"
                     >
-                      <Clock className="h-3.5 w-3.5 text-amber-400" />
+                      <Clock className="h-3 w-3 text-amber-400" />
                       {part}
                     </button>
                   );
                 }
-                return (
-                  <span key={pIdx} className="text-[14px] font-semibold text-slate-100">
-                    {part}
-                  </span>
-                );
+                return part;
               })}
-            </div>
+            </p>
           );
         })}
       </div>
@@ -298,8 +291,8 @@ export default function DiscussionPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 px-4 sm:px-6 pb-12">
-      {/* Toast Notification for Timestamps */}
+    <div className="max-w-6xl mx-auto space-y-4 px-4 sm:px-6 pb-8">
+      {/* Toast Notification */}
       {activeTimestampToast && (
         <div className="fixed top-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 bg-slate-900 border border-amber-500/50 text-amber-300 text-[13px] font-bold rounded-2xl shadow-2xl backdrop-blur-md animate-in slide-in-from-top-3">
           <FileVideo className="h-4 w-4 text-amber-400 animate-bounce" />
@@ -307,83 +300,59 @@ export default function DiscussionPage() {
         </div>
       )}
 
-      {/* Header Area */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
-        <div className="space-y-1">
-          {/* Single Unified Breadcrumb */}
-          <div className="flex items-center gap-2 text-[13px] text-slate-400 font-medium">
-            <button
-              onClick={handleBack}
-              className="hover:text-amber-400 transition-colors flex items-center gap-1.5 cursor-pointer font-semibold"
-            >
-              <FolderKanban className="h-3.5 w-3.5" />
-              Projects
-            </button>
-            <ChevronRight className="h-3.5 w-3.5 text-slate-600" />
-            <span className="text-slate-300 font-bold max-w-[200px] truncate">{project.standardName}</span>
-            <ChevronRight className="h-3.5 w-3.5 text-slate-600" />
-            <span className="text-amber-400 font-bold">{getDiscussionTitle()}</span>
-          </div>
-
-          <div className="flex items-center gap-3 pt-1">
-            <h1 className="text-[26px] font-extrabold text-white tracking-tight">
-              {getDiscussionTitle()}
-            </h1>
-            <span className={`text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-xl border ${colors.badge}`}>
-              {discussionType}
-            </span>
+      {/* Slack/Discord Style Header */}
+      <div className="flex items-center justify-between gap-4 border-b border-slate-800/60 pb-3.5">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleBack}
+            className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition-all cursor-pointer"
+            title="Back to board"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[18px] font-extrabold text-white tracking-tight">
+                #{getDiscussionTitle()}
+              </span>
+              <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md border ${colors.badge}`}>
+                {discussionType}
+              </span>
+            </div>
+            <p className="text-[12px] text-slate-400 font-medium">
+              {project.standardName} · <span className="text-slate-500">{filteredComments.length} messages</span>
+            </p>
           </div>
         </div>
 
-        {/* Clear Secondary Back Button */}
         <button
           onClick={handleBack}
-          className="self-start sm:self-auto flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-700/80 hover:border-amber-500/40 bg-slate-900/60 hover:bg-slate-800/80 text-slate-300 hover:text-white text-[13px] font-bold transition-all shadow-sm cursor-pointer"
+          className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:bg-slate-800 text-slate-300 hover:text-white text-[12px] font-bold transition-all cursor-pointer"
         >
-          <ArrowLeft className="h-4 w-4 text-slate-400" />
-          Back to Board
+          <FolderKanban className="h-3.5 w-3.5 text-slate-400" />
+          <span>Board</span>
         </button>
       </div>
 
-      {/* Main Thread & Composer Card */}
-      <div className="bg-slate-950/90 border border-slate-800/80 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+      {/* Main Conversation Container */}
+      <div className="bg-slate-950/80 border border-slate-800/60 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[76vh]">
 
-        {/* Subheader Toolbar */}
-        <div className="px-6 py-3.5 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/60">
-          <div className="flex items-center gap-3">
-            <div className={`h-8 w-8 rounded-xl border ${colors.iconBg} flex items-center justify-center shrink-0`}>
-              <MessageSquare className={`h-4 w-4 ${colors.icon}`} />
-            </div>
-            <div>
-              <span className="text-[14px] font-bold text-slate-100 tracking-wide">
-                {project.standardName}
-              </span>
-              <p className="text-[11.5px] text-slate-400 font-medium mt-0.5">
-                {filteredComments.length} revision note{filteredComments.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-[12px] font-semibold text-slate-400">
-            <CheckCheck className="h-4 w-4 text-emerald-400" />
-            <span className="hidden sm:inline">Syncing with Video Player</span>
-          </div>
-        </div>
-
-        {/* Message Thread Scroll Area */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 min-h-[160px] max-h-[52vh]">
+        {/* Conversation Stream */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-2 min-h-[160px] custom-scrollbar">
           {filteredComments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+            <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
               <div className={`h-14 w-14 rounded-2xl border ${colors.iconBg} flex items-center justify-center`}>
                 <MessageSquare className={`h-6 w-6 ${colors.icon} stroke-[1.5]`} />
               </div>
-              <p className="text-[16px] font-bold text-slate-200">No revision notes yet</p>
-              <p className="text-[13.5px] font-medium text-slate-500 max-w-sm">
-                Add timestamped notes below to give feedback on cuts, transitions, or audio.
+              <p className="text-[16px] font-bold text-slate-200">Start of #{getDiscussionTitle()}</p>
+              <p className="text-[13px] font-medium text-slate-500 max-w-sm">
+                This is the beginning of the timestamped revision channel for {project.standardName}.
               </p>
             </div>
           ) : (
-            filteredComments.map((c) => {
+            filteredComments.map((c, idx) => {
+              const prevComment = idx > 0 ? filteredComments[idx - 1] : null;
+              const sameSender = isSameSenderGroup(prevComment, c);
               const initials = getInitials(c.author?.name || 'User');
               const isAuthorAdmin = c.author?.role === 'ADMIN';
               const isResolved = !!resolvedIds[c.id];
@@ -392,30 +361,32 @@ export default function DiscussionPage() {
               return (
                 <div
                   key={c.id}
-                  className={`group relative flex items-start gap-4 px-4.5 py-4 rounded-2xl border transition-all duration-200 ${
-                    isAuthorAdmin
-                      ? 'bg-slate-900/60 border-amber-500/20 border-l-4 border-l-amber-500'
-                      : 'bg-slate-900/40 border-indigo-500/20 border-l-4 border-l-indigo-500'
-                  } ${isResolved ? 'bg-slate-950/40 border-slate-800/60' : 'hover:border-slate-700/80'}`}
+                  className={`group relative flex items-start gap-3 transition-all duration-150 ${
+                    sameSender ? 'mt-1 pl-11' : 'mt-3.5'
+                  }`}
                 >
-                  {/* Avatar */}
-                  <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[12px] font-extrabold shrink-0 select-none shadow-xs
-                    ${isAuthorAdmin
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                      : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
-                    }`}
-                  >
-                    {initials}
-                  </div>
+                  {/* Avatar (only shown when sender changes) */}
+                  {!sameSender && (
+                    <div
+                      className={`h-8 w-8 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 select-none shadow-xs mt-0.5
+                        ${isAuthorAdmin
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                          : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
+                        }`}
+                    >
+                      {initials}
+                    </div>
+                  )}
 
-                  {/* Message Body */}
-                  <div className="flex-1 min-w-0 space-y-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
+                  {/* Message Bubble Container */}
+                  <div className="flex-1 min-w-0 space-y-1">
+                    {/* Header line (only for first message in group) */}
+                    {!sameSender && (
                       <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-[14.5px] text-white leading-none">
+                        <span className="font-extrabold text-[13.5px] text-slate-100">
                           {c.author?.name}
                         </span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-extrabold uppercase tracking-wider
+                        <span className={`text-[9.5px] px-1.5 py-0.2 rounded font-extrabold uppercase tracking-wider
                           ${isAuthorAdmin
                             ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                             : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
@@ -423,36 +394,49 @@ export default function DiscussionPage() {
                         >
                           {c.author?.role}
                         </span>
-                        <span className="text-[11.5px] text-slate-400 font-medium">
+                        <span className="text-[11px] text-slate-500 font-medium">
                           {formatFriendlyTime(c.createdAt)}
                         </span>
                       </div>
+                    )}
 
-                      {/* Status Badges */}
-                      <div className="flex items-center gap-2">
-                        {isResolved && (
-                          <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                            <CheckCircle2 className="h-3 w-3" /> Resolved
-                          </span>
-                        )}
-                      </div>
+                    {/* Chat Bubble */}
+                    <div
+                      className={`relative inline-block max-w-full sm:max-w-[85%] rounded-2xl px-4 py-2.5 transition-all ${
+                        isAuthorAdmin
+                          ? 'bg-slate-900/90 border border-slate-800/80 shadow-xs'
+                          : 'bg-slate-900/60 border border-slate-800/60 shadow-xs'
+                      } ${isResolved ? 'opacity-50' : 'hover:border-slate-700/80'}`}
+                    >
+                      {renderBubbleContent(c.content, isResolved)}
+
+                      {/* Reactions / Resolved Badges inside bubble */}
+                      {(reactionCount > 0 || isResolved) && (
+                        <div className="flex items-center gap-1.5 mt-2 pt-1 border-t border-slate-800/60">
+                          {isResolved && (
+                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                              <CheckCircle2 className="h-3 w-3" /> Resolved
+                            </span>
+                          )}
+                          {reactionCount > 0 && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 text-[10px] font-bold text-amber-300 border border-slate-700">
+                              👍 {reactionCount}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
-                    {/* Formatted Content */}
-                    {renderCommentBody(c.content, isResolved)}
-
-                    {/* Reaction Pills */}
-                    {reactionCount > 0 && (
-                      <div className="flex items-center gap-1.5 pt-1">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-800/80 border border-slate-700 text-[11px] font-bold text-amber-300">
-                          👍 {reactionCount}
-                        </span>
-                      </div>
+                    {/* Hover Timestamp for grouped messages */}
+                    {sameSender && (
+                      <span className="opacity-0 group-hover:opacity-100 text-[10px] text-slate-500 ml-2 transition-opacity">
+                        {formatShortTime(c.createdAt)}
+                      </span>
                     )}
                   </div>
 
-                  {/* Action Bar (Hover Overlay) */}
-                  <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-slate-900/90 border border-slate-700/80 rounded-xl p-1 shadow-lg backdrop-blur-xs">
+                  {/* Hover Floating Actions (Slack/WhatsApp style) */}
+                  <div className="absolute right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-slate-900/95 border border-slate-700/80 rounded-xl p-1 shadow-xl backdrop-blur-md z-10">
                     <button
                       onClick={() => toggleResolve(c.id)}
                       className={`p-1.5 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 ${
@@ -460,7 +444,7 @@ export default function DiscussionPage() {
                           ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                           : 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10'
                       }`}
-                      title={isResolved ? 'Mark as Unresolved' : 'Mark as Resolved'}
+                      title={isResolved ? 'Mark Unresolved' : 'Mark Resolved'}
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" />
                     </button>
@@ -468,15 +452,15 @@ export default function DiscussionPage() {
                     <button
                       onClick={() => handleAddReaction(c.id)}
                       className="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-all"
-                      title="Acknowledge / React"
+                      title="React 👍"
                     >
                       <Smile className="h-3.5 w-3.5" />
                     </button>
 
                     <button
-                      onClick={() => insertQuickTag(`Replying to @${c.author?.name}: `)}
+                      onClick={() => insertChip(`Replying to @${c.author?.name}: `)}
                       className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-all"
-                      title="Reply to message"
+                      title="Reply"
                     >
                       <CornerDownRight className="h-3.5 w-3.5" />
                     </button>
@@ -485,7 +469,7 @@ export default function DiscussionPage() {
                       <button
                         onClick={() => handleDeleteComment(c.id)}
                         className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
-                        title="Delete Comment"
+                        title="Delete message"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -498,65 +482,69 @@ export default function DiscussionPage() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Composer & Toolbar */}
-        <div className="px-5 py-4 bg-slate-900/90 border-t border-slate-800/80 space-y-2.5">
-          {/* Quick Helper Toolbar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 text-[12px]">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-slate-500 font-bold uppercase tracking-wider text-[10px] mr-1">Quick Tools:</span>
-              <button
-                type="button"
-                onClick={() => insertQuickTag(':07 ')}
-                className="px-2 py-0.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 font-bold transition-all cursor-pointer flex items-center gap-1"
-              >
-                <Clock className="h-3 w-3" /> :07
-              </button>
-              <button
-                type="button"
-                onClick={() => insertQuickTag(':20-:31 ')}
-                className="px-2 py-0.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 font-bold transition-all cursor-pointer flex items-center gap-1"
-              >
-                <Clock className="h-3 w-3" /> :20-:31
-              </button>
-              <button
-                type="button"
-                onClick={() => insertQuickTag('[Tighten Cut] ')}
-                className="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 font-medium transition-all cursor-pointer"
-              >
-                [Tighten Cut]
-              </button>
-              <button
-                type="button"
-                onClick={() => insertQuickTag('[Color Grade] ')}
-                className="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 font-medium transition-all cursor-pointer"
-              >
-                [Color Grade]
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2 text-slate-400">
-              <button
-                type="button"
-                onClick={() => alert('Attachment upload ready.')}
-                className="p-1 hover:text-white transition-colors cursor-pointer"
-                title="Attach reference file"
-              >
-                <Paperclip className="h-4 w-4" />
-              </button>
-            </div>
+        {/* Minimal Bottom Composer Bar */}
+        <div className="p-3 sm:p-4 bg-slate-900/90 border-t border-slate-800/80 space-y-2">
+          {/* Suggestion Chips Above Input */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar text-[12px]">
+            <span className="text-slate-500 font-bold uppercase text-[10px] tracking-wider shrink-0 mr-1">Quick Notes:</span>
+            <button
+              type="button"
+              onClick={() => insertChip(':07 ')}
+              className="px-2.5 py-1 rounded-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-bold transition-all cursor-pointer shrink-0 flex items-center gap-1"
+            >
+              <Clock className="h-3 w-3 text-amber-400" /> :07
+            </button>
+            <button
+              type="button"
+              onClick={() => insertChip(':20-:31 ')}
+              className="px-2.5 py-1 rounded-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-bold transition-all cursor-pointer shrink-0 flex items-center gap-1"
+            >
+              <Clock className="h-3 w-3 text-amber-400" /> :20-:31
+            </button>
+            <button
+              type="button"
+              onClick={() => insertChip('[Tighten Cut] ')}
+              className="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 font-medium transition-all cursor-pointer shrink-0"
+            >
+              [Tighten Cut]
+            </button>
+            <button
+              type="button"
+              onClick={() => insertChip('[Color Grade] ')}
+              className="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 font-medium transition-all cursor-pointer shrink-0"
+            >
+              [Color Grade]
+            </button>
+            <button
+              type="button"
+              onClick={() => insertChip('[Audio Level] ')}
+              className="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 font-medium transition-all cursor-pointer shrink-0"
+            >
+              [Audio Level]
+            </button>
           </div>
 
+          {/* Minimal Input Bar */}
           <form
             onSubmit={handlePostComment}
-            className={`flex items-center gap-3 bg-slate-950/80 border border-slate-800 rounded-2xl px-4 py-2.5 focus-within:ring-2 ${colors.ring} focus-within:border-slate-700 transition-all`}
+            className={`flex items-center gap-2.5 bg-slate-950/90 border border-slate-800 rounded-2xl px-3.5 py-2 focus-within:ring-2 ${colors.ring} focus-within:border-slate-700 transition-all`}
           >
+            <button
+              type="button"
+              onClick={() => alert('Attachment upload ready.')}
+              className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer shrink-0"
+              title="Attach reference"
+            >
+              <Paperclip className="h-4 w-4" />
+            </button>
+
             <textarea
               rows={1}
               required
-              placeholder={`Write revision notes for ${getDiscussionTitle()}...`}
+              placeholder={`Message #${getDiscussionTitle()}...`}
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              className="flex-1 text-[14.5px] py-2 bg-transparent outline-none border-none resize-none
+              className="flex-1 text-[14.5px] py-1 bg-transparent outline-none border-none resize-none
                 text-slate-100 placeholder:text-slate-500
                 max-h-24 overflow-y-auto leading-relaxed font-medium"
               onKeyDown={(e) => {
@@ -570,13 +558,13 @@ export default function DiscussionPage() {
             <button
               type="submit"
               disabled={submitting || !newComment.trim()}
-              className={`h-10 shrink-0 rounded-xl px-5 ${colors.btnBg} flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-md disabled:opacity-40 disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed cursor-pointer`}
+              className={`h-9 shrink-0 rounded-xl px-4 ${colors.btnBg} flex items-center gap-1.5 hover:opacity-90 active:scale-95 transition-all shadow-md disabled:opacity-30 disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed cursor-pointer`}
             >
               {submitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  <span>Send</span>
+                  <span className="text-[13px]">Send</span>
                   <Send className="h-3.5 w-3.5" />
                 </>
               )}
@@ -589,7 +577,7 @@ export default function DiscussionPage() {
               <kbd className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 font-mono">Shift+Enter</kbd> for newline
             </span>
             <span className="text-slate-600 flex items-center gap-1">
-              <Eye className="h-3 w-3 text-slate-500" /> Seen by Editor & Admin
+              <Eye className="h-3 w-3 text-slate-500" /> Synced with Video Player
             </span>
           </div>
         </div>
