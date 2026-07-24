@@ -217,10 +217,12 @@ export default function AdminDashboard() {
   const pendingCount = invoices.filter((inv: any) => !['PAID','CANCELLED'].includes(inv.status)).length;
 
 
+  const threshold = Number(process.env.NEXT_PUBLIC_DEADLINE_THRESHOLD_DAYS || '3');
+
   const upcomingDeadlines = projects.filter((p: any) => {
-    if (!p.dueDate) return false;
+    if (!p.dueDate || p.status === 'UPLOADED') return false;
     const diffDays = Math.ceil((new Date(p.dueDate).getTime() - Date.now()) / 86_400_000);
-    return diffDays >= 0 && diffDays <= 7;
+    return diffDays >= 0 && diffDays <= threshold;
   }).length;
 
   // ── Demo fallbacks ────────────────────────────────────────────────────────
