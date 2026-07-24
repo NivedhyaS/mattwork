@@ -51,6 +51,8 @@ const KANBAN_COLUMNS = [
   { id: 'REVISION_1_REVIEW', title: 'Revision 1 Review', color: 'bg-purple-500/20 border-l-purple-500' },
   { id: 'REVISION_2', title: 'Revision 2', color: 'bg-orange-500/20 border-l-orange-500' },
   { id: 'REVISION_2_REVIEW', title: 'Revision 2 Review', color: 'bg-purple-500/20 border-l-purple-500' },
+  { id: 'REVISION_3', title: 'Revision 3', color: 'bg-orange-500/20 border-l-orange-500' },
+  { id: 'REVISION_3_REVIEW', title: 'Revision 3 Review', color: 'bg-purple-500/20 border-l-purple-500' },
   { id: 'FINAL_DRAFT', title: 'Final Draft', color: 'bg-status-amber border-l-amber-500' },
   { id: 'UPLOADED', title: 'Uploaded', color: 'bg-status-green border-l-emerald-500' },
 ];
@@ -65,13 +67,14 @@ function getEditorAllowedTargets(currentStatus: string): string[] {
     EDITING:    ['EDITING_REVIEW'],
     REVISION_1: ['REVISION_1_REVIEW'],
     REVISION_2: ['REVISION_2_REVIEW'],
+    REVISION_3: ['REVISION_3_REVIEW'],
   };
   return ALLOWED[currentStatus] ?? [];
 }
 
 /** Returns true if an editor cannot pick up a card (it is frozen, waiting for Admin). */
 function isFrozenStatus(status: string): boolean {
-  return ['EDITING_REVIEW', 'REVISION_1_REVIEW', 'REVISION_2_REVIEW', 'FINAL_DRAFT', 'UPLOADED'].includes(status);
+  return ['EDITING_REVIEW', 'REVISION_1_REVIEW', 'REVISION_2_REVIEW', 'REVISION_3_REVIEW', 'FINAL_DRAFT', 'UPLOADED'].includes(status);
 }
 
 /** Returns a small workflow badge config for the card footer. */
@@ -84,9 +87,11 @@ function getWorkflowBadge(status: string): { label: string; classes: string } | 
     case 'EDITING_REVIEW':
     case 'REVISION_1_REVIEW':
     case 'REVISION_2_REVIEW':
+    case 'REVISION_3_REVIEW':
       return { label: 'Waiting for Admin', classes: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/20 dark:text-indigo-300 dark:border-indigo-800/30' };
     case 'REVISION_1':
     case 'REVISION_2':
+    case 'REVISION_3':
       return { label: 'Revision Requested', classes: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/20 dark:text-orange-300 dark:border-orange-800/30' };
     case 'FINAL_DRAFT':
       return { label: 'Approved', classes: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-300 dark:border-emerald-800/30' };
@@ -97,18 +102,21 @@ function getWorkflowBadge(status: string): { label: string; classes: string } | 
   }
 }
 
-// ── Revision discussion tab helper functions ───────────────────────────────────
+// ── Editor discussion tab helper functions ───────────────────────────────────
 
 function getAvailableTabs(status: string, commentsList: any[]): string[] {
   const tabs = ['GENERAL'];
   const hasRevision1Comments = commentsList.some(c => c.content?.startsWith('[Revision 1] '));
   const hasRevision2Comments = commentsList.some(c => c.content?.startsWith('[Revision 2] '));
+  const hasRevision3Comments = commentsList.some(c => c.content?.startsWith('[Revision 3] '));
 
   const isAtOrAfterRevision1 = [
     'REVISION_1',
     'REVISION_1_REVIEW',
     'REVISION_2',
     'REVISION_2_REVIEW',
+    'REVISION_3',
+    'REVISION_3_REVIEW',
     'FINAL_DRAFT',
     'UPLOADED'
   ].includes(status) || hasRevision1Comments;
@@ -117,20 +125,36 @@ function getAvailableTabs(status: string, commentsList: any[]): string[] {
     tabs.push('REVISION_1');
   }
 
-  const enteredRevision2 = [
+  const isAtOrAfterRevision2 = [
     'REVISION_2',
-    'REVISION_2_REVIEW'
+    'REVISION_2_REVIEW',
+    'REVISION_3',
+    'REVISION_3_REVIEW',
+    'FINAL_DRAFT',
+    'UPLOADED'
   ].includes(status) || hasRevision2Comments;
 
-  if (enteredRevision2) {
+  if (isAtOrAfterRevision2) {
     tabs.push('REVISION_2');
+  }
+
+  const enteredRevision3 = [
+    'REVISION_3',
+    'REVISION_3_REVIEW'
+  ].includes(status) || hasRevision3Comments;
+
+  if (enteredRevision3) {
+    tabs.push('REVISION_3');
   }
 
   return tabs;
 }
 
-function getDefaultTab(status: string, commentsList: any[]): 'GENERAL' | 'REVISION_1' | 'REVISION_2' {
+function getDefaultTab(status: string, commentsList: any[]): 'GENERAL' | 'REVISION_1' | 'REVISION_2' | 'REVISION_3' {
   const tabs = getAvailableTabs(status, commentsList);
+  if (tabs.includes('REVISION_3') && ['REVISION_3', 'REVISION_3_REVIEW'].includes(status)) {
+    return 'REVISION_3';
+  }
   if (tabs.includes('REVISION_2') && ['REVISION_2', 'REVISION_2_REVIEW'].includes(status)) {
     return 'REVISION_2';
   }
@@ -229,7 +253,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
   const [isSavingField, setIsSavingField] = useState<string | null>(null);
   const [rawMaterialsUrlInput, setRawMaterialsUrlInput] = useState('');
   const [isEditingRawMaterials, setIsEditingRawMaterials] = useState(false);
-  const [activeCommentTab, setActiveCommentTab] = useState<'GENERAL' | 'REVISION_1' | 'REVISION_2'>('GENERAL');
+  const [activeCommentTab, setActiveCommentTab] = useState<'GENERAL' | 'REVISION_1' | 'REVISION_2' | 'REVISION_3'>('GENERAL');
 
   // States for creating a project
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
@@ -500,6 +524,8 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
         finalContent = `[Revision 1] ${finalContent}`;
       } else if (activeCommentTab === 'REVISION_2') {
         finalContent = `[Revision 2] ${finalContent}`;
+      } else if (activeCommentTab === 'REVISION_3') {
+        finalContent = `[Revision 3] ${finalContent}`;
       }
 
       const res = await api.post(`/projects/${selectedProject.id}/comments`, { content: finalContent });
@@ -634,6 +660,8 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
           setActiveCommentTab('REVISION_1');
         } else if (newStatus === 'REVISION_2') {
           setActiveCommentTab('REVISION_2');
+        } else if (newStatus === 'REVISION_3') {
+          setActiveCommentTab('REVISION_3');
         }
       }
     } catch (err) {
@@ -1359,10 +1387,10 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                 );
               })()}
 
-              {/* 4. Grouped Card: Revision Discussions (ADMIN and EDITOR only) */}
+              {/* 4. Grouped Card: Editor Discussions (ADMIN and EDITOR only) */}
               {role !== 'CLIENT' && (
                 <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
-                  <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Revision Discussions</h3>
+                  <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Editor Discussions</h3>
 
                   <div className="space-y-3">
                     {/* General Discussion */}
@@ -1658,7 +1686,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                     <div className="space-y-2">
                       <span className="text-[12px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block">Update workflow stage</span>
                       <div className="flex flex-wrap gap-2">
-                        {['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW', 'FINAL_DRAFT', 'UPLOADED'].map((s) => (
+                        {['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW', 'REVISION_3', 'REVISION_3_REVIEW', 'FINAL_DRAFT', 'UPLOADED'].map((s) => (
                           <button
                             key={s}
                             onClick={() => handleStatusUpdate(selectedProject.id, s)}

@@ -24,16 +24,23 @@ function getAvailableTabs(status: string, commentsList: any[]): string[] {
   const tabs = ['GENERAL'];
   const hasRevision1Comments = commentsList.some(c => c.content?.startsWith('[Revision 1] '));
   const hasRevision2Comments = commentsList.some(c => c.content?.startsWith('[Revision 2] '));
+  const hasRevision3Comments = commentsList.some(c => c.content?.startsWith('[Revision 3] '));
 
   const isAtOrAfterRevision1 = [
     'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2',
-    'REVISION_2_REVIEW', 'FINAL_DRAFT', 'UPLOADED'
+    'REVISION_2_REVIEW', 'REVISION_3', 'REVISION_3_REVIEW', 'FINAL_DRAFT', 'UPLOADED'
   ].includes(status) || hasRevision1Comments;
 
   if (isAtOrAfterRevision1) tabs.push('REVISION_1');
 
-  const enteredRevision2 = ['REVISION_2', 'REVISION_2_REVIEW'].includes(status) || hasRevision2Comments;
-  if (enteredRevision2) tabs.push('REVISION_2');
+  const isAtOrAfterRevision2 = [
+    'REVISION_2', 'REVISION_2_REVIEW', 'REVISION_3', 'REVISION_3_REVIEW', 'FINAL_DRAFT', 'UPLOADED'
+  ].includes(status) || hasRevision2Comments;
+
+  if (isAtOrAfterRevision2) tabs.push('REVISION_2');
+
+  const enteredRevision3 = ['REVISION_3', 'REVISION_3_REVIEW'].includes(status) || hasRevision3Comments;
+  if (enteredRevision3) tabs.push('REVISION_3');
 
   return tabs;
 }
@@ -41,6 +48,7 @@ function getAvailableTabs(status: string, commentsList: any[]): string[] {
 function cleanCommentContent(content: string): string {
   if (content?.startsWith('[Revision 1] ')) return content.slice('[Revision 1] '.length);
   if (content?.startsWith('[Revision 2] ')) return content.slice('[Revision 2] '.length);
+  if (content?.startsWith('[Revision 3] ')) return content.slice('[Revision 3] '.length);
   return content;
 }
 
@@ -78,6 +86,13 @@ function getDiscussionColors(discussionType: string) {
     ring: 'focus-within:ring-rose-500/40',
     btnBg: 'bg-rose-500 hover:bg-rose-400 text-white font-bold',
   };
+  if (discussionType === 'revision-3') return {
+    icon: 'text-pink-400',
+    iconBg: 'bg-pink-500/15 border-pink-500/30',
+    badge: 'bg-pink-500/20 text-pink-300 border-pink-500/40',
+    ring: 'focus-within:ring-pink-500/40',
+    btnBg: 'bg-pink-500 hover:bg-pink-400 text-white font-bold',
+  };
   return {
     icon: 'text-indigo-400',
     iconBg: 'bg-indigo-500/15 border-indigo-500/30',
@@ -106,12 +121,14 @@ export default function DiscussionPage() {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const getDiscussionKey = () => {
+    if (discussionType === 'revision-3') return 'REVISION_3';
     if (discussionType === 'revision-2') return 'REVISION_2';
     if (discussionType === 'revision-1') return 'REVISION_1';
     return 'GENERAL';
   };
 
   const getDiscussionTitle = () => {
+    if (discussionType === 'revision-3') return 'Revision 3 Notes';
     if (discussionType === 'revision-2') return 'Revision 2 Notes';
     if (discussionType === 'revision-1') return 'Revision 1 Notes';
     return 'General Discussion';

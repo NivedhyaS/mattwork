@@ -346,7 +346,8 @@ export class ProjectService {
         REVISION_1: ['REVISION_1_REVIEW'],
         // REVISION_1_REVIEW is frozen — no entry here
         REVISION_2: ['REVISION_2_REVIEW'],
-        // REVISION_2_REVIEW, FINAL_DRAFT, UPLOADED — all frozen
+        REVISION_3: ['REVISION_3_REVIEW'],
+        // REVISION_2_REVIEW, REVISION_3_REVIEW, FINAL_DRAFT, UPLOADED — all frozen
       };
 
       const allowedTargets = EDITOR_ALLOWED[cur] ?? [];

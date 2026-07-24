@@ -195,7 +195,7 @@ export default function AdminDashboard() {
 
   const totalProjects     = projects.length;
   const activeProjects    = projects.filter((p: any) =>
-    ['IN_PROGRESS','EDITING','REVIEW','REVISION','REVISION_1','REVISION_2'].includes(p.status)
+    ['IN_PROGRESS','EDITING','REVIEW','REVISION','REVISION_1','REVISION_2','REVISION_3'].includes(p.status)
   ).length;
   const completedProjects = projects.filter((p: any) =>
     ['COMPLETED','FINAL_DRAFT','UPLOADED'].includes(p.status)
@@ -296,7 +296,7 @@ export default function AdminDashboard() {
     ).length;
 
     const active = weekProjects.filter((p: any) =>
-      ['IN_PROGRESS', 'EDITING', 'REVIEW', 'REVISION', 'REVISION_1', 'REVISION_2'].includes(p.status)
+      ['IN_PROGRESS', 'EDITING', 'REVIEW', 'REVISION', 'REVISION_1', 'REVISION_2', 'REVISION_3'].includes(p.status)
     ).length;
 
     return {
@@ -310,7 +310,7 @@ export default function AdminDashboard() {
   const editorWorkload = editors.map((ed: any) => {
     const assignedCount = projects.filter((p: any) =>
       p.editorId === ed.id &&
-      ['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW'].includes(p.status)
+      ['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW', 'REVISION_3', 'REVISION_3_REVIEW'].includes(p.status)
     ).length;
     const fullName = ed.user?.name || 'Editor';
     const truncatedName = fullName.length > 13 ? `${fullName.slice(0, 12)}…` : fullName;

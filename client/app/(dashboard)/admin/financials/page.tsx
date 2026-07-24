@@ -218,7 +218,7 @@ export default function FinancialsDashboard() {
   ).length;
 
   const activeProjectsCount = filteredProjects.filter((p: any) =>
-    ['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW'].includes(p.status)
+    ['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW', 'REVISION_3', 'REVISION_3_REVIEW'].includes(p.status)
   ).length;
 
   // Revenue (native USD)
@@ -307,7 +307,7 @@ export default function FinancialsDashboard() {
   const editorChartData = editors.slice(0, 5).map((ed: any) => {
     const active = projects.filter((p: any) => 
       p.editorId === ed.id &&
-      ['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW'].includes(p.status)
+      ['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW', 'REVISION_3', 'REVISION_3_REVIEW'].includes(p.status)
     ).length;
     return {
       name: ed.user?.name || 'Editor',
@@ -797,7 +797,7 @@ export default function FinancialsDashboard() {
                     const completedCount = editorProj.filter((p: any) => p.status === 'UPLOADED').length;
 
                     const activeCount = editorProj.filter((p: any) => 
-                      ['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW'].includes(p.status)
+                      ['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW', 'REVISION_3', 'REVISION_3_REVIEW'].includes(p.status)
                     ).length;
 
                     const totalEarnings = editorProj

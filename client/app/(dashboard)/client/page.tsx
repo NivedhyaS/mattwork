@@ -59,8 +59,8 @@ const customFormatDate = (dateString: string | Date | undefined | null): string 
 const getClientStatus = (status: string) => {
   const s = status.toUpperCase();
   if (['NEW_VIDEO', 'PENDING'].includes(s)) return 'submitted';
-  if (['EDITING', 'REVISION_1', 'REVISION_2', 'FINAL_DRAFT', 'IN_PROGRESS'].includes(s)) return 'in production';
-  if (['EDITING_REVIEW', 'REVISION_1_REVIEW', 'REVISION_2_REVIEW', 'REVIEW'].includes(s)) return 'in review';
+  if (['EDITING', 'REVISION_1', 'REVISION_2', 'REVISION_3', 'FINAL_DRAFT', 'IN_PROGRESS'].includes(s)) return 'in production';
+  if (['EDITING_REVIEW', 'REVISION_1_REVIEW', 'REVISION_2_REVIEW', 'REVISION_3_REVIEW', 'REVIEW'].includes(s)) return 'in review';
   if (['UPLOADED', 'COMPLETED'].includes(s)) return 'delivered';
   return 'inactive';
 };
