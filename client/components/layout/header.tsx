@@ -40,7 +40,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
         {/* Breadcrumb Navigation */}
         <nav className="hidden sm:flex items-center gap-1.5 text-[15px] font-semibold select-none">
-          <Link href="/admin" className="text-slate-500 hover:text-slate-950 dark:hover:text-white transition-colors">
+          <Link href="/" className="text-slate-500 hover:text-slate-950 dark:hover:text-white transition-colors">
             Mattwork
           </Link>
           {breadcrumbs.map((crumb, idx) => (

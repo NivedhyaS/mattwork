@@ -40,7 +40,8 @@ export default function Sidebar() {
   ];
 
   const editorLinks = [
-    { name: 'dashboard', href: '/editor', icon: LayoutDashboard },
+    { name: 'dashboard', href: '/editor/dashboard', icon: LayoutDashboard },
+    { name: 'projects', href: '/editor/projects', icon: FolderKanban },
     { name: 'invoices', href: '/editor/invoices', icon: FileSpreadsheet },
   ];
 

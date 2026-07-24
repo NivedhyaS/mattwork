@@ -1,7 +1,5 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import ProjectBoard from '@/components/board/ProjectBoard';
-
-export default function EditorDashboardPage() {
-  return <ProjectBoard role="EDITOR" />;
+export default function EditorRootPage() {
+  redirect('/editor/dashboard');
 }
