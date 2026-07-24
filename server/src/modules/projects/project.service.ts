@@ -360,8 +360,14 @@ export class ProjectService {
       }
     }
 
-    const updated = await projectRepository.update(realId, { status: input.status }) as RawProject;
+    const updateData: any = { status: input.status };
+    if (input.status === 'UPLOADED') {
+      updateData.completedAt = new Date();
+    } else {
+      updateData.completedAt = null;
+    }
 
+    const updated = await projectRepository.update(realId, updateData) as RawProject;
     // Automate: Notify client of status change
     if (updated.client?.user?.id) {
       notificationService.notifyUser(

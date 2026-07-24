@@ -201,16 +201,21 @@ export default function AdminDashboard() {
     ['COMPLETED','FINAL_DRAFT','UPLOADED'].includes(p.status)
   ).length;
 
-  // Revenue = sum of all client payments
-  const totalRevenue = invoices.reduce((s: number, inv: any) => s + Number(inv.amountPaid || 0), 0);
-  const pendingCount  = invoices.filter((inv: any) => !['PAID','CANCELLED'].includes(inv.status)).length;
-  
-  // Real Cost: sum of completed project editor price payouts (INR)
-  const totalCosts = projects
-    .filter((p: any) => ['FINAL_DRAFT', 'UPLOADED', 'COMPLETED'].includes(p.status))
-    .reduce((s: number, p: any) => s + Number(p.editorPrice || 0), 0);
+  // ── Financial Calculations (PRD Definitions) ──
+  // Filter for approved/completed projects only
+  const completedProjectsList = projects.filter((p: any) => p.status === 'UPLOADED');
 
-  const totalProfit   = totalRevenue - (totalCosts / rate);
+  // Revenue = sum of Client Price for completed projects
+  const totalRevenue = completedProjectsList.reduce((s: number, p: any) => s + Number(p.clientPrice || 0), 0);
+  
+  // Cost = sum of Editor Price for completed projects (stored in INR)
+  const totalCosts = completedProjectsList.reduce((s: number, p: any) => s + Number(p.editorPrice || 0), 0);
+
+  // Profit (Net Margin) = Revenue - Cost (Normalized to USD)
+  const totalProfit = totalRevenue - (totalCosts / rate);
+
+  const pendingCount = invoices.filter((inv: any) => !['PAID','CANCELLED'].includes(inv.status)).length;
+
 
   const upcomingDeadlines = projects.filter((p: any) => {
     if (!p.dueDate) return false;

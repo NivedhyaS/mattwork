@@ -88,6 +88,7 @@ model Project {
   rawMaterialsFolder  String?
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
+  completedAt         DateTime?
   invoices            Invoice[]
   invoicedProjects    Invoice[]        @relation("InvoiceProjects")
   notifications       Notification[]

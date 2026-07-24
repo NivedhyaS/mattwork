@@ -18,23 +18,19 @@ export class ReportService {
   async getRevenueReport(month: string) {
     const { startDate, endDate } = this.getMonthDateRange(month);
 
-    // Fetch all completed payments in the date range
-    const payments = await prisma.payment.findMany({
+    // Fetch all completed projects in the date range
+    const projects = await prisma.project.findMany({
       where: {
-        status: PaymentStatus.COMPLETED,
-        paidAt: {
+        status: ProjectStatus.UPLOADED,
+        completedAt: {
           gte: startDate,
           lt: endDate,
         },
       },
       include: {
-        invoice: {
+        client: {
           include: {
-            client: {
-              include: {
-                user: true,
-              },
-            },
+            user: true,
           },
         },
       },
@@ -43,11 +39,14 @@ export class ReportService {
     const clientMap = new Map<string, { clientName: string; company?: string; totalRevenue: number; currency?: string }>();
     let totalRevenue = 0;
 
-    payments.forEach((payment) => {
-      const client = payment.invoice.client;
+    // PRD Definition: Revenue = sum of Client Price for approved/completed projects
+    // Here we sum clientPrice. To get Cost, we would sum editorPrice.
+    // Profit (Net Margin) = Revenue - Cost, ensuring Revenue = Cost + Profit.
+    projects.forEach((project) => {
+      const client = project.client;
       const clientName = client.user.name;
       const company = client.company || undefined;
-      const amount = Number(payment.amount);
+      const amount = Number(project.clientPrice || 0);
       const currency = client.currency;
 
       totalRevenue += amount;

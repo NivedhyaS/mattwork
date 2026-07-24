@@ -188,18 +188,20 @@ export default function FinancialsDashboard() {
     return true;
   });
 
-  // ── Dynamic KPIs ────────────────────────────────────────────────────────
-  // Total Revenue: sum of all client payments
-  const totalRevenue = filteredInvoices
-    .reduce((s: number, inv: any) => s + Number(inv.amountPaid || 0), 0);
+  const rate = exchangeRate ? exchangeRate.usdToInr : 83.5;
 
-  // Total Costs: sum of editorPrice for projects that are final/uploaded
-  const totalCosts = filteredProjects
-    .filter((p: any) => ['FINAL_DRAFT', 'UPLOADED', 'COMPLETED'].includes(p.status))
-    .reduce((s: number, p: any) => s + Number(p.editorPrice || 0), 0);
+  // ── Dynamic KPIs (PRD Definitions) ────────────────────────────────────────
+  // Filter for approved/completed projects only
+  const completedProjectsList = filteredProjects.filter((p: any) => p.status === 'UPLOADED');
 
-  // Total Profit: Revenue - Costs
-  const totalProfit = totalRevenue - totalCosts;
+  // Total Revenue: sum of Client Price for completed projects
+  const totalRevenue = completedProjectsList.reduce((s: number, p: any) => s + Number(p.clientPrice || 0), 0);
+
+  // Total Costs: sum of Editor Price for completed projects (stored in INR)
+  const totalCosts = completedProjectsList.reduce((s: number, p: any) => s + Number(p.editorPrice || 0), 0);
+
+  // Total Profit: Revenue - Costs (converted to base currency USD)
+  const totalProfit = totalRevenue - (totalCosts / rate);
 
   // Outstanding Balance: sum of remaining client payments on active invoices
   const outstandingBalance = filteredInvoices
@@ -218,8 +220,6 @@ export default function FinancialsDashboard() {
   const activeProjectsCount = filteredProjects.filter((p: any) =>
     ['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW'].includes(p.status)
   ).length;
-
-  const rate = exchangeRate ? exchangeRate.usdToInr : 83.5;
 
   // Revenue (native USD)
   const revenueFormatted = displayCurrency === 'USD'
@@ -248,14 +248,15 @@ export default function FinancialsDashboard() {
     ? `≈ ${formatCurrency(profitInUsd)}`
     : `≈ ${formatEditorCurrency(profitInInr)}`;
 
-  // Monthly Revenue: current month's revenue (uses today's month)
+  // Monthly Revenue: current month's revenue (uses today's month from completed projects)
   const currentMonthStr = new Date().toISOString().substring(0, 7); // "YYYY-MM"
-  const monthlyRevenue = invoices
-    .filter((inv: any) => {
-      const invMonth = inv.createdAt.substring(0, 7);
-      return invMonth === currentMonthStr;
+  const monthlyRevenue = projects
+    .filter((p: any) => p.status === 'UPLOADED')
+    .filter((p: any) => {
+      const pMonth = (p.completedAt || p.updatedAt).substring(0, 7);
+      return pMonth === currentMonthStr;
     })
-    .reduce((s: number, inv: any) => s + Number(inv.amountPaid || 0), 0);
+    .reduce((s: number, p: any) => s + Number(p.clientPrice || 0), 0);
 
   // ── Chart Data Generation ───────────────────────────────────────────────
   // Group by month
@@ -264,21 +265,16 @@ export default function FinancialsDashboard() {
 
   const monthlyChartData = months.map((monthName, index) => {
     const monthNum = index + 1;
-    const monthProj = projects.filter((p: any) => {
-      const d = new Date(p.createdAt);
+    const monthProj = projects.filter((p: any) => p.status === 'UPLOADED');
+    const monthProjMatch = monthProj.filter((p: any) => {
+      const d = new Date(p.completedAt || p.updatedAt);
       return d.getFullYear() === currentYear && d.getMonth() + 1 === monthNum;
     });
 
-    const monthInv = invoices.filter((inv: any) => {
-      const d = new Date(inv.createdAt);
-      return d.getFullYear() === currentYear && d.getMonth() + 1 === monthNum;
-    });
+    const rev = monthProjMatch
+      .reduce((s: number, p: any) => s + Number(p.clientPrice || 0), 0);
 
-    const rev = monthInv
-      .reduce((s: number, inv: any) => s + Number(inv.amountPaid || 0), 0);
-
-    const cost = monthProj
-      .filter((p: any) => ['FINAL_DRAFT', 'UPLOADED', 'COMPLETED'].includes(p.status))
+    const cost = monthProjMatch
       .reduce((s: number, p: any) => s + Number(p.editorPrice || 0), 0);
 
     const convertedRev = displayCurrency === 'USD' ? rev : rev * rate;
@@ -743,16 +739,15 @@ export default function FinancialsDashboard() {
                     const clientProj = projects.filter((p: any) => p.clientId === cl.id);
                     const clientInv = invoices.filter((inv: any) => inv.clientId === cl.id);
                     
-                    const clientRev = clientInv
-                      .reduce((s: number, inv: any) => s + Number(inv.amountPaid || 0), 0);
+                    const clientRev = clientProj
+                      .filter((p: any) => p.status === 'UPLOADED')
+                      .reduce((s: number, p: any) => s + Number(p.clientPrice || 0), 0);
                     
                     const clientBalance = clientInv
                       .filter((inv: any) => !['PAID', 'CANCELLED'].includes(inv.status))
                       .reduce((s: number, inv: any) => s + (Number(inv.total || 0) - Number(inv.amountPaid || 0)), 0);
 
-                    const completedCount = clientProj.filter((p: any) => 
-                      ['FINAL_DRAFT', 'UPLOADED', 'COMPLETED'].includes(p.status)
-                    ).length;
+                    const completedCount = clientProj.filter((p: any) => p.status === 'UPLOADED').length;
 
                     return (
                       <tr key={cl.id} className="border-b border-slate-100 dark:border-slate-850 hover:bg-slate-50/50 dark:hover:bg-slate-900/20">
@@ -799,20 +794,18 @@ export default function FinancialsDashboard() {
                   {editors.map((ed: any) => {
                     const editorProj = projects.filter((p: any) => p.editorId === ed.id);
                     
-                    const completedCount = editorProj.filter((p: any) => 
-                      ['FINAL_DRAFT', 'UPLOADED', 'COMPLETED'].includes(p.status)
-                    ).length;
+                    const completedCount = editorProj.filter((p: any) => p.status === 'UPLOADED').length;
 
                     const activeCount = editorProj.filter((p: any) => 
                       ['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW'].includes(p.status)
                     ).length;
 
                     const totalEarnings = editorProj
-                      .filter((p: any) => ['FINAL_DRAFT', 'UPLOADED', 'COMPLETED'].includes(p.status))
+                      .filter((p: any) => p.status === 'UPLOADED')
                       .reduce((s: number, p: any) => s + Number(p.editorPrice || 0), 0);
 
                     const pendingPayments = editorProj
-                      .filter((p: any) => ['FINAL_DRAFT', 'UPLOADED', 'COMPLETED'].includes(p.status))
+                      .filter((p: any) => p.status === 'UPLOADED')
                       .reduce((s: number, p: any) => s + Number(p.editorPrice || 0), 0); // Owed for finished videos
 
                     const totalEarningsFormatted = displayCurrency === 'INR'
