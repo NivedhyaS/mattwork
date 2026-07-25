@@ -83,36 +83,37 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        'hidden md:flex flex-col border-r border-border bg-card text-foreground transition-all duration-300 relative h-screen sticky top-0',
+        'hidden md:flex flex-col bg-[#F6EFE9] text-[#3D2E24] transition-all duration-300 relative h-screen sticky top-0 border-r-0',
+        'shadow-[4px_0_12px_rgba(206,187,172,0.4)]',
         isCollapsed ? 'w-20' : 'w-64'
       )}
     >
       {/* Brand logo & collapse */}
       <div className={cn(
-        "flex h-16 items-center border-b border-border transition-all duration-300 relative",
+        "flex h-20 items-center transition-all duration-300 relative",
         isCollapsed ? "justify-center px-4" : "justify-between px-6"
       )}>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium flex-shrink-0">
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="h-10 w-10 flex items-center justify-center rounded-full bg-[#F6EFE9] text-[#EA580C] font-extrabold flex-shrink-0 shadow-[inset_3px_3px_6px_rgba(206,187,172,0.65),inset_-3px_-3px_6px_rgba(255,255,255,0.9)]">
             mw
           </div>
           {!isCollapsed && (
-            <span className="font-medium text-lg tracking-tight select-none">
+            <span className="font-extrabold text-xl tracking-tight text-[#3D2E24] select-none">
               mattwork
             </span>
           )}
         </div>
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-5 h-6 w-6 rounded-full border border-border bg-card flex items-center justify-center text-slate-400 hover:text-slate-655 focus:outline-none cursor-pointer z-10"
+          className="absolute -right-3 top-7 h-7 w-7 rounded-full bg-[#F6EFE9] flex items-center justify-center text-[#7C6A5A] hover:text-[#EA580C] focus:outline-none cursor-pointer z-10 shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)]"
         >
           {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
       </div>
 
       {/* Navigation links */}
-      <nav className="flex-1 space-y-1.5 px-4 py-6 overflow-y-auto">
-        <div className={cn("text-[10px] font-medium tracking-wider text-slate-400 uppercase px-2 mb-2", isCollapsed && "sr-only")}>
+      <nav className="flex-1 space-y-2.5 px-4 py-6 overflow-y-auto">
+        <div className={cn("text-[10px] font-extrabold tracking-wider text-[#8C7769] uppercase px-3 mb-3", isCollapsed && "sr-only")}>
           {getRoleLabel()}
         </div>
         {links.map((link) => {
@@ -123,16 +124,16 @@ export default function Sidebar() {
               key={link.href}
               href={link.href}
               className={cn(
-                'flex items-center gap-3 px-3.5 py-3 rounded-lg text-[16px] transition-all group relative',
+                'flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[15px] font-bold transition-all group relative',
                 isActive
-                  ? 'bg-accent text-white font-semibold shadow-sm'
-                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white font-medium'
+                  ? 'bg-[#F6EFE9] text-[#EA580C] shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]'
+                  : 'text-[#7C6A5A] hover:text-[#3D2E24] hover:shadow-[-4px_-4px_8px_rgba(255,255,255,0.9),4px_4px_8px_rgba(206,187,172,0.5)]'
               )}
             >
-              <Icon className="h-5 w-5 flex-shrink-0" />
-              {!isCollapsed && <span>{link.name}</span>}
+              <Icon className={cn("h-5 w-5 flex-shrink-0 transition-colors", isActive ? "text-[#EA580C]" : "text-[#8C7769] group-hover:text-[#EA580C]")} />
+              {!isCollapsed && <span className="capitalize">{link.name}</span>}
               {isCollapsed && (
-                <div className="absolute left-full rounded-md px-2 py-1 ml-6 bg-slate-900 text-white text-[11px] invisible opacity-0 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-50">
+                <div className="absolute left-full rounded-xl px-3 py-1.5 ml-4 bg-[#3D2E24] text-white text-[12px] font-bold invisible opacity-0 -translate-x-2 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-50 shadow-lg">
                   {link.name}
                 </div>
               )}
@@ -142,11 +143,11 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer Profile & Logout */}
-      <div className="p-4 border-t border-border flex flex-col gap-2">
+      <div className="p-4 flex flex-col gap-2">
         <button
           onClick={logout}
           className={cn(
-            'flex w-full items-center gap-3 px-3.5 py-3 rounded-lg text-[16px] font-semibold text-status-red hover:bg-status-red/5 transition-all border border-transparent hover:border-status-red/10 cursor-pointer',
+            'flex w-full items-center gap-3 px-4 py-3 rounded-2xl text-[15px] font-bold text-[#EF4444] transition-all cursor-pointer bg-[#F6EFE9] shadow-[-4px_-4px_8px_rgba(255,255,255,0.9),4px_4px_8px_rgba(206,187,172,0.5)] hover:shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]',
             isCollapsed && 'justify-center'
           )}
         >

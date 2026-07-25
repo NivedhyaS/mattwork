@@ -20,6 +20,7 @@ import Button from '@/components/ui/button';
 import { formatCurrency } from '@/lib/utils';
 import { getCurrencySymbol } from '@/lib/currency';
 import Drawer from '@/components/ui/drawer';
+import Modal from '@/components/ui/modal';
 import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label';
 import Select from '@/components/ui/select';
@@ -29,11 +30,11 @@ import { z } from 'zod';
 import { useAuthStore } from '@/store/authStore';
 
 const STATUS_COLORS: Record<string, string> = {
-  DRAFT: 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-900 dark:border-slate-800',
-  SENT: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900',
-  PAID: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900',
-  OVERDUE: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:border-rose-900',
-  CANCELLED: 'bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:border-slate-700',
+  DRAFT: 'bg-[#F6EFE9] text-[#7C6A5A] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
+  SENT: 'bg-[#F6EFE9] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
+  PAID: 'bg-[#F6EFE9] text-[#10B981] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
+  OVERDUE: 'bg-[#F6EFE9] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
+  CANCELLED: 'bg-[#F6EFE9] text-[#8C7769] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
 };
 
 const invoiceItemSchema = z.object({
@@ -58,7 +59,7 @@ type InvoiceFormValues = z.infer<typeof createInvoiceSchema>;
 interface UploadedProject {
   id: string;
   title: string;
-  clientPrice: number | null;
+  budget: number | null;
 }
 
 export default function InvoicesPage() {
@@ -108,6 +109,21 @@ export default function InvoicesPage() {
     onError: (err: any) => {
       console.error('Invoice PDF download failed:', err);
       alert('Failed to download invoice PDF. Please try again.');
+    }
+  });
+
+  const [invoiceToDelete, setInvoiceToDelete] = useState<any>(null);
+
+  const deleteInvoiceMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/invoices/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      setInvoiceToDelete(null);
+    },
+    onError: (err: any) => {
+      alert(err?.response?.data?.message || 'Failed to delete invoice');
     }
   });
 
@@ -173,7 +189,7 @@ export default function InvoicesPage() {
         const uploaded: UploadedProject[] = (res.data?.data || []).map((p: any) => ({
           id: p.id,
           title: p.title,
-          clientPrice: p.clientPrice != null ? Number(p.clientPrice) : null,
+          budget: p.budget != null ? Number(p.budget) : null,
         }));
 
         if (uploaded.length === 0) {
@@ -184,7 +200,7 @@ export default function InvoicesPage() {
             uploaded.map((p) => ({
               description: p.title,
               quantity: 1,
-              unitPrice: p.clientPrice ?? 0,
+              unitPrice: p.budget ?? 0,
             }))
           );
           setValue('projectIds', uploaded.map((p) => p.id));
@@ -369,6 +385,19 @@ export default function InvoicesPage() {
                           >
                             {generatePdfMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                           </button>
+                          
+                          {inv.status !== 'PAID' && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setInvoiceToDelete(inv);
+                              }}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg cursor-pointer transition-colors"
+                              title="Delete Invoice"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -539,7 +568,7 @@ export default function InvoicesPage() {
                             placeholder="Project title or service description"
                             error={errors.items?.[index]?.description?.message}
                             {...register(`items.${index}.description` as const)}
-                            className="rounded-xl border-slate-200 dark:border-slate-800 bg-slate-50/20 focus:bg-white transition-all text-[14px]"
+                            className="rounded-xl border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-900/50 focus:bg-white dark:focus:bg-slate-950 transition-all text-[14px]"
                           />
                         </div>
                         <div className="w-full md:w-20 space-y-1.5 text-left">
@@ -548,7 +577,7 @@ export default function InvoicesPage() {
                             type="number"
                             error={errors.items?.[index]?.quantity?.message}
                             {...register(`items.${index}.quantity` as const, { valueAsNumber: true })}
-                            className="rounded-xl border-slate-200 dark:border-slate-800 bg-slate-50/20 focus:bg-white text-center font-semibold text-[14px]"
+                            className="rounded-xl border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-900/50 focus:bg-white dark:focus:bg-slate-950 text-center font-semibold text-[14px]"
                           />
                         </div>
                         <div className="w-full md:w-28 space-y-1.5 text-left">
@@ -558,7 +587,7 @@ export default function InvoicesPage() {
                             step="0.01"
                             error={errors.items?.[index]?.unitPrice?.message}
                             {...register(`items.${index}.unitPrice` as const, { valueAsNumber: true })}
-                            className="rounded-xl border-slate-200 dark:border-slate-800 bg-slate-50/20 focus:bg-white font-semibold text-right text-[14px]"
+                            className="rounded-xl border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-900/50 focus:bg-white dark:focus:bg-slate-950 font-semibold text-right text-[14px]"
                           />
                         </div>
                         <div className="w-full md:w-28 space-y-1.5 text-left">
@@ -663,6 +692,33 @@ export default function InvoicesPage() {
           </div>
         </form>
       </Drawer>
+
+      {/* ── Delete Confirmation Modal ────────────────────────────────────────────── */}
+      <Modal
+        isOpen={!!invoiceToDelete}
+        onClose={() => setInvoiceToDelete(null)}
+        title="Delete Invoice"
+        description="Are you sure you want to delete this invoice? This action cannot be undone."
+      >
+        <div className="flex justify-end gap-3 mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setInvoiceToDelete(null)}
+            className="rounded-xl font-bold"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={() => deleteInvoiceMutation.mutate(invoiceToDelete?.id)}
+            isLoading={deleteInvoiceMutation.isPending}
+            className="bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl px-5 border-transparent"
+          >
+            Delete Invoice
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

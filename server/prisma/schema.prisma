@@ -73,6 +73,7 @@ model Project {
   title               String
   description         String?
   status              ProjectStatus    @default(NEW_VIDEO)
+  editorVisibleStatus ProjectStatus    @default(NEW_VIDEO)
   priority            Priority         @default(MEDIUM)
   clientId            String
   editorId            String?
@@ -89,11 +90,13 @@ model Project {
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
   completedAt         DateTime?
+  editorInvoiced      Boolean          @default(false)
   invoices            Invoice[]
   invoicedProjects    Invoice[]        @relation("InvoiceProjects")
   notifications       Notification[]
   files               ProjectFile[]
   comments            ProjectComment[]
+  revisionRequests    RevisionRequest[]
   client              Client           @relation(fields: [clientId], references: [id])
   editor              Editor?          @relation(fields: [editorId], references: [id])
 
@@ -380,4 +383,26 @@ model ProcessedFormResponse {
   @@unique([connectedFormId, googleResponseId])
   @@index([connectedFormId])
   @@map("processed_form_responses")
+}
+
+model RevisionRequest {
+  id                String         @id @default(cuid())
+  projectId         String
+  stage             ProjectStatus  
+  status            RevisionStatus @default(PENDING_ADMIN) 
+  rawClientInput    Json?          
+  adminInstructions String?        
+  adminMessage      String?        
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  project           Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("revision_requests")
+}
+
+enum RevisionStatus {
+  PENDING_ADMIN
+  NEEDS_CLARIFICATION
+  APPROVED
 }

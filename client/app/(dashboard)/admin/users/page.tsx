@@ -25,9 +25,9 @@ interface User {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  ADMIN: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/30 dark:border-purple-900',
-  EDITOR: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900',
-  CLIENT: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900',
+  ADMIN: 'bg-[#F6EFE9] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
+  EDITOR: 'bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
+  CLIENT: 'bg-[#F6EFE9] text-[#10B981] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
 };
 
 const createUserSchema = z.object({
@@ -195,14 +195,14 @@ export default function UsersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[36px] font-bold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-[36px] font-extrabold tracking-tight text-[#3D2E24]">
             User Management
           </h1>
-          <p className="text-[15px] text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-[15px] text-[#7C6A5A] mt-1 font-extrabold">
             Manage all platform users — Admins, Editors, and Clients
           </p>
         </div>
-        <Button size="sm" onClick={() => setIsCreateOpen(true)} className="self-start sm:self-auto cursor-pointer">
+        <Button size="sm" onClick={() => setIsCreateOpen(true)} className="self-start sm:self-auto cursor-pointer rounded-2xl font-extrabold">
           <UserPlus className="h-4 w-4 mr-2" />
           Add User
         </Button>
@@ -210,30 +210,30 @@ export default function UsersPage() {
 
       {/* Search Bar */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8C7769]" />
         <input
           type="text"
           placeholder="Search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-[15px] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full pl-11 pr-4 py-3 rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] font-semibold shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(206,187,172,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9)] transition-all text-[15px]"
         />
       </div>
 
       {/* Table Card */}
-      <div className="bg-white dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-900 shadow-sm overflow-hidden">
+      <div className="bg-[#F6EFE9] rounded-3xl border-0 shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] overflow-hidden p-2">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-slate-300" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#EA580C]" />
           </div>
         ) : error ? (
           <div className="text-center py-20 flex flex-col items-center gap-4">
-            <div className="h-14 w-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center">
-              <AlertTriangle className="h-7 w-7 text-rose-500" />
+            <div className="h-14 w-14 rounded-full bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)] flex items-center justify-center">
+              <AlertTriangle className="h-7 w-7 text-[#EF4444]" />
             </div>
             <div>
-              <p className="font-bold text-[16px] text-rose-600 dark:text-rose-400">Failed to load users</p>
-              <p className="text-[14px] text-slate-400 mt-1">
+              <p className="font-extrabold text-[16px] text-[#EF4444]">Failed to load users</p>
+              <p className="text-[14px] text-[#7C6A5A] mt-1">
                 {(error as any)?.response?.data?.message ||
                   (error as any)?.message ||
                   'Could not reach the server. Make sure the backend is running.'}
@@ -241,22 +241,22 @@ export default function UsersPage() {
             </div>
             <button
               onClick={() => refetch()}
-              className="flex items-center gap-2 text-[14px] font-semibold border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer"
+              className="flex items-center gap-2 text-[14px] font-extrabold px-4 py-2 rounded-2xl bg-[#F6EFE9] text-[#3D2E24] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] cursor-pointer"
             >
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className="h-4 w-4 text-[#EA580C]" />
               Retry
             </button>
           </div>
         ) : users.length === 0 ? (
-          <div className="text-center py-16 text-slate-400">
-            <Shield className="h-10 w-10 mx-auto mb-3 text-slate-200 dark:text-slate-800" />
-            <p className="font-semibold">No users found</p>
+          <div className="text-center py-16 text-[#8C7769]">
+            <Shield className="h-10 w-10 mx-auto mb-3 text-[#EA580C]" />
+            <p className="font-extrabold">No users found</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-900 text-xs font-bold uppercase tracking-wider text-slate-400">
+                <tr className="bg-[#F6EFE9] border-b border-[rgba(206,187,172,0.3)] text-xs font-extrabold uppercase tracking-wider text-[#8C7769]">
                   <th className="py-3.5 px-5">User</th>
                   <th className="py-3.5 px-5">Role</th>
                   <th className="py-3.5 px-5">Status</th>
@@ -264,9 +264,9 @@ export default function UsersPage() {
                   <th className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-900">
+              <tbody className="divide-y divide-[rgba(206,187,172,0.2)]">
                 {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-900/30 transition-colors">
+                  <tr key={user.id} className="hover:bg-[rgba(234,88,12,0.04)] transition-colors">
                     <td className="py-3.5 px-5">
                       <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-600 dark:text-white shrink-0">

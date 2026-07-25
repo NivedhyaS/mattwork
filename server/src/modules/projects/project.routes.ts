@@ -13,6 +13,8 @@ import {
   reassignEditorSchema,
   addCommentSchema,
   updateCommentSchema,
+  createRevisionRequestSchema,
+  adminReviewRevisionSchema,
 } from './project.validator';
 
 const router = Router();
@@ -71,6 +73,24 @@ router.patch(
 
 // DELETE /api/v1/projects/:id — Admin only
 router.delete('/:id', authorize(Role.ADMIN), projectController.deleteProject);
+
+// ── Revisions ─────────────────────────────────────────────────────────────
+
+// POST /api/v1/projects/:id/revisions — Client only
+router.post(
+  '/:id/revisions',
+  authorize(Role.CLIENT),
+  validate(createRevisionRequestSchema),
+  projectController.createRevisionRequest
+);
+
+// PATCH /api/v1/projects/:id/revisions/:reqId — Admin only
+router.patch(
+  '/:id/revisions/:reqId',
+  authorize(Role.ADMIN),
+  validate(adminReviewRevisionSchema),
+  projectController.reviewRevisionRequest
+);
 
 // ── Internal Comments — ADMIN and EDITOR only (CLIENT blocked at route level) ──
 

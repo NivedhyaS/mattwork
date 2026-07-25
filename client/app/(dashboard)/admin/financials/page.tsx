@@ -3,45 +3,14 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Banknote,
-  Receipt,
-  TrendingUp,
-  Hourglass,
-  Layers,
-  CircleCheck,
-  Timer,
-  Calendar,
   Filter,
   RefreshCw,
-  Search,
 } from 'lucide-react';
 import { formatCurrency, formatEditorCurrency } from '@/lib/utils';
-import { useExchangeRate, buildProfitDisplay, formatFetchedAgo } from '@/lib/exchangeRate';
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  AreaChart,
-  Area,
-  CartesianGrid,
-  Legend,
-} from 'recharts';
-
-const V = {
-  accent: '#7c3aed', // violet — active pipeline only
-  neutral: '#94a3b8', // slate-400 — informational / revenue
-  green: '#10b981', // completed / profit
-  amber: '#f59e0b', // pending
-  red: '#ef4444', // urgent / overdue
-  orange: '#f97316', // high priority
-  gray: '#4b5563', // low priority
-  muted: '#71717a', // labels / subtitles
-};
+import { useExchangeRate, formatFetchedAgo } from '@/lib/exchangeRate';
+import { calculateFinancialMetrics } from '@/lib/projectMetrics';
 
 export default function FinancialsDashboard() {
   const { rate: exchangeRate } = useExchangeRate(true);
@@ -63,6 +32,7 @@ export default function FinancialsDashboard() {
       localStorage.setItem('admin_display_currency', curr);
     }
   };
+
   // ── Filters ──────────────────────────────────────────────────────────────
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedEditor, setSelectedEditor] = useState('');
@@ -72,7 +42,6 @@ export default function FinancialsDashboard() {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [minVal, setMinVal] = useState('');
   const [maxVal, setMaxVal] = useState('');
-  const [activeTab, setActiveTab] = useState<'company' | 'clients' | 'editors'>('company');
 
   // ── Queries ──────────────────────────────────────────────────────────────
   const { data: projectsData, refetch: refetchProjects } = useQuery({
@@ -138,7 +107,7 @@ export default function FinancialsDashboard() {
     if (selectedEditor && p.editorId !== selectedEditor) return false;
     if (selectedStatus && p.status !== selectedStatus) return false;
 
-    const pClientPrice = Number(p.clientPrice || 0);
+    const pClientPrice = Number(p.budget || p.clientPrice || 0);
     if (minVal && pClientPrice < Number(minVal)) return false;
     if (maxVal && pClientPrice > Number(maxVal)) return false;
 
@@ -190,170 +159,71 @@ export default function FinancialsDashboard() {
 
   const rate = exchangeRate ? exchangeRate.usdToInr : 83.5;
 
-  // ── Dynamic KPIs (PRD Definitions) ────────────────────────────────────────
-  // Filter for approved/completed projects only
-  const completedProjectsList = filteredProjects.filter((p: any) => p.status === 'UPLOADED');
-
-  // Total Revenue: sum of Client Price for completed projects
-  const totalRevenue = completedProjectsList.reduce((s: number, p: any) => s + Number(p.clientPrice || 0), 0);
-
-  // Total Costs: sum of Editor Price for completed projects (stored in INR)
-  const totalCosts = completedProjectsList.reduce((s: number, p: any) => s + Number(p.editorPrice || 0), 0);
-
-  // Total Profit: Revenue - Costs (converted to base currency USD)
-  const totalProfit = totalRevenue - (totalCosts / rate);
-
-  // Outstanding Balance: sum of remaining client payments on active invoices
-  const outstandingBalance = filteredInvoices
-    .filter((inv: any) => !['PAID', 'CANCELLED'].includes(inv.status))
-    .reduce((s: number, inv: any) => s + (Number(inv.total || 0) - Number(inv.amountPaid || 0)), 0);
-
-  // Pending Editor Payments: editor price of completed projects where editor is assigned
-  const pendingEditorPayments = filteredProjects
-    .filter((p: any) => p.editorId && ['FINAL_DRAFT', 'UPLOADED', 'COMPLETED'].includes(p.status))
-    .reduce((s: number, p: any) => s + Number(p.editorPrice || 0), 0);
-
-  const completedProjectsCount = filteredProjects.filter((p: any) =>
-    ['FINAL_DRAFT', 'UPLOADED', 'COMPLETED'].includes(p.status)
-  ).length;
-
-  const activeProjectsCount = filteredProjects.filter((p: any) =>
-    ['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW', 'REVISION_3', 'REVISION_3_REVIEW'].includes(p.status)
-  ).length;
+  const metrics = calculateFinancialMetrics(filteredProjects, filteredInvoices, clients, editors, rate);
 
   // Revenue (native USD)
   const revenueFormatted = displayCurrency === 'USD'
-    ? formatCurrency(totalRevenue)
-    : `≈ ${formatEditorCurrency(totalRevenue * rate)}`;
+    ? formatCurrency(metrics.totalRevenueUsd)
+    : formatEditorCurrency(metrics.totalRevenueUsd * rate);
 
   // Costs (native INR)
   const costsFormatted = displayCurrency === 'INR'
-    ? formatEditorCurrency(totalCosts)
-    : `≈ ${formatCurrency(totalCosts / rate)}`;
+    ? formatEditorCurrency(metrics.totalCostsInr)
+    : formatCurrency(metrics.totalCostsUsd);
 
-  // Outstanding Balance (native USD)
-  const outstandingFormatted = displayCurrency === 'USD'
-    ? formatCurrency(outstandingBalance)
-    : `≈ ${formatEditorCurrency(outstandingBalance * rate)}`;
-
-  // Pending Editor Payments (native INR)
-  const pendingPaymentsFormatted = displayCurrency === 'INR'
-    ? formatEditorCurrency(pendingEditorPayments)
-    : `≈ ${formatCurrency(pendingEditorPayments / rate)}`;
-
-  // Profit (cross-currency, always estimated with ≈)
-  const profitInUsd = totalRevenue - (totalCosts / rate);
-  const profitInInr = (totalRevenue * rate) - totalCosts;
+  // Net Margin
   const profitFormatted = displayCurrency === 'USD'
-    ? `≈ ${formatCurrency(profitInUsd)}`
-    : `≈ ${formatEditorCurrency(profitInInr)}`;
+    ? formatCurrency(metrics.totalNetMarginUsd)
+    : formatEditorCurrency(metrics.totalNetMarginInr);
 
-  // Monthly Revenue: current month's revenue (uses today's month from completed projects)
-  const currentMonthStr = new Date().toISOString().substring(0, 7); // "YYYY-MM"
-  const monthlyRevenue = projects
-    .filter((p: any) => p.status === 'UPLOADED')
-    .filter((p: any) => {
-      const pMonth = (p.completedAt || p.updatedAt).substring(0, 7);
-      return pMonth === currentMonthStr;
-    })
-    .reduce((s: number, p: any) => s + Number(p.clientPrice || 0), 0);
+  // Outstanding Balance
+  const outstandingFormatted = displayCurrency === 'USD'
+    ? formatCurrency(metrics.clientBalances)
+    : formatEditorCurrency(metrics.clientBalances * rate);
 
-  // ── Chart Data Generation ───────────────────────────────────────────────
-  // Group by month
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const currentYear = new Date().getFullYear();
+  // Pending Editor Payments
+  const pendingPaymentsFormatted = displayCurrency === 'INR'
+    ? formatEditorCurrency(metrics.pendingEditorPayouts)
+    : formatCurrency(metrics.pendingEditorPayouts / rate);
 
-  const monthlyChartData = months.map((monthName, index) => {
-    const monthNum = index + 1;
-    const monthProj = projects.filter((p: any) => p.status === 'UPLOADED');
-    const monthProjMatch = monthProj.filter((p: any) => {
-      const d = new Date(p.completedAt || p.updatedAt);
-      return d.getFullYear() === currentYear && d.getMonth() + 1 === monthNum;
-    });
-
-    const rev = monthProjMatch
-      .reduce((s: number, p: any) => s + Number(p.clientPrice || 0), 0);
-
-    const cost = monthProjMatch
-      .reduce((s: number, p: any) => s + Number(p.editorPrice || 0), 0);
-
-    const convertedRev = displayCurrency === 'USD' ? rev : rev * rate;
-    const convertedCost = displayCurrency === 'INR' ? cost : cost / rate;
-    const convertedProfit = displayCurrency === 'USD'
-      ? rev - (cost / rate)
-      : (rev * rate) - cost;
-
-    return {
-      name: monthName,
-      revenue: Math.round(convertedRev),
-      costs: Math.round(convertedCost),
-      profit: Math.round(convertedProfit),
-    };
-  }).filter((d) => d.revenue > 0 || d.costs > 0); // Only show months with data
-
-  // Client Utilization Chart Data
-  const clientChartData = clients.slice(0, 5).map((cl: any) => {
-    const clientProj = projects.filter((p: any) => p.clientId === cl.id);
-    const submitted = clientProj.length;
-    const completed = clientProj.filter((p: any) => ['FINAL_DRAFT', 'UPLOADED', 'COMPLETED'].includes(p.status)).length;
-    return {
-      name: cl.user?.name || cl.company || 'Client',
-      submitted,
-      completed,
-    };
-  });
-
-  // Editor Workload Chart Data
-  const editorChartData = editors.slice(0, 5).map((ed: any) => {
-    const active = projects.filter((p: any) => 
-      p.editorId === ed.id &&
-      ['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW', 'REVISION_3', 'REVISION_3_REVIEW'].includes(p.status)
-    ).length;
-    return {
-      name: ed.user?.name || 'Editor',
-      active,
-    };
-  });
-
-  const iconProps = { size: 18, strokeWidth: 1.5 };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 bg-[#F6EFE9] text-[#3D2E24] p-1">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[36px] font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
+          <h1 className="text-[36px] font-extrabold tracking-tight text-[#3D2E24] leading-tight">
             Financial Analytics
           </h1>
-          <p className="text-[16px] mt-2 text-slate-500 dark:text-slate-450">
+          <p className="text-[16px] mt-1 text-[#7C6A5A]">
             Real-time profit tracking, client balances, and editor payout performance.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {exchangeRate && (
-            <div className="text-[12px] text-slate-450 dark:text-slate-500 font-medium">
+            <div className="text-[12px] text-[#8C7769] font-bold px-3 py-2 rounded-xl shadow-[inset_2px_2px_5px_rgba(206,187,172,0.5),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]">
               1 USD = ₹{exchangeRate.usdToInr.toFixed(2)} · {formatFetchedAgo(exchangeRate.fetchedAt)}
             </div>
           )}
 
           {/* Currency Toggle */}
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
+          <div className="flex items-center bg-[#F6EFE9] p-1.5 rounded-2xl shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
             <button
               onClick={() => handleCurrencyChange('USD')}
-              className={`px-3 py-1.5 rounded-md text-[13px] font-extrabold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-xl text-[13px] font-extrabold transition-all cursor-pointer ${
                 displayCurrency === 'USD'
-                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-450 hover:text-slate-750 dark:text-slate-450 dark:hover:text-slate-250'
+                  ? 'bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white shadow-[-3px_-3px_6px_rgba(255,255,255,0.7),3px_3px_8px_rgba(234,88,12,0.4)]'
+                  : 'text-[#7C6A5A] hover:text-[#3D2E24]'
               }`}
             >
               USD ($)
             </button>
             <button
               onClick={() => handleCurrencyChange('INR')}
-              className={`px-3 py-1.5 rounded-md text-[13px] font-extrabold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-xl text-[13px] font-extrabold transition-all cursor-pointer ${
                 displayCurrency === 'INR'
-                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-450 hover:text-slate-750 dark:text-slate-450 dark:hover:text-slate-250'
+                  ? 'bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white shadow-[-3px_-3px_6px_rgba(255,255,255,0.7),3px_3px_8px_rgba(234,88,12,0.4)]'
+                  : 'text-[#7C6A5A] hover:text-[#3D2E24]'
               }`}
             >
               INR (₹)
@@ -362,142 +232,140 @@ export default function FinancialsDashboard() {
 
           <button
             onClick={handleRefresh}
-            className="flex items-center gap-2 px-4 py-2 text-[15px] font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg transition-all cursor-pointer"
+            className="h-10 px-4 font-bold text-[14px] text-[#3D2E24] bg-[#F6EFE9] rounded-2xl flex items-center justify-center transition-all cursor-pointer shadow-[-4px_-4px_8px_rgba(255,255,255,0.9),4px_4px_8px_rgba(206,187,172,0.6)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(201,180,163,0.7)] active:shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]"
           >
-            <RefreshCw size={16} /> Refresh
+            <RefreshCw size={16} className="mr-2 text-[#EA580C]" /> Refresh
           </button>
         </div>
       </div>
 
       {/* ── Filter Bar ──────────────────────────────────────────────────────── */}
-      <Card className="shadow-none border border-slate-200 dark:border-slate-800 bg-card">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-2 mb-4 text-[15px] font-bold text-slate-800 dark:text-slate-200">
-            <Filter size={18} /> Filters
+      <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] space-y-4">
+        <div className="flex items-center gap-2 text-[16px] font-extrabold text-[#3D2E24]">
+          <Filter size={18} className="text-[#EA580C]" /> Filters
+        </div>
+        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+          {/* Client Filter */}
+          <div>
+            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">Client</label>
+            <select
+              value={selectedClient}
+              onChange={(e) => setSelectedClient(e.target.value)}
+              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+            >
+              <option value="">All Clients</option>
+              {clients.map((c: any) => (
+                <option key={c.id} value={c.id}>
+                  {c.user?.name || c.company}
+                </option>
+              ))}
+            </select>
           </div>
-          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {/* Client Filter */}
-            <div>
-              <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Client</label>
-              <select
-                value={selectedClient}
-                onChange={(e) => setSelectedClient(e.target.value)}
-                className="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px]"
-              >
-                <option value="">All Clients</option>
-                {clients.map((c: any) => (
-                  <option key={c.id} value={c.id}>
-                    {c.user?.name || c.company}
-                  </option>
-                ))}
-              </select>
-            </div>
 
-            {/* Editor Filter */}
-            <div>
-              <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Editor</label>
-              <select
-                value={selectedEditor}
-                onChange={(e) => setSelectedEditor(e.target.value)}
-                className="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px]"
-              >
-                <option value="">All Editors</option>
-                {editors.map((e: any) => (
-                  <option key={e.id} value={e.id}>
-                    {e.user?.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Month Filter */}
-            <div>
-              <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Month</label>
-              <input
-                type="month"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px]"
-              />
-            </div>
-
-            {/* Date Range Start */}
-            <div>
-              <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">From Date</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px]"
-              />
-            </div>
-
-            {/* Date Range End */}
-            <div>
-              <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">To Date</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px]"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <div>
-              <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Status</label>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px]"
-              >
-                <option value="">All Statuses</option>
-                <option value="NEW_VIDEO">New Video</option>
-                <option value="EDITING">Editing</option>
-                <option value="EDITING_REVIEW">Editing Review</option>
-                <option value="FINAL_DRAFT">Final Draft</option>
-                <option value="UPLOADED">Uploaded</option>
-                <option value="CANCELLED">Cancelled</option>
-              </select>
-            </div>
-
-            {/* Min Value */}
-            <div>
-              <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Min Project Value</label>
-              <input
-                type="number"
-                placeholder="Min $"
-                value={minVal}
-                onChange={(e) => setMinVal(e.target.value)}
-                className="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px]"
-              />
-            </div>
-
-            {/* Max Value */}
-            <div>
-              <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Max Project Value</label>
-              <input
-                type="number"
-                placeholder="Max $"
-                value={maxVal}
-                onChange={(e) => setMaxVal(e.target.value)}
-                className="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px]"
-              />
-            </div>
+          {/* Editor Filter */}
+          <div>
+            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">Editor</label>
+            <select
+              value={selectedEditor}
+              onChange={(e) => setSelectedEditor(e.target.value)}
+              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+            >
+              <option value="">All Editors</option>
+              {editors.map((e: any) => (
+                <option key={e.id} value={e.id}>
+                  {e.user?.name}
+                </option>
+              ))}
+            </select>
           </div>
+
+          {/* Month Filter */}
+          <div>
+            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">Month</label>
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+            />
+          </div>
+
+          {/* Date Range Start */}
+          <div>
+            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">From Date</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+            />
+          </div>
+
+          {/* Date Range End */}
+          <div>
+            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">To Date</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+            />
+          </div>
+
+          {/* Status Filter */}
+          <div>
+            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">Status</label>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+            >
+              <option value="">All Statuses</option>
+              <option value="NEW_VIDEO">New Video</option>
+              <option value="EDITING">Editing</option>
+              <option value="EDITING_REVIEW">Editing Review</option>
+              <option value="FINAL_DRAFT">Final Draft</option>
+              <option value="UPLOADED">Uploaded</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+
+          {/* Min Value */}
+          <div>
+            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">Min Project Value</label>
+            <input
+              type="number"
+              placeholder="Min $"
+              value={minVal}
+              onChange={(e) => setMinVal(e.target.value)}
+              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+            />
+          </div>
+
+          {/* Max Value */}
+          <div>
+            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">Max Project Value</label>
+            <input
+              type="number"
+              placeholder="Max $"
+              value={maxVal}
+              onChange={(e) => setMaxVal(e.target.value)}
+              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+            />
+          </div>
+        </div>
 
           <div className="flex justify-end gap-3 mt-4">
             <button
               onClick={handleReset}
-              className="px-4 py-2 text-[15px] font-semibold text-slate-650 dark:text-slate-400 hover:text-slate-850"
+              className="px-5 py-2.5 text-[14px] font-bold text-[#8C7769] hover:text-[#EA580C] transition-colors cursor-pointer"
             >
               Reset Filters
             </button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* ── KPI Cards ──────────────────────────────────────────────────────── */}
+      {/* Row 1: Total Revenue, Total Editor Cost, Total Net Margin, Margin % */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Revenue */}
         <Card className="shadow-none border border-slate-200 dark:border-slate-850">
@@ -510,7 +378,7 @@ export default function FinancialsDashboard() {
             <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
               {revenueFormatted}
             </div>
-            <p className="text-[12px] mt-2 text-slate-500">Gross cleared client income</p>
+            <p className="text-[12px] mt-2 text-slate-500">Gross billed revenue (approved projects)</p>
           </CardContent>
         </Card>
 
@@ -518,7 +386,7 @@ export default function FinancialsDashboard() {
         <Card className="shadow-none border border-slate-200 dark:border-slate-850">
           <CardHeader className="pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
-              Total Costs
+              Total Editor Cost
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -533,7 +401,7 @@ export default function FinancialsDashboard() {
         <Card className="shadow-none border border-slate-200 dark:border-slate-850">
           <CardHeader className="pb-3">
             <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
-              Total Profit
+              Total Net Margin
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -544,6 +412,24 @@ export default function FinancialsDashboard() {
           </CardContent>
         </Card>
 
+        {/* Margin % */}
+        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
+              Margin %
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
+              {metrics.marginPct}{metrics.marginPct !== 'N/A' ? '%' : ''}
+            </div>
+            <p className="text-[12px] mt-2 text-slate-500">Profit relative to revenue</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Row 2: Client Balances, Pending Payouts */}
+      <div className="grid gap-6 sm:grid-cols-2">
         {/* Outstanding Balance */}
         <Card className="shadow-none border border-slate-200 dark:border-slate-850">
           <CardHeader className="pb-3">
@@ -573,270 +459,81 @@ export default function FinancialsDashboard() {
             <p className="text-[12px] mt-2 text-slate-500">Owed to editors for finished videos</p>
           </CardContent>
         </Card>
-
-        {/* Completed Projects */}
-        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
-              Completed Work
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
-              {completedProjectsCount}
-            </div>
-            <p className="text-[12px] mt-2 text-slate-500">Delivered video count</p>
-          </CardContent>
-        </Card>
-
-        {/* Active Projects */}
-        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
-              Active Pipeline
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
-              {activeProjectsCount}
-            </div>
-            <p className="text-[12px] mt-2 text-slate-500">Videos in progress</p>
-          </CardContent>
-        </Card>
-
-        {/* Monthly Revenue */}
-        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
-              Monthly Revenue
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
-              {formatCurrency(monthlyRevenue)}
-            </div>
-            <p className="text-[12px] mt-2 text-slate-500">Billed in the current calendar month</p>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* ── Tabs / Sections ─────────────────────────────────────────────────── */}
-      <div className="flex gap-4 border-b border-slate-200 dark:border-slate-800 pb-2">
-        <button
-          onClick={() => setActiveTab('company')}
-          className={`px-4 py-2 text-[15px] font-semibold border-b-2 transition-all cursor-pointer ${
-            activeTab === 'company'
-              ? 'border-slate-900 dark:border-white text-slate-900 dark:text-white'
-              : 'border-transparent text-slate-400 hover:text-slate-600'
-          }`}
-        >
-          Company Performance
-        </button>
-        <button
-          onClick={() => setActiveTab('clients')}
-          className={`px-4 py-2 text-[15px] font-semibold border-b-2 transition-all cursor-pointer ${
-            activeTab === 'clients'
-              ? 'border-slate-900 dark:border-white text-slate-900 dark:text-white'
-              : 'border-transparent text-slate-400 hover:text-slate-600'
-          }`}
-        >
-          Client Accounts
-        </button>
-        <button
-          onClick={() => setActiveTab('editors')}
-          className={`px-4 py-2 text-[15px] font-semibold border-b-2 transition-all cursor-pointer ${
-            activeTab === 'editors'
-              ? 'border-slate-900 dark:border-white text-slate-900 dark:text-white'
-              : 'border-transparent text-slate-400 hover:text-slate-600'
-          }`}
-        >
-          Editor Earnings
-        </button>
-      </div>
-
-      {/* ── Content Sections ───────────────────────────────────────────────── */}
-      {activeTab === 'company' && (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Revenue & Profit Trends Chart */}
-          <Card className="lg:col-span-2 shadow-none border border-slate-200 dark:border-slate-800 bg-card">
-            <CardHeader>
-              <CardTitle className="text-[18px] font-bold text-slate-900 dark:text-white">Revenue & Profit Trends</CardTitle>
-              <CardDescription style={{ color: V.muted }}>
-                Monthly overview of billing vs margin performance.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={monthlyChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
-                    <XAxis dataKey="name" fontSize={14} stroke={V.muted} tickLine={false} />
-                    <YAxis fontSize={14} stroke={V.muted} tickLine={false} axisLine={false} />
-                    <Tooltip
-                      contentStyle={{ background: '#18181b', border: '1px solid #27272a', borderRadius: 8 }}
-                      itemStyle={{ fontSize: 14 }}
-                    />
-                    <Legend />
-                    <Area type="monotone" dataKey="revenue" stroke={V.neutral} fill={V.neutral} fillOpacity={0.08} name="Revenue" />
-                    <Area type="monotone" dataKey="profit" stroke={V.green} fill={V.green} fillOpacity={0.08} name="Profit" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Editor Workloads Chart */}
-          <Card className="shadow-none border border-slate-200 dark:border-slate-800 bg-card">
-            <CardHeader>
-              <CardTitle className="text-[18px] font-bold text-slate-900 dark:text-white">Editor Distribution</CardTitle>
-              <CardDescription style={{ color: V.muted }}>Active project assignments workload.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {editorChartData.length > 0 ? (
-                <div className="h-80 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={editorChartData} layout="vertical" margin={{ top: 20, right: 20, left: 10, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#27272a" />
-                      <XAxis type="number" fontSize={14} stroke={V.muted} tickLine={false} />
-                      <YAxis dataKey="name" type="category" fontSize={14} stroke={V.muted} tickLine={false} />
-                      <Tooltip
-                        contentStyle={{ background: '#18181b', border: '1px solid #27272a', borderRadius: 8 }}
-                        itemStyle={{ fontSize: 14 }}
-                      />
-                      <Bar dataKey="active" fill={V.accent} name="Active Projects" radius={[0, 2, 2, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="flex h-64 items-center justify-center text-slate-400">No active editor assignments found.</div>
+      {/* Row 3: Per-Client breakdown table */}
+      <Card className="shadow-none border border-slate-200 dark:border-slate-800">
+        <CardHeader>
+          <CardTitle>Per-Client Breakdown</CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Client Name</th>
+                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Total Revenue</th>
+                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Advance Received</th>
+                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Remaining Credit</th>
+                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Completed Videos</th>
+              </tr>
+            </thead>
+            <tbody>
+              {metrics.clientBreakdowns.filter(b => b.completedVideos > 0 || b.advanceReceived > 0).map(client => (
+                <tr key={client.clientId} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                  <td className="py-3 px-4 font-medium">{client.clientName}</td>
+                  <td className="py-3 px-4">{displayCurrency === 'USD' ? formatCurrency(client.totalRevenue) : formatEditorCurrency(client.totalRevenue * rate)}</td>
+                  <td className="py-3 px-4">{displayCurrency === 'USD' ? formatCurrency(client.advanceReceived) : formatEditorCurrency(client.advanceReceived * rate)}</td>
+                  <td className="py-3 px-4 text-emerald-600 dark:text-emerald-400 font-medium">
+                    {displayCurrency === 'USD' ? formatCurrency(client.remainingCredit) : formatEditorCurrency(client.remainingCredit * rate)}
+                  </td>
+                  <td className="py-3 px-4">{client.completedVideos}</td>
+                </tr>
+              ))}
+              {metrics.clientBreakdowns.filter(b => b.completedVideos > 0 || b.advanceReceived > 0).length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-slate-500">No client data matches the current filters.</td>
+                </tr>
               )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
 
-      {activeTab === 'clients' && (
-        <Card className="shadow-none border border-slate-200 dark:border-slate-800 bg-card">
-          <CardHeader>
-            <CardTitle className="text-[18px] font-bold text-slate-900 dark:text-white">Per Client Performance</CardTitle>
-            <CardDescription style={{ color: V.muted }}>Revenue and balance breakdown for every client account.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-[15px]">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                    <th className="p-4 font-bold text-slate-500 uppercase tracking-wider">Client Name</th>
-                    <th className="p-4 font-bold text-slate-500 uppercase tracking-wider">Company</th>
-                    <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Total Revenue</th>
-                    <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Advance Paid</th>
-                    <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Remaining Balance</th>
-                    <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-center">Completed Videos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {clients.map((cl: any) => {
-                    const clientProj = projects.filter((p: any) => p.clientId === cl.id);
-                    const clientInv = invoices.filter((inv: any) => inv.clientId === cl.id);
-                    
-                    const clientRev = clientProj
-                      .filter((p: any) => p.status === 'UPLOADED')
-                      .reduce((s: number, p: any) => s + Number(p.clientPrice || 0), 0);
-                    
-                    const clientBalance = clientInv
-                      .filter((inv: any) => !['PAID', 'CANCELLED'].includes(inv.status))
-                      .reduce((s: number, inv: any) => s + (Number(inv.total || 0) - Number(inv.amountPaid || 0)), 0);
-
-                    const completedCount = clientProj.filter((p: any) => p.status === 'UPLOADED').length;
-
-                    return (
-                      <tr key={cl.id} className="border-b border-slate-100 dark:border-slate-850 hover:bg-slate-50/50 dark:hover:bg-slate-900/20">
-                        <td className="p-4 font-medium text-slate-900 dark:text-white">{cl.user?.name || 'Unknown'}</td>
-                        <td className="p-4 text-slate-500">{cl.company || '—'}</td>
-                        <td className="p-4 text-right font-medium text-emerald-500">{formatCurrency(clientRev)}</td>
-                        <td className="p-4 text-right text-slate-500">{formatCurrency(Number(cl.advancePaid || 0))}</td>
-                        <td className="p-4 text-right font-medium text-amber-500">{formatCurrency(clientBalance)}</td>
-                        <td className="p-4 text-center font-bold">{completedCount}</td>
-                      </tr>
-                    );
-                  })}
-                  {clients.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="p-8 text-center text-slate-400">No client accounts found.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {activeTab === 'editors' && (
-        <Card className="shadow-none border border-slate-200 dark:border-slate-800 bg-card">
-          <CardHeader>
-            <CardTitle className="text-[18px] font-bold text-slate-900 dark:text-white">Per Editor Analytics</CardTitle>
-            <CardDescription style={{ color: V.muted }}>Workload deliverables, payouts, and pending editor payouts.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-[15px]">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                    <th className="p-4 font-bold text-slate-500 uppercase tracking-wider">Editor Name</th>
-                    <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-center">Completed Projects</th>
-                    <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-center">Active Workload</th>
-                    <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Total Earnings</th>
-                    <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Pending Payments</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {editors.map((ed: any) => {
-                    const editorProj = projects.filter((p: any) => p.editorId === ed.id);
-                    
-                    const completedCount = editorProj.filter((p: any) => p.status === 'UPLOADED').length;
-
-                    const activeCount = editorProj.filter((p: any) => 
-                      ['NEW_VIDEO', 'EDITING', 'EDITING_REVIEW', 'REVISION_1', 'REVISION_1_REVIEW', 'REVISION_2', 'REVISION_2_REVIEW', 'REVISION_3', 'REVISION_3_REVIEW'].includes(p.status)
-                    ).length;
-
-                    const totalEarnings = editorProj
-                      .filter((p: any) => p.status === 'UPLOADED')
-                      .reduce((s: number, p: any) => s + Number(p.editorPrice || 0), 0);
-
-                    const pendingPayments = editorProj
-                      .filter((p: any) => p.status === 'UPLOADED')
-                      .reduce((s: number, p: any) => s + Number(p.editorPrice || 0), 0); // Owed for finished videos
-
-                    const totalEarningsFormatted = displayCurrency === 'INR'
-                      ? formatEditorCurrency(totalEarnings)
-                      : `≈ ${formatCurrency(totalEarnings / rate)}`;
-
-                    const pendingPaymentsFormatted = displayCurrency === 'INR'
-                      ? formatEditorCurrency(pendingPayments)
-                      : `≈ ${formatCurrency(pendingPayments / rate)}`;
-
-                    return (
-                      <tr key={ed.id} className="border-b border-slate-100 dark:border-slate-850 hover:bg-slate-50/50 dark:hover:bg-slate-900/20">
-                        <td className="p-4 font-medium text-slate-900 dark:text-white">{ed.user?.name || 'Unknown'}</td>
-                        <td className="p-4 text-center font-bold text-slate-700 dark:text-slate-300">{completedCount}</td>
-                        <td className="p-4 text-center font-bold text-violet-500">{activeCount}</td>
-                        <td className="p-4 text-right font-medium text-slate-900 dark:text-white">{totalEarningsFormatted}</td>
-                        <td className="p-4 text-right font-medium text-amber-500">{pendingPaymentsFormatted}</td>
-                      </tr>
-                    );
-                  })}
-                  {editors.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="p-8 text-center text-slate-400">No editors found.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Row 4: Per-Editor breakdown table */}
+      <Card className="shadow-none border border-slate-200 dark:border-slate-800">
+        <CardHeader>
+          <CardTitle>Per-Editor Breakdown</CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Editor Name</th>
+                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Amount Payable</th>
+                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Completed Projects</th>
+                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Pending Payments</th>
+              </tr>
+            </thead>
+            <tbody>
+              {metrics.editorBreakdowns.filter(b => b.completedProjectsCount > 0).map(editor => (
+                <tr key={editor.editorId} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                  <td className="py-3 px-4 font-medium">{editor.editorName}</td>
+                  <td className="py-3 px-4">{displayCurrency === 'INR' ? formatEditorCurrency(editor.amountPayable) : formatCurrency(editor.amountPayable / rate)}</td>
+                  <td className="py-3 px-4">{editor.completedProjectsCount}</td>
+                  <td className="py-3 px-4 text-rose-600 dark:text-rose-400 font-medium">
+                    {displayCurrency === 'INR' ? formatEditorCurrency(editor.pendingPaymentsAmount) : formatCurrency(editor.pendingPaymentsAmount / rate)}
+                  </td>
+                </tr>
+              ))}
+              {metrics.editorBreakdowns.filter(b => b.completedProjectsCount > 0).length === 0 && (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-slate-500">No editor data matches the current filters.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

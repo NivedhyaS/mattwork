@@ -5,6 +5,7 @@ import { api } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { FolderKanban, Clock, CheckCircle2, DollarSign } from 'lucide-react';
 import { formatEditorCurrency } from '@/lib/utils';
+import { COMPLETED_STATUSES } from '@/lib/projectMetrics';
 import Link from 'next/link';
 
 export default function EditorDashboardPage() {
@@ -28,8 +29,8 @@ export default function EditorDashboardPage() {
 
   const threshold = Number(process.env.NEXT_PUBLIC_DEADLINE_THRESHOLD_DAYS || '3');
 
-  // Pending Works: Assigned projects not completed (UPLOADED)
-  const pendingProjects = projects.filter((p) => p.status !== 'UPLOADED');
+  // Pending Works: Assigned projects not completed
+  const pendingProjects = projects.filter((p) => !COMPLETED_STATUSES.includes(p.status));
   const pendingWorksCount = pendingProjects.length;
 
   // Deadline Close Works: Due within threshold days
@@ -41,8 +42,8 @@ export default function EditorDashboardPage() {
   });
   const deadlineCloseCount = deadlineCloseProjects.length;
 
-  // Total Works Done: Completed projects (UPLOADED)
-  const completedProjects = projects.filter((p) => p.status === 'UPLOADED');
+  // Total Works Done: Completed projects
+  const completedProjects = projects.filter((p) => COMPLETED_STATUSES.includes(p.status));
   const totalWorksDone = completedProjects.length;
 
   // Total Money Earned: Sum of Editor Price for completed projects
@@ -60,85 +61,104 @@ export default function EditorDashboardPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8 p-6 md:p-8 max-w-7xl mx-auto w-full">
+    <div className="flex flex-col gap-8 p-1 max-w-7xl mx-auto w-full bg-[#F6EFE9] text-[#3D2E24]">
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Editor Dashboard</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Overview of your workload and earnings.</p>
+          <h1 className="text-[36px] font-extrabold tracking-tight text-[#3D2E24]">Editor Dashboard</h1>
+          <p className="text-[16px] text-[#7C6A5A] mt-1">Overview of your workload and earnings.</p>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="shadow-none border border-slate-200 dark:border-slate-800 bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-bold text-slate-500 uppercase tracking-wider">Pending Works</CardTitle>
-            <FolderKanban className="h-4 w-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-900 dark:text-white">{pendingWorksCount}</div>
-            <p className="text-xs text-slate-500 mt-1">Active assigned projects</p>
-          </CardContent>
-        </Card>
+      {/* KPI Cards Grid */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Pending Works */}
+        <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Pending Works</span>
+            <div className="h-11 w-11 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+              <FolderKanban className="h-5 w-5 text-[#EA580C]" />
+            </div>
+          </div>
+          <div>
+            <div className="kpi-figure text-[38px] font-extrabold text-[#3D2E24]">{pendingWorksCount}</div>
+            <p className="text-[12px] text-[#7C6A5A] mt-1">Active assigned projects</p>
+          </div>
+        </div>
 
-        <Card className="shadow-none border border-slate-200 dark:border-slate-800 bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-bold text-amber-500 uppercase tracking-wider">Deadline Close</CardTitle>
-            <Clock className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-900 dark:text-white">{deadlineCloseCount}</div>
-            <p className="text-xs text-slate-500 mt-1">Due in {threshold} days or less</p>
-          </CardContent>
-        </Card>
+        {/* Deadline Close */}
+        <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Deadline Close</span>
+            <div className="h-11 w-11 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+              <Clock className="h-5 w-5 text-[#EA580C]" />
+            </div>
+          </div>
+          <div>
+            <div className="kpi-figure text-[38px] font-extrabold text-[#EA580C]">{deadlineCloseCount}</div>
+            <p className="text-[12px] text-[#7C6A5A] mt-1">Due in {threshold} days or less</p>
+          </div>
+        </div>
 
-        <Card className="shadow-none border border-slate-200 dark:border-slate-800 bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-bold text-emerald-500 uppercase tracking-wider">Works Done</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-900 dark:text-white">{totalWorksDone}</div>
-            <p className="text-xs text-slate-500 mt-1">Completed projects</p>
-          </CardContent>
-        </Card>
+        {/* Works Done */}
+        <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Works Done</span>
+            <div className="h-11 w-11 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+              <CheckCircle2 className="h-5 w-5 text-[#EA580C]" />
+            </div>
+          </div>
+          <div>
+            <div className="kpi-figure text-[38px] font-extrabold text-[#3D2E24]">{totalWorksDone}</div>
+            <p className="text-[12px] text-[#7C6A5A] mt-1">Completed projects</p>
+          </div>
+        </div>
 
-        <Card className="shadow-none border border-slate-200 dark:border-slate-800 bg-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-bold text-violet-500 uppercase tracking-wider">Money Earned</CardTitle>
-            <DollarSign className="h-4 w-4 text-violet-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-900 dark:text-white">{formatEditorCurrency(totalMoneyEarned)}</div>
-            <p className="text-xs text-slate-500 mt-1">From completed works</p>
-          </CardContent>
-        </Card>
+        {/* Money Earned */}
+        <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Money Earned</span>
+            <div className="h-11 w-11 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+              <DollarSign className="h-5 w-5 text-[#EA580C]" />
+            </div>
+          </div>
+          <div>
+            <div className="kpi-figure text-[38px] font-extrabold text-[#EA580C]">{formatEditorCurrency(totalMoneyEarned)}</div>
+            <p className="text-[12px] text-[#7C6A5A] mt-1">From completed works</p>
+          </div>
+        </div>
       </div>
 
-      <div className="mt-4">
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Upcoming Deadlines</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* Upcoming Deadlines Section */}
+      <div className="space-y-4">
+        <h2 className="text-[20px] font-extrabold text-[#3D2E24]">Upcoming Deadlines</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {deadlineCloseProjects.length > 0 ? (
             deadlineCloseProjects.map((p) => (
               <Link key={p.id} href={`/editor/projects?open=${p.id}`}>
-                <Card className="shadow-none border border-slate-200 dark:border-slate-800 hover:border-violet-500/50 transition-colors cursor-pointer bg-card">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">{p.title}</CardTitle>
-                    <CardDescription className="line-clamp-1">{p.client?.user?.name || p.client?.company || 'Client'}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-0 flex items-center justify-between">
-                    <span className="text-sm font-medium text-amber-500">
+                <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all cursor-pointer space-y-3">
+                  <div>
+                    <h3 className="font-extrabold text-[16px] text-[#3D2E24]">{p.title}</h3>
+                    <p className="text-[13px] text-[#7C6A5A] line-clamp-1 mt-0.5">{p.client?.user?.name || p.client?.company || 'Client'}</p>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-transparent">
+                    <span className="text-[13px] font-extrabold text-[#EA580C]">
                       Due: {new Date(p.dueDate).toLocaleDateString()}
                     </span>
-                    <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold rounded-md">
+                    <span className="px-3 py-1 bg-[#F6EFE9] text-[#3D2E24] text-[12px] font-extrabold rounded-xl shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
                       {p.status.replace(/_/g, ' ')}
                     </span>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </Link>
             ))
           ) : (
-            <div className="col-span-full p-8 text-center text-slate-500 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
-              No projects with upcoming deadlines.
+            <div className="col-span-full p-10 text-center bg-[#F6EFE9] rounded-3xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.5),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] space-y-2">
+              <div className="h-12 w-12 rounded-full bg-[#F6EFE9] flex items-center justify-center mx-auto text-[#EA580C] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+                <Clock className="h-6 w-6" />
+              </div>
+              <p className="font-extrabold text-[16px] text-[#3D2E24]">No upcoming deadlines</p>
+              <p className="text-[13px] text-[#7C6A5A]">You have no active projects due in the next {threshold} days.</p>
             </div>
           )}
         </div>

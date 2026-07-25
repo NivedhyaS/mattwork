@@ -14,6 +14,7 @@ export const createClientSchema = z.object({
   country: z.string().optional(),
   notes: z.string().optional(),
   currency: z.string().length(3).regex(/^[A-Z]{3}$/, 'Must be a 3-letter currency code').optional().default('USD'),
+  advancePaid: z.coerce.number().min(0).optional(),
 });
 
 export const updateClientSchema = z.object({

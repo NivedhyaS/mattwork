@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { api } from '@/lib/api';
 import Link from 'next/link';
@@ -28,15 +28,19 @@ import {
   Plus,
   Trash,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  X,
+  FilterX
 } from 'lucide-react';
 import Drawer from '@/components/ui/drawer';
 import Badge from '@/components/ui/badge';
 import Button from '@/components/ui/button';
 import Select from '@/components/ui/select';
+import PriorityCombobox from '@/components/ui/PriorityCombobox';
 import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label';
 import EditorCombobox from '@/components/ui/EditorCombobox';
+import RevisionRequestModal from './RevisionRequestModal';
 import { formatCurrency, formatDate, formatEditorCurrency } from '@/lib/utils';
 import { getCurrencySymbol } from '@/lib/currency';
 import { useExchangeRate, buildProfitDisplay, formatFetchedAgo } from '@/lib/exchangeRate';
@@ -78,8 +82,18 @@ function isFrozenStatus(status: string): boolean {
 }
 
 /** Returns a small workflow badge config for the card footer. */
-function getWorkflowBadge(status: string): { label: string; classes: string } | null {
-  switch (status) {
+function getWorkflowBadge(project: Project): { label: string; classes: string } | null {
+  const hasPendingAdmin = project.revisionRequests?.some(r => r.status === 'PENDING_ADMIN');
+  if (hasPendingAdmin) {
+    return { label: 'Pending Admin Review', classes: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-300 dark:border-rose-800/30' };
+  }
+  
+  const hasNeedsClarification = project.revisionRequests?.some(r => r.status === 'NEEDS_CLARIFICATION');
+  if (hasNeedsClarification) {
+    return { label: 'Needs Clarification', classes: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-300 dark:border-amber-800/30' };
+  }
+
+  switch (project.status) {
     case 'NEW_VIDEO':
       return null; // no badge needed
     case 'EDITING':
@@ -183,11 +197,16 @@ function getCommentCount(tab: string, commentsList: any[]): number {
   return 0;
 }
 
+export const PRIORITY_OPTIONS = [
+  { value: 'HIGH', label: '🔴 High Priority', shortLabel: '🔴 HIGH', color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-350 dark:border-amber-800/40', badgeColor: 'bg-slate-900 text-rose-400' },
+  { value: 'MEDIUM', label: '🟡 Medium Priority', shortLabel: '🟡 MEDIUM', color: 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-350 dark:border-blue-800/40', badgeColor: 'bg-slate-900 text-amber-400' },
+  { value: 'LOW', label: '🟢 Low Priority', shortLabel: '🟢 LOW', color: 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700', badgeColor: 'bg-slate-900 text-emerald-400' }
+];
+
 const PRIORITY_COLORS: Record<string, string> = {
-  LOW: 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
-  MEDIUM: 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-350 dark:border-blue-800/40',
-  HIGH: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-350 dark:border-amber-800/40',
-  URGENT: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-350 dark:border-rose-800/40',
+  LOW: PRIORITY_OPTIONS[2].color,
+  MEDIUM: PRIORITY_OPTIONS[1].color,
+  HIGH: PRIORITY_OPTIONS[0].color,
 };
 
 interface Project {
@@ -198,7 +217,7 @@ interface Project {
   dueDate: string | null;
   clientPrice: number | string | null;
   editorPrice: number | string | null;
-  profit: number | string | null;
+  netMargin: number | string | null;
   description?: string | null;
   notes?: string | null;
   driveFolder?: string | null;
@@ -213,9 +232,11 @@ interface Project {
   files?: any[];
   invoices?: any[];
   comments?: any[];
+  revisionRequests?: any[];
   projectNumber?: string;
   standardName?: string;
   standardSlug?: string;
+  hasPendingRevisionRequest?: boolean;
 }
 
 interface ProjectBoardProps {
@@ -224,6 +245,10 @@ interface ProjectBoardProps {
 }
 
 export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const { rate: exchangeRate } = useExchangeRate(role === 'ADMIN');
   const queryClient = useQueryClient();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -236,9 +261,14 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
   // Search & Filter States
   const [searchQuery, setSearchQuery] = useState('');
+  const [revisionModalState, setRevisionModalState] = useState<{ isOpen: boolean; project: Project | null; targetStage: string }>({ isOpen: false, project: null, targetStage: '' });
   const [priorityFilter, setPriorityFilter] = useState<'ALL' | 'HIGH' | 'MEDIUM' | 'LOW'>('ALL');
   const [sortBy, setSortBy] = useState<'dueDate' | 'createdAt' | 'title' | 'priority'>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  // Filter Drawer State
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [filterDraft, setFilterDraft] = useState<Record<string, string>>({});
 
   // File Upload State (for Editor workstation)
   const [uploadUrl, setUploadUrl] = useState('');
@@ -357,7 +387,6 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
   }, [fetchProjects, fetchMetadata]);
 
   // Auto-open project drawer when returning from a discussion page (?open=projectId)
-  const searchParams = useSearchParams();
   useEffect(() => {
     const openId = searchParams?.get('open');
     if (!openId || projects.length === 0) return;
@@ -383,13 +412,26 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
   const onDragEnd = async (result: DropResult) => {
     setActiveDragProject(null);
-    if (role !== 'ADMIN' && role !== 'EDITOR') return;
 
     const { destination, source, draggableId } = result;
     if (!destination) return;
     if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
     const newStatus = destination.droppableId;
+
+    if (role === 'CLIENT') {
+      const allowedRevisionStages = ['REVISION_1', 'REVISION_2', 'REVISION_3'];
+      if (!allowedRevisionStages.includes(newStatus)) {
+         return; 
+      }
+      const project = projects.find(p => p.id === draggableId);
+      if (!project) return;
+      setRevisionModalState({ isOpen: true, project, targetStage: newStatus });
+      return;
+    }
+
+    if (role !== 'ADMIN' && role !== 'EDITOR') return;
+
     const oldProjects = [...projects];
 
     // Optimistic UI Update
@@ -670,14 +712,109 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
     }
   };
 
+
+  // --- Active Filters parsing ---
+  const activeFilters = {
+    client: searchParams?.get('client') || '',
+    editor: searchParams?.get('editor') || '',
+    status: searchParams?.get('status') || '',
+    priority: searchParams?.get('priority') || '',
+    subFrom: searchParams?.get('subFrom') || '',
+    subTo: searchParams?.get('subTo') || '',
+    dueFrom: searchParams?.get('dueFrom') || '',
+    dueTo: searchParams?.get('dueTo') || '',
+    valMin: searchParams?.get('valMin') || '',
+    valMax: searchParams?.get('valMax') || '',
+    month: searchParams?.get('month') || '',
+    overdue: searchParams?.get('overdue') === 'true',
+    dueWeek: searchParams?.get('dueWeek') === 'true',
+  };
+  
+  const activeFilterCount = Object.entries(activeFilters).filter(([k, v]) => {
+    if (k === 'overdue' || k === 'dueWeek') return v === true;
+    return v !== '';
+  }).length;
+
+  const handleApplyFilters = () => {
+    const params = new URLSearchParams();
+    Object.entries(filterDraft).forEach(([k, v]) => {
+      if (v) params.set(k, v);
+    });
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    setIsFilterDrawerOpen(false);
+  };
+
+  const handleClearFilters = () => {
+    router.replace(pathname, { scroll: false });
+    setFilterDraft({});
+    setIsFilterDrawerOpen(false);
+  };
+
+  // Extract dynamic options
+  const uniqueStatuses = Array.from(new Set(projects.map(p => p.status)));
+
   // Apply local filtering, search, and sorting
   const filteredProjects = projects.filter((p) => {
     const isCancelledOrHold = p.status === 'CANCELLED' || p.status === 'ON_HOLD';
-    if (isCancelledOrHold) return false;
+    if (isCancelledOrHold && activeFilters.status !== 'CANCELLED' && activeFilters.status !== 'ON_HOLD') {
+        if (!activeFilters.status) return false;
+    }
 
     if (role === 'ADMIN' && priorityFilter !== 'ALL') {
       const projPriority = p.priority || 'MEDIUM';
       if (projPriority !== priorityFilter) return false;
+    }
+
+    // --- Advanced Filters ---
+    if (activeFilters.client && p.client?.id !== activeFilters.client) return false;
+    if (role === 'ADMIN' && activeFilters.editor && p.editor?.id !== activeFilters.editor) return false;
+    if (activeFilters.status && p.status !== activeFilters.status) return false;
+    if (activeFilters.priority && (p.priority || 'MEDIUM') !== activeFilters.priority) return false;
+
+    if (activeFilters.subFrom) {
+      if (!p.submissionDate || new Date(p.submissionDate) < new Date(activeFilters.subFrom)) return false;
+    }
+    if (activeFilters.subTo) {
+      if (!p.submissionDate || new Date(p.submissionDate) > new Date(activeFilters.subTo + 'T23:59:59')) return false;
+    }
+
+    if (activeFilters.dueFrom) {
+      if (!p.dueDate || new Date(p.dueDate) < new Date(activeFilters.dueFrom)) return false;
+    }
+    if (activeFilters.dueTo) {
+      if (!p.dueDate || new Date(p.dueDate) > new Date(activeFilters.dueTo + 'T23:59:59')) return false;
+    }
+
+    if (activeFilters.month) {
+      if (!p.dueDate) return false;
+      const d = new Date(p.dueDate);
+      const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (monthStr !== activeFilters.month) return false;
+    }
+
+    if (activeFilters.valMin || activeFilters.valMax) {
+      const rawVal = Number(p.clientPrice || 0);
+      const rate = Number(exchangeRate) || 1;
+      const displayVal = rawVal / rate;
+      if (activeFilters.valMin && displayVal < Number(activeFilters.valMin)) return false;
+      if (activeFilters.valMax && displayVal > Number(activeFilters.valMax)) return false;
+    }
+
+    if (activeFilters.overdue) {
+      if (!p.dueDate) return false;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (new Date(p.dueDate) >= today) return false;
+    }
+
+    if (activeFilters.dueWeek) {
+      if (!p.dueDate) return false;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const nextWeek = new Date(today);
+      nextWeek.setDate(today.getDate() + 7);
+      const d = new Date(p.dueDate);
+      if (d < today || d > nextWeek) return false;
     }
 
     if (searchQuery) {
@@ -719,15 +856,15 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
   return (
     <div className="flex flex-col h-full -m-6 md:-m-8 overflow-hidden select-none">
       {/* Board Header & Controls */}
-      <div className="flex flex-col gap-4 border-b border-slate-200/60 dark:border-slate-900/60 bg-white dark:bg-slate-950 p-6 md:p-8 shrink-0">
+      <div className="flex flex-col gap-4 bg-[#F6EFE9] p-6 md:p-8 shrink-0 border-b border-[rgba(206,187,172,0.3)]">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-[36px] font-black tracking-tight text-slate-900 dark:text-white leading-tight flex items-center gap-3">
-              <TrendingUp className="h-8 w-8 text-accent shrink-0" />
+            <h1 className="text-[36px] font-extrabold tracking-tight text-[#3D2E24] leading-tight flex items-center gap-3">
+              <TrendingUp className="h-8 w-8 text-[#EA580C] shrink-0" />
               {role === 'ADMIN' ? 'Production Workspace' : 'Mattwork Workspace'}
             </h1>
-            <p className="text-[14px] text-slate-500 dark:text-slate-400 mt-2 font-medium">
-              Showing {sortedProjects.length} projects of {projects.length} total. Role view: <span className="font-extrabold text-accent uppercase tracking-wider">{role.toLowerCase()}</span>
+            <p className="text-[14px] text-[#7C6A5A] mt-2 font-extrabold">
+              Showing {sortedProjects.length} projects of {projects.length} total. Role view: <span className="font-extrabold text-[#EA580C] uppercase tracking-wider">{role.toLowerCase()}</span>
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -748,7 +885,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             {role === 'ADMIN' && (
               <button
                 onClick={() => setIsCreateProjectOpen(true)}
-                className="flex items-center gap-2 text-[13px] font-black bg-accent text-white px-4.5 py-2.5 rounded-xl hover:bg-accent/90 active:scale-95 transition-all shadow-md cursor-pointer border-none"
+                className="flex items-center gap-2 text-[14px] font-extrabold bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white px-5 py-2.5 rounded-2xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.7),4px_4px_12px_rgba(234,88,12,0.4)] hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.8),6px_6px_16px_rgba(234,88,12,0.5)] transition-all cursor-pointer border-none"
               >
                 <Plus className="h-4.5 w-4.5" />
                 Add Project
@@ -759,42 +896,56 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
         {/* Search, Filters, Sort */}
         <div className="flex flex-col md:flex-row gap-3 pt-2">
+          {/* Filters Button — Admin only */}
+          {role === 'ADMIN' && (
+            <button
+              onClick={() => {
+                setFilterDraft(activeFilters as any);
+                setIsFilterDrawerOpen(true);
+              }}
+              className="flex items-center gap-2 px-4 py-3 bg-[#F6EFE9] text-[#3D2E24] rounded-2xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(201,180,163,0.7)] active:shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] transition-all font-extrabold text-[14px]"
+            >
+              <SlidersHorizontal className="h-4.5 w-4.5 text-[#EA580C] shrink-0" />
+              Filters {activeFilterCount > 0 && <span className="bg-[#EA580C] text-white px-2 py-0.5 rounded-full text-[11px] ml-1">{activeFilterCount}</span>}
+            </button>
+          )}
+
           {/* Search Input */}
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-slate-400 dark:text-slate-500" />
+            <Search className="absolute left-4 top-3.5 h-4.5 w-4.5 text-[#8C7769]" />
             <input
               type="text"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 text-[14px] rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-slate-400 dark:focus:border-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-200 transition-all font-medium"
+              className="w-full pl-11 pr-4 py-3 text-[14px] rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] font-semibold placeholder:text-[#8C7769] shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(206,187,172,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9)] transition-all"
             />
           </div>
 
           {/* Priority filter (ADMIN only) */}
           {role === 'ADMIN' && (
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-slate-400 dark:text-slate-500 shrink-0" />
+              <Filter className="h-4 w-4 text-[#8C7769] shrink-0" />
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value as any)}
-                className="text-[14px] font-bold border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-slate-400 dark:focus:border-slate-700 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+                className="text-[14px] font-extrabold border-0 rounded-2xl px-4 py-3 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none cursor-pointer"
               >
                 <option value="ALL">All Priorities</option>
-                <option value="HIGH">🔴 High Priority</option>
-                <option value="MEDIUM">🟡 Medium Priority</option>
-                <option value="LOW">🟢 Low Priority</option>
+                {PRIORITY_OPTIONS.map(po => (
+                  <option key={po.value} value={po.value}>{po.label}</option>
+                ))}
               </select>
             </div>
           )}
 
           {/* Sort selection */}
           <div className="flex items-center gap-2">
-            <SlidersHorizontal className="h-4 w-4 text-slate-400 dark:text-slate-500 shrink-0" />
+            <SlidersHorizontal className="h-4 w-4 text-[#8C7769] shrink-0" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="text-[14px] font-bold border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-slate-400 dark:focus:border-slate-700 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+              className="text-[14px] font-extrabold border-0 rounded-2xl px-4 py-3 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none cursor-pointer"
             >
               <option value="createdAt">Date Created</option>
               <option value="dueDate">Deadline</option>
@@ -803,7 +954,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             </select>
             <button
               onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-              className="px-4 py-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all text-[13px] font-extrabold text-slate-700 dark:text-slate-300"
+              className="px-4 py-3 border-0 rounded-2xl bg-[#F6EFE9] text-[#3D2E24] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(201,180,163,0.7)] active:shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] transition-all text-[13px] font-extrabold"
             >
               {sortOrder.toUpperCase()}
             </button>
@@ -812,26 +963,33 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
       </div>
 
       {/* Board Content */}
-      <div className="flex-1 overflow-x-auto p-6 md:p-8 bg-slate-50 dark:bg-slate-900/30">
+      <div className="flex-1 overflow-x-auto p-6 md:p-8 bg-[#F6EFE9]">
         {loading ? (
           <div className="flex gap-5 h-full min-w-max pb-2 items-stretch">
             {KANBAN_COLUMNS.map((column) => (
               <div
                 key={column.id}
-                className="w-72 flex flex-col bg-slate-50/50 dark:bg-slate-950/40 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 shrink-0"
+                className="w-72 flex flex-col bg-[#F6EFE9] rounded-3xl shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(206,187,172,0.6)] shrink-0 p-4 space-y-4"
               >
-                <div className="px-4.5 py-4 border-b border-slate-200/40 dark:border-slate-850 flex items-center justify-between">
-                  <span className="font-extrabold text-[12px] text-slate-400 dark:text-slate-500 animate-pulse uppercase tracking-wider">Loading...</span>
+                <div className="flex items-center justify-between pb-3 border-b border-[rgba(206,187,172,0.3)]">
+                  <span className="font-extrabold text-[12px] text-[#8C7769] animate-pulse uppercase tracking-wider">Loading...</span>
                 </div>
-                <div className="p-3.5 space-y-3 flex-1">
+                <div className="space-y-3 flex-1">
                   {[1, 2].map((i) => (
-                    <div key={i} className="h-28 bg-slate-200/40 dark:bg-slate-900/20 border border-slate-200/20 dark:border-slate-800/20 rounded-2xl animate-pulse" />
+                    <div key={i} className="h-28 bg-[#F6EFE9] rounded-2xl shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] animate-pulse" />
                   ))}
                 </div>
               </div>
             ))}
           </div>
-        ) : (
+        ) : filteredProjects.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 rounded-3xl bg-[#F6EFE9] shadow-[inset_4px_4px_8px_rgba(206,187,172,0.55),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] w-full max-w-3xl mx-auto mt-10 p-8 text-center">
+              <FilterX className="h-10 w-10 text-[#EA580C] mb-3" />
+              <h3 className="text-lg font-extrabold text-[#3D2E24]">No projects match these filters</h3>
+              <p className="text-sm text-[#7C6A5A] mb-6">Try adjusting your active filters or clear them to see all projects.</p>
+              <Button onClick={handleClearFilters} variant="outline" className="rounded-2xl font-extrabold">Clear Filters</Button>
+            </div>
+          ) : (
           <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
             <div className="flex gap-5 h-full items-stretch min-w-max pb-2">
               {KANBAN_COLUMNS.map((column) => {
@@ -848,27 +1006,25 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                 const isEditorDragging = role === 'EDITOR' && isDraggingAny;
                 const columnDragClass = isEditorDragging
                   ? isValidTarget
-                    ? 'border-accent/40 ring-2 ring-accent/25 dark:ring-accent/15 bg-accent/[0.025]'
+                    ? 'shadow-[inset_3px_3px_6px_rgba(234,88,12,0.3)]'
                     : 'opacity-20 cursor-not-allowed select-none pointer-events-none'
-                  : isDraggingAny
-                  ? 'border-slate-200/40 dark:border-slate-800/40'
-                  : 'border-slate-200/40 dark:border-slate-800/40';
+                  : 'shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(206,187,172,0.6)]';
 
                 return (
                   <div
                     key={column.id}
-                    className={`w-72 flex flex-col bg-slate-50/50 dark:bg-slate-950/40 rounded-2xl overflow-hidden border shrink-0 shadow-sm transition-all duration-200 ${columnDragClass}`}
+                    className={`w-72 flex flex-col bg-[#F6EFE9] rounded-3xl overflow-hidden border-0 shrink-0 transition-all duration-200 ${columnDragClass}`}
                   >
                     {/* Column Header */}
-                    <div className="px-4.5 py-4 border-b border-slate-200/40 dark:border-slate-900 bg-slate-100/30 dark:bg-slate-950/50">
+                    <div className="px-4.5 py-4 border-b border-[rgba(206,187,172,0.3)] bg-[#F6EFE9]">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
-                          <span className={`h-2 w-2 rounded-full ${column.color.split(' ')[0]} shadow-[0_0_8px_rgba(255,255,255,0.15)] shrink-0`} />
-                          <h3 className="font-extrabold text-[14px] text-slate-850 dark:text-slate-100 uppercase tracking-wide">
+                          <span className={`h-2.5 w-2.5 rounded-full ${column.color.split(' ')[0]} shrink-0`} />
+                          <h3 className="font-extrabold text-[14px] text-[#3D2E24] uppercase tracking-wide">
                             {column.title}
                           </h3>
                         </div>
-                        <span className="text-[11px] font-extrabold text-slate-700 dark:text-slate-300 bg-slate-150 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <span className="text-[11px] font-extrabold text-[#3D2E24] bg-[#F6EFE9] px-2.5 py-0.5 rounded-full shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
                           {columnProjects.length}
                         </span>
                       </div>
@@ -880,10 +1036,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                         <div
                           ref={provided.innerRef}
                           {...provided.droppableProps}
-                          className={`flex-1 p-3.5 overflow-y-auto space-y-3 min-h-[140px] transition-colors duration-150 ${snapshot.isDraggingOver
-                              ? 'bg-slate-55/40 dark:bg-slate-900/10'
-                              : 'bg-transparent'
-                            }`}
+                          className="flex-1 p-3.5 overflow-y-auto space-y-3 min-h-[140px] bg-[#F6EFE9]"
                         >
                           {columnProjects.map((project, index) => {
                             const dueDate = formatCardDate(project.dueDate);
@@ -891,10 +1044,11 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
                             // Use shared helper — mirrors backend exactly
                             const frozenForEditor = role === 'EDITOR' && isFrozenStatus(project.status);
-                            const isDragDisabled = role === 'CLIENT' || frozenForEditor;
+                            const canClientDrag = role === 'CLIENT' && ['EDITING_REVIEW', 'REVISION_1_REVIEW', 'REVISION_2_REVIEW', 'REVISION_3_REVIEW'].includes(project.status);
+                            const isDragDisabled = (role === 'CLIENT' && !canClientDrag) || frozenForEditor;
 
                             // Workflow status badge (shown on cards for editors)
-                            const workflowBadge = role !== 'CLIENT' ? getWorkflowBadge(project.status) : null;
+                            const workflowBadge = role !== 'CLIENT' ? getWorkflowBadge(project) : null;
 
                             return (
                               <Draggable
@@ -909,22 +1063,15 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                     {...provided.draggableProps}
                                     {...provided.dragHandleProps}
                                     onClick={() => openProjectDetails(project)}
-                                    className={`group relative bg-white dark:bg-slate-900 rounded-2xl border overflow-hidden select-none flex flex-col transition-all duration-200
-                                      ${frozenForEditor
-                                        ? 'border-slate-200/80 dark:border-slate-800/80 cursor-default'
-                                        : 'border-slate-200/80 dark:border-slate-800/80 cursor-grab active:cursor-grabbing'}
-                                      ${snapshot.isDragging
-                                        ? 'ring-2 ring-accent/60 shadow-2xl shadow-accent/15 rotate-1 scale-[1.02] bg-slate-50 dark:bg-slate-850'
-                                        : frozenForEditor
-                                          ? 'opacity-70'
-                                          : 'hover:border-slate-350 dark:hover:border-slate-700 hover:shadow-lg hover:-translate-y-0.5'}
+                                    className={`group relative bg-[#F6EFE9] text-[#3D2E24] rounded-2xl border-0 overflow-hidden select-none flex flex-col transition-all duration-200 shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(201,180,163,0.75)]
+                                      ${snapshot.isDragging ? 'rotate-1 scale-[1.02]' : ''}
                                       ${isUpdating ? 'opacity-50 pointer-events-none' : ''}`}
                                   >
 
                                     <div className="p-4.5 flex flex-col gap-3">
                                       {/* Row 1: Standard Name + priority selector (ADMIN) + lock/updating indicator */}
                                       <div className="flex items-center justify-between gap-2">
-                                        <span className="text-[10px] font-bold text-slate-550 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md block truncate flex-1" title={project.standardName}>
+                                        <span className="text-[11px] font-extrabold text-[#8C7769] bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] px-2.5 py-1 rounded-xl block truncate flex-1" title={project.standardName}>
                                           {project.standardName}
                                         </span>
                                         {role === 'ADMIN' && (
@@ -932,27 +1079,35 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                             value={project.priority || 'MEDIUM'}
                                             onClick={(e) => e.stopPropagation()}
                                             onChange={(e) => handleUpdatePriority(project.id, e.target.value as any, e)}
-                                            className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border appearance-none cursor-pointer focus:outline-none shrink-0 transition-all ${
+                                            className={`text-[10px] font-extrabold px-2 py-0.5 rounded-xl border-0 appearance-none cursor-pointer focus:outline-none shrink-0 shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] ${
                                               (project.priority || 'MEDIUM') === 'HIGH'
-                                                ? 'bg-rose-500/15 text-rose-500 border-rose-500/30 hover:bg-rose-500/25'
+                                                ? 'text-[#EF4444]'
                                                 : (project.priority || 'MEDIUM') === 'LOW'
-                                                ? 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/25'
-                                                : 'bg-amber-500/15 text-amber-500 border-amber-500/30 hover:bg-amber-500/25'
+                                                ? 'text-[#10B981]'
+                                                : 'text-[#EA580C]'
                                             }`}
                                           >
-                                            <option value="HIGH" className="bg-slate-900 text-rose-400">🔴 HIGH</option>
-                                            <option value="MEDIUM" className="bg-slate-900 text-amber-400">🟡 MEDIUM</option>
-                                            <option value="LOW" className="bg-slate-900 text-emerald-400">🟢 LOW</option>
+                                            {PRIORITY_OPTIONS.map(po => (
+                                              <option key={po.value} value={po.value}>{po.shortLabel}</option>
+                                            ))}
                                           </select>
                                         )}
                                         <div className="flex items-center gap-1.5 shrink-0">
-                                          {isUpdating && <Loader2 className="h-3.5 w-3.5 text-accent animate-spin" />}
-                                          {frozenForEditor && <Lock className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />}
+                                          {isUpdating && <Loader2 className="h-3.5 w-3.5 text-[#EA580C] animate-spin" />}
+                                          {frozenForEditor && <Lock className="h-3.5 w-3.5 text-[#8C7769]" />}
                                         </div>
                                       </div>
 
-                                      {/* Row 2: Title */}
-                                      <p className="font-extrabold text-[15px] leading-snug text-slate-900 dark:text-slate-50 line-clamp-2 tracking-tight group-hover:text-accent transition-colors">
+                                      {/* Row 2: Title & Flags */}
+                                      {project.hasPendingRevisionRequest && (
+                                        <div className="mb-1.5">
+                                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-xl bg-[#F6EFE9] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(239,68,68,0.3)]">
+                                            <AlertCircle className="h-3 w-3" />
+                                            Pending Review
+                                          </span>
+                                        </div>
+                                      )}
+                                      <p className="font-extrabold text-[15px] leading-snug text-[#3D2E24] line-clamp-2 tracking-tight group-hover:text-[#EA580C] transition-colors">
                                         {project.title}
                                       </p>
 
@@ -1077,6 +1232,17 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
         )}
       </div>
 
+      {/* Revision Request Modal for Clients */}
+      <RevisionRequestModal
+        isOpen={revisionModalState.isOpen}
+        project={revisionModalState.project}
+        targetStage={revisionModalState.targetStage}
+        onClose={() => setRevisionModalState({ isOpen: false, project: null, targetStage: '' })}
+        onSubmitSuccess={() => {
+          fetchProjects(); // Refresh the board
+        }}
+      />
+
       {/* Slide-out Drawer for Project Details */}
       <Drawer
         isOpen={!!selectedProject}
@@ -1186,16 +1352,11 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                 {role === 'ADMIN' && (
                   <div className="space-y-2">
                     <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block font-bold">Priority Level</span>
-                    <Select
+                    <PriorityCombobox
                       value={selectedProject.priority || 'MEDIUM'}
                       disabled={isSavingField === `priority_${selectedProject.id}`}
-                      onChange={(e) => handleUpdatePriority(selectedProject.id, e.target.value as any)}
-                      className="text-[14px] py-2 h-11 border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white w-full rounded-xl font-bold"
-                    >
-                      <option value="HIGH">🔴 High Priority</option>
-                      <option value="MEDIUM">🟡 Medium Priority</option>
-                      <option value="LOW">🟢 Low Priority</option>
-                    </Select>
+                      onChange={(val) => handleUpdatePriority(selectedProject.id, val as any)}
+                    />
                   </div>
                 )}
               </div>
@@ -1252,6 +1413,101 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
               {/* Description */}
 
             </div>
+
+            {/* Admin Revision Review Section */}
+            {role === 'ADMIN' && selectedProject.revisionRequests && selectedProject.revisionRequests.some((r: any) => r.status === 'PENDING_ADMIN') && (
+              <div className="bg-orange-50/50 dark:bg-orange-900/10 p-5 rounded-2xl border border-orange-200 dark:border-orange-800/30 space-y-4">
+                <h3 className="text-[18px] font-extrabold text-orange-900 dark:text-orange-400 tracking-tight flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5" />
+                  Pending Revision Review
+                </h3>
+                {selectedProject.revisionRequests
+                  .filter((r: any) => r.status === 'PENDING_ADMIN')
+                  .map((req: any) => (
+                    <div key={req.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4">
+                      <div>
+                        <span className="text-slate-500 dark:text-slate-400 text-[12px] font-bold uppercase tracking-wider block">Target Stage</span>
+                        <p className="font-semibold text-slate-900 dark:text-white">{req.stage.replace(/_/g, ' ')}</p>
+                      </div>
+                      {req.rawClientInput?.timecodes && (
+                        <div>
+                          <span className="text-slate-500 dark:text-slate-400 text-[12px] font-bold uppercase tracking-wider block">Client Timecodes</span>
+                          <pre className="mt-1 p-3 bg-slate-50 dark:bg-slate-950 rounded-lg text-sm text-slate-800 dark:text-slate-300 font-mono whitespace-pre-wrap">
+                            {req.rawClientInput.timecodes}
+                          </pre>
+                        </div>
+                      )}
+                      {req.rawClientInput?.generalComment && (
+                        <div>
+                          <span className="text-slate-500 dark:text-slate-400 text-[12px] font-bold uppercase tracking-wider block">Client Comment</span>
+                          <p className="mt-1 p-3 bg-slate-50 dark:bg-slate-950 rounded-lg text-sm text-slate-800 dark:text-slate-300">
+                            {req.rawClientInput.generalComment}
+                          </p>
+                        </div>
+                      )}
+                      
+                      <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                        <div className="flex flex-col gap-2">
+                           <Label className="text-[13px] font-bold text-slate-700 dark:text-slate-300">Final Instructions for Editor</Label>
+                           <textarea
+                             id={`adminInstructions-${req.id}`}
+                             className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-sm focus:ring-2 focus:ring-accent outline-none min-h-[80px]"
+                             placeholder="Translate client comments into clear instructions..."
+                           ></textarea>
+                        </div>
+                        <div className="flex gap-2">
+                           <Button 
+                             className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl"
+                             onClick={async () => {
+                               const el = document.getElementById(`adminInstructions-${req.id}`) as HTMLTextAreaElement;
+                               if (!el.value.trim()) { alert('Instructions required'); return; }
+                               try {
+                                 await api.patch(`/projects/${selectedProject.id}/revisions/${req.id}`, { action: 'APPROVE', adminInstructions: el.value });
+                                 fetchProjects();
+                                 setSelectedProject(null);
+                               } catch (e: any) { alert(e.response?.data?.message || 'Error'); }
+                             }}
+                           >Approve & Forward to Editor</Button>
+                           <Button 
+                             variant="outline" 
+                             className="border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl"
+                             onClick={async () => {
+                               const msg = prompt('Enter clarification message for the client:');
+                               if (!msg) return;
+                               try {
+                                 await api.patch(`/projects/${selectedProject.id}/revisions/${req.id}`, { action: 'CLARIFY', adminMessage: msg });
+                                 fetchProjects();
+                                 setSelectedProject(null);
+                               } catch (e: any) { alert(e.response?.data?.message || 'Error'); }
+                             }}
+                           >Request Clarification</Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {/* Approved Revision Instructions (Visible to Editor and Admin) */}
+            {selectedProject.revisionRequests && selectedProject.revisionRequests.some((r: any) => r.adminInstructions) && (
+              <div className="bg-indigo-50/50 dark:bg-indigo-900/10 p-5 rounded-2xl border border-indigo-200 dark:border-indigo-800/30 space-y-4">
+                <h3 className="text-[18px] font-extrabold text-indigo-900 dark:text-indigo-400 tracking-tight">
+                  Revision Instructions
+                </h3>
+                {selectedProject.revisionRequests
+                  .filter((r: any) => r.adminInstructions)
+                  .map((req: any) => (
+                    <div key={req.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 dark:text-slate-400 text-[12px] font-bold uppercase tracking-wider block">{req.stage.replace(/_/g, ' ')}</span>
+                      </div>
+                      <pre className="mt-1 p-3 bg-slate-50 dark:bg-slate-950 rounded-lg text-sm text-slate-800 dark:text-slate-300 font-mono whitespace-pre-wrap">
+                        {req.adminInstructions}
+                      </pre>
+                    </div>
+                  ))}
+              </div>
+            )}
 
             {/* 2. Grouped Card: Resources & Deliverables */}
             <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
@@ -1506,7 +1762,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                           </div>
                           <div>
                             <span className="text-[12px] text-slate-500 dark:text-slate-400 block font-bold uppercase tracking-wider">
-                              Editor payout <span className="text-amber-500 font-extrabold">INR</span>
+                              Editor amount <span className="text-amber-500 font-extrabold">INR</span>
                             </span>
                             <div className="relative mt-1.5">
                               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] font-extrabold text-slate-400 dark:text-slate-500 pointer-events-none">₹</span>
@@ -1538,7 +1794,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                  {/* Net Margin block */}
                  <div className="pt-4 border-t border-slate-200 dark:border-slate-800/60 mt-4">
                    <span className="text-[12px] text-slate-500 dark:text-slate-400 block font-bold uppercase tracking-wider">
-                     Net margin
+                     Company profit (net margin)
                    </span>
                    {(() => {
                       const cp = selectedProject.clientPrice != null ? Number(selectedProject.clientPrice) : 0;
@@ -1747,80 +2003,80 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             <div className="lg:col-span-2 space-y-6">
               
               {/* Card 1: Basic details */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 p-8 rounded-2xl shadow-xl shadow-slate-100/40 dark:shadow-black/20 space-y-5">
-                <h4 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Basic Details</h4>
+              <div className="bg-[#F6EFE9] p-8 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-5 border-0">
+                <h4 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Basic Details</h4>
                 
                 <div className="space-y-3.5">
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectTitle" className="text-[13px] font-semibold text-slate-550 dark:text-slate-400">Project Title</Label>
+                    <Label htmlFor="projectTitle" className="text-[13px] font-extrabold text-[#8C7769]">Project Title</Label>
                     <input
                       id="projectTitle"
                       required
                       placeholder="e.g. Autumn Collection Promo Video"
                       value={newProjectTitle}
                       onChange={(e) => setNewProjectTitle(e.target.value)}
-                      className="w-full text-[15px] px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all text-slate-900 dark:text-white"
+                      className="w-full text-[15px] px-4 py-3 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(206,187,172,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9)] transition-all"
                     />
                   </div>
 
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectDesc" className="text-[13px] font-semibold text-slate-550 dark:text-slate-400">Description</Label>
+                    <Label htmlFor="projectDesc" className="text-[13px] font-extrabold text-[#8C7769]">Description</Label>
                     <textarea
                       id="projectDesc"
                       placeholder="Enter project overview, style guidelines, or specific briefs..."
                       value={newProjectDesc}
                       onChange={(e) => setNewProjectDesc(e.target.value)}
-                      className="w-full text-[15px] px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all h-20 resize-none text-slate-900 dark:text-white"
+                      className="w-full text-[15px] px-4 py-3 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(206,187,172,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9)] transition-all h-20 resize-none"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Card 2: Stakeholders & dates */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 py-6 px-8 rounded-2xl shadow-xl shadow-slate-100/40 dark:shadow-black/20 space-y-4">
-                <h4 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Stakeholders & Schedule</h4>
+              <div className="bg-[#F6EFE9] py-6 px-8 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4 border-0">
+                <h4 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Stakeholders & Schedule</h4>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectClient" className="text-[13px] font-semibold text-slate-550 dark:text-slate-400">Client Owner</Label>
+                    <Label htmlFor="projectClient" className="text-[13px] font-extrabold text-[#8C7769]">Client Owner</Label>
                     <div className="relative w-full">
                       <select
                         id="projectClient"
                         required
                         value={newProjectClientId}
                         onChange={(e) => setNewProjectClientId(e.target.value)}
-                        className="w-full appearance-none bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 pr-10 text-[15px] focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all text-slate-900 dark:text-white"
+                        className="w-full appearance-none bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl px-4 py-3 pr-10 text-[15px] shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none"
                       >
-                        <option value="" className="bg-white dark:bg-slate-955 text-slate-900 dark:text-white">Select a client…</option>
+                        <option value="" className="bg-[#F6EFE9] text-[#3D2E24]">Select a client…</option>
                         {clients.map((c) => (
-                          <option key={c.id} value={c.id} className="bg-white dark:bg-slate-955 text-slate-900 dark:text-white">
+                          <option key={c.id} value={c.id} className="bg-[#F6EFE9] text-[#3D2E24]">
                             {c.user.name} {c.company ? `(${c.company})` : ''}
                           </option>
                         ))}
                       </select>
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#8C7769]">
                         <ChevronDown className="h-4 w-4" />
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectEditor" className="text-[13px] font-semibold text-slate-550 dark:text-slate-400">Assigned Editor</Label>
+                    <Label htmlFor="projectEditor" className="text-[13px] font-extrabold text-[#8C7769]">Assigned Editor</Label>
                     <div className="relative w-full">
                       <select
                         id="projectEditor"
                         value={newProjectEditorId}
                         onChange={(e) => setNewProjectEditorId(e.target.value)}
-                        className="w-full appearance-none bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 pr-10 text-[15px] focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all text-slate-900 dark:text-white"
+                        className="w-full appearance-none bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl px-4 py-3 pr-10 text-[15px] shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none"
                       >
-                        <option value="" className="bg-white dark:bg-slate-955 text-slate-900 dark:text-white">Unassigned (None)</option>
+                        <option value="" className="bg-[#F6EFE9] text-[#3D2E24]">Unassigned (None)</option>
                         {editors.map((e) => (
-                          <option key={e.id} value={e.id} className="bg-white dark:bg-slate-955 text-slate-900 dark:text-white">
+                          <option key={e.id} value={e.id} className="bg-[#F6EFE9] text-[#3D2E24]">
                             {e.user.name}
                           </option>
                         ))}
                       </select>
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#8C7769]">
                         <ChevronDown className="h-4 w-4" />
                       </div>
                     </div>
@@ -1829,29 +2085,29 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectSubDate" className="text-[13px] font-semibold text-slate-550 dark:text-slate-400">Submission Date</Label>
+                    <Label htmlFor="projectSubDate" className="text-[13px] font-extrabold text-[#8C7769]">Submission Date</Label>
                     <div className="relative w-full">
-                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8C7769] pointer-events-none" />
                       <input
                         id="projectSubDate"
                         type="date"
                         value={newProjectSubDate}
                         onChange={(e) => setNewProjectSubDate(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all text-slate-900 dark:text-white text-[15px]"
+                        className="w-full pl-10 pr-4 py-3 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none text-[15px]"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectDueDate" className="text-[13px] font-semibold text-slate-550 dark:text-slate-400">Final Deadline</Label>
+                    <Label htmlFor="projectDueDate" className="text-[13px] font-extrabold text-[#8C7769]">Final Deadline</Label>
                     <div className="relative w-full">
-                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8C7769] pointer-events-none" />
                       <input
                         id="projectDueDate"
                         type="date"
                         value={newProjectDueDate}
                         onChange={(e) => setNewProjectDueDate(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all text-slate-900 dark:text-white text-[15px]"
+                        className="w-full pl-10 pr-4 py-3 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none text-[15px]"
                       />
                     </div>
                   </div>
@@ -1859,18 +2115,18 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
               </div>
 
               {/* Card 3: Asset links */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 py-6 px-8 rounded-2xl shadow-xl shadow-slate-100/40 dark:shadow-black/20 space-y-4">
-                <h4 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Assets & Links</h4>
+              <div className="bg-[#F6EFE9] py-6 px-8 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4 border-0">
+                <h4 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Assets & Links</h4>
                 
                 <div className="space-y-1.5 text-left">
-                  <Label htmlFor="projectRawMaterials" className="text-[13px] font-semibold text-slate-550 dark:text-slate-400">Raw Materials Google Drive Link</Label>
+                  <Label htmlFor="projectRawMaterials" className="text-[13px] font-extrabold text-[#8C7769]">Raw Materials Google Drive Link</Label>
                   <input
                     id="projectRawMaterials"
                     type="url"
                     placeholder="https://drive.google.com/drive/folders/..."
                     value={newProjectRawMaterials}
                     onChange={(e) => setNewProjectRawMaterials(e.target.value)}
-                    className="w-full text-[15px] px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all text-slate-900 dark:text-white"
+                    className="w-full text-[15px] px-4 py-3 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none"
                   />
                 </div>
               </div>
@@ -1878,18 +2134,17 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
             {/* Right Column: Finance & Margin Summary (1/3 width) */}
             <div className="lg:col-span-1">
-              <div className="sticky top-0 bg-gradient-to-br from-indigo-500/[0.08] via-indigo-650/[0.03] to-transparent dark:from-indigo-950/30 p-8 border border-indigo-500/20 dark:border-indigo-400/25 rounded-2xl shadow-xl space-y-6 relative overflow-hidden">
-                <div className="absolute top-[-30%] right-[-30%] w-[60%] h-[60%] bg-indigo-500/5 rounded-full blur-[35px] pointer-events-none" />
+              <div className="sticky top-0 bg-[#F6EFE9] p-8 border-0 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-6 relative overflow-hidden">
                 
-                <h4 className="text-[18px] font-extrabold text-indigo-650 dark:text-indigo-400 tracking-tight flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" /> Finance
+                <h4 className="text-[18px] font-extrabold text-[#EA580C] tracking-tight flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-[#EA580C]" /> Finance
                 </h4>
 
                 <div className="space-y-4 relative z-10">
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectClientPrice" className="text-[13px] font-semibold text-slate-550 dark:text-slate-400">Client Budget</Label>
+                    <Label htmlFor="projectClientPrice" className="text-[13px] font-extrabold text-[#8C7769]">Client Budget</Label>
                     <div className="relative w-full">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-450 font-bold text-[15px]">$</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8C7769] font-bold text-[15px]">$</span>
                       <input
                         id="projectClientPrice"
                         type="number"
@@ -1897,20 +2152,20 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                         placeholder="500.00"
                         value={newProjectClientPrice}
                         onChange={(e) => setNewProjectClientPrice(e.target.value)}
-                        className="w-full pl-8 pr-16 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-indigo-550/20 focus:border-indigo-500 transition-all font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-slate-900 dark:text-white"
+                        className="w-full pl-8 pr-16 py-3 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                         <button
                           type="button"
                           onClick={() => setNewProjectClientPrice(prev => String(Math.max(0, (Number(prev) || 0) - 10)))}
-                          className="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-350 transition-colors font-bold text-[12px] flex items-center justify-center cursor-pointer select-none"
+                          className="w-6 h-6 rounded-lg bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold text-[12px] flex items-center justify-center cursor-pointer select-none"
                         >
                           -
                         </button>
                         <button
                           type="button"
                           onClick={() => setNewProjectClientPrice(prev => String((Number(prev) || 0) + 10))}
-                          className="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-350 transition-colors font-bold text-[12px] flex items-center justify-center cursor-pointer select-none"
+                          className="w-6 h-6 rounded-lg bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold text-[12px] flex items-center justify-center cursor-pointer select-none"
                         >
                           +
                         </button>
@@ -1919,9 +2174,9 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   </div>
 
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectEditorPrice" className="text-[13px] font-semibold text-slate-550 dark:text-slate-400">Editor Payout (INR)</Label>
+                    <Label htmlFor="projectEditorPrice" className="text-[13px] font-extrabold text-[#8C7769]">Editor Amount (INR)</Label>
                     <div className="relative w-full">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-450 font-bold text-[15px]">₹</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8C7769] font-bold text-[15px]">₹</span>
                       <input
                         id="projectEditorPrice"
                         type="number"
@@ -1929,20 +2184,20 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                         placeholder="200.00"
                         value={newProjectEditorPrice}
                         onChange={(e) => setNewProjectEditorPrice(e.target.value)}
-                        className="w-full pl-8 pr-16 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-indigo-550/20 focus:border-indigo-500 transition-all font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-slate-900 dark:text-white"
+                        className="w-full pl-8 pr-16 py-3 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                         <button
                           type="button"
                           onClick={() => setNewProjectEditorPrice(prev => String(Math.max(0, (Number(prev) || 0) - 10)))}
-                          className="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-350 transition-colors font-bold text-[12px] flex items-center justify-center cursor-pointer select-none"
+                          className="w-6 h-6 rounded-lg bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold text-[12px] flex items-center justify-center cursor-pointer select-none"
                         >
                           -
                         </button>
                         <button
                           type="button"
                           onClick={() => setNewProjectEditorPrice(prev => String((Number(prev) || 0) + 10))}
-                          className="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-350 transition-colors font-bold text-[12px] flex items-center justify-center cursor-pointer select-none"
+                          className="w-6 h-6 rounded-lg bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold text-[12px] flex items-center justify-center cursor-pointer select-none"
                         >
                           +
                         </button>
@@ -1951,22 +2206,22 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   </div>
 
                   {/* Calculations breakdown */}
-                  <div className="border-t border-indigo-500/20 pt-6 mt-6 space-y-3">
-                    <div className="flex justify-between text-sm text-slate-500 dark:text-slate-400 font-medium">
-                      <span>Gross Revenue</span>
-                      <span className="text-slate-900 dark:text-white font-bold">${Number(newProjectClientPrice) || 0}</span>
+                  <div className="border-t border-[rgba(206,187,172,0.4)] pt-6 mt-6 space-y-3">
+                    <div className="flex justify-between text-sm text-[#7C6A5A] font-extrabold">
+                      <span>Revenue</span>
+                      <span className="text-[#3D2E24] font-extrabold">${Number(newProjectClientPrice) || 0}</span>
                     </div>
-                    <div className="flex justify-between text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    <div className="flex justify-between text-sm text-[#7C6A5A] font-extrabold">
                       <span>Editor Cost</span>
-                      <span className="text-rose-500 font-bold">-${Number(newProjectEditorPrice) || 0}</span>
+                      <span className="text-[#EF4444] font-extrabold">-${Number(newProjectEditorPrice) || 0}</span>
                     </div>
                     
-                    <div className="border-t border-indigo-500/10 pt-4 flex justify-between items-center text-slate-900 dark:text-white">
+                    <div className="border-t border-[rgba(206,187,172,0.3)] pt-4 flex justify-between items-center text-[#3D2E24]">
                       <div>
-                        <span className="text-sm font-extrabold text-slate-800 dark:text-slate-200 leading-tight block">Net Margin</span>
-                        <span className="text-[10px] text-slate-450 dark:text-slate-500 font-normal">Calculated estimate</span>
+                        <span className="text-sm font-extrabold text-[#3D2E24] leading-tight block">Company Profit (Net Margin)</span>
+                        <span className="text-[10px] text-[#8C7769] font-normal">Calculated estimate</span>
                       </div>
-                      <span className="text-[28px] font-black text-indigo-600 dark:text-indigo-400 tracking-tight leading-none">
+                      <span className="text-[28px] font-extrabold text-[#EA580C] tracking-tight leading-none">
                         ${(Number(newProjectClientPrice) || 0) - (Number(newProjectEditorPrice) || 0)}
                       </span>
                     </div>
@@ -2001,6 +2256,181 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
         </form>
       </Drawer>
 
+      {/* ── Filter Drawer ─────────────────────────────────────────────── */}
+      <Drawer
+        isOpen={isFilterDrawerOpen}
+        onClose={() => setIsFilterDrawerOpen(false)}
+        title="Advanced Filters"
+        description="Refine the project board view using multiple conditions."
+        size="md"
+      >
+        <div className="p-6 space-y-6">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+
+              <div className="space-y-1.5">
+                <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Client</Label>
+                <select 
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+                  value={filterDraft.client || ''}
+                  onChange={e => setFilterDraft(p => ({ ...p, client: e.target.value }))}
+                >
+                  <option value="">All Clients</option>
+                  {clients.map(c => <option key={c.id} value={c.id}>{c.user?.name}</option>)}
+                </select>
+              </div>
+
+              {role === 'ADMIN' && (
+                <div className="space-y-1.5">
+                  <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Assigned Editor</Label>
+                  <select 
+                    className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+                    value={filterDraft.editor || ''}
+                    onChange={e => setFilterDraft(p => ({ ...p, editor: e.target.value }))}
+                  >
+                    <option value="">All Editors</option>
+                    {editors.map(e => <option key={e.id} value={e.id}>{e.user?.name}</option>)}
+                  </select>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Status</Label>
+                <select 
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+                  value={filterDraft.status || ''}
+                  onChange={e => setFilterDraft(p => ({ ...p, status: e.target.value }))}
+                >
+                  <option value="">All Statuses</option>
+                  {uniqueStatuses.map(s => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Priority</Label>
+                <select 
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+                  value={filterDraft.priority || ''}
+                  onChange={e => setFilterDraft(p => ({ ...p, priority: e.target.value }))}
+                >
+                  <option value="">All Priorities</option>
+                  {PRIORITY_OPTIONS.map(po => <option key={po.value} value={po.value}>{po.label}</option>)}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Deadline Month</Label>
+                <input 
+                  type="month"
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+                  value={filterDraft.month || ''}
+                  onChange={e => setFilterDraft(p => ({ ...p, month: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Submission Date</Label>
+              <div className="grid grid-cols-2 gap-4 mt-1.5">
+                <input 
+                  type="date"
+                  title="From"
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+                  value={filterDraft.subFrom || ''}
+                  onChange={e => setFilterDraft(p => ({ ...p, subFrom: e.target.value }))}
+                />
+                <input 
+                  type="date"
+                  title="To"
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+                  value={filterDraft.subTo || ''}
+                  onChange={e => setFilterDraft(p => ({ ...p, subTo: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Deadline</Label>
+              <div className="grid grid-cols-2 gap-4 mt-1.5">
+                <input 
+                  type="date"
+                  title="From"
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+                  value={filterDraft.dueFrom || ''}
+                  onChange={e => setFilterDraft(p => ({ ...p, dueFrom: e.target.value }))}
+                />
+                <input 
+                  type="date"
+                  title="To"
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+                  value={filterDraft.dueTo || ''}
+                  onChange={e => setFilterDraft(p => ({ ...p, dueTo: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <Label className="text-[12px] font-bold uppercase tracking-wider text-slate-500">Project Value</Label>
+              <div className="grid grid-cols-2 gap-4 mt-1.5">
+                <input 
+                  type="number"
+                  placeholder="Min"
+                  className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 bg-white dark:bg-slate-950 text-sm focus:ring-1 focus:ring-accent outline-none text-slate-700 dark:text-slate-200"
+                  value={filterDraft.valMin || ''}
+                  onChange={e => setFilterDraft(p => ({ ...p, valMin: e.target.value }))}
+                />
+                <input 
+                  type="number"
+                  placeholder="Max"
+                  className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 bg-white dark:bg-slate-950 text-sm focus:ring-1 focus:ring-accent outline-none text-slate-700 dark:text-slate-200"
+                  value={filterDraft.valMax || ''}
+                  onChange={e => setFilterDraft(p => ({ ...p, valMax: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={filterDraft.overdue === 'true'}
+                  onChange={e => setFilterDraft(p => ({ ...p, overdue: e.target.checked ? 'true' : '', dueWeek: e.target.checked ? '' : p.dueWeek }))}
+                  className="rounded border-slate-300 text-accent focus:ring-accent"
+                />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Overdue Only</span>
+              </label>
+              
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={filterDraft.dueWeek === 'true'}
+                  onChange={e => setFilterDraft(p => ({ ...p, dueWeek: e.target.checked ? 'true' : '', overdue: e.target.checked ? '' : p.overdue }))}
+                  className="rounded border-slate-300 text-accent focus:ring-accent"
+                />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Due This Week</span>
+              </label>
+            </div>
+          </div>
+          
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClearFilters}
+              className="rounded-xl font-bold"
+            >
+              Clear All
+            </Button>
+            <Button
+              type="button"
+              onClick={handleApplyFilters}
+              className="bg-accent hover:bg-accent/90 text-white font-bold rounded-xl px-6 border-transparent"
+            >
+              Apply Filters
+            </Button>
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 }

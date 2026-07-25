@@ -134,7 +134,7 @@ export class ClientService {
     const advancePaid = Number(client.advancePaid ?? 0);
 
     // ── remainingCredit ────────────────────────────────────────────────────
-    const remainingCredit = advancePaid - completedWorkValue;
+    const remainingCredit = Math.max(0, advancePaid - completedWorkValue);
 
     // ── equivalentRemainingVideos ──────────────────────────────────────────
     // Average is taken from this client's own completed projects only.

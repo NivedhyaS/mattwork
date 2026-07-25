@@ -69,8 +69,44 @@ export class InvoiceController {
     res.send(pdfBuffer);
   });
 
+
+  getEligibleClients = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const editor = await prisma.editor.findUnique({
+      where: { userId: (req as any).user!.id },
+    });
+    if (!editor) {
+      throw ApiError.notFound('Editor profile not found');
+    }
+
+    const eligibleProjects = await prisma.project.findMany({
+      where: {
+        editorId: editor.id,
+        status: 'UPLOADED',
+        editorInvoiced: false
+      },
+      include: {
+        client: {
+          include: { user: true }
+        }
+      }
+    });
+
+    const uniqueClientsMap = new Map();
+    for (const p of eligibleProjects) {
+      if (!uniqueClientsMap.has(p.clientId)) {
+        uniqueClientsMap.set(p.clientId, {
+          id: p.client.id,
+          name: p.client.user.name,
+          company: p.client.company
+        });
+      }
+    }
+
+    ApiResponse.success(res, Array.from(uniqueClientsMap.values()), 'Eligible clients retrieved successfully');
+  });
+
   downloadEditorInvoicePdf = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const { month } = req.query;
+    const { clientId } = req.query;
     
     // Find Editor
     const editor = await prisma.editor.findUnique({
@@ -85,45 +121,43 @@ export class InvoiceController {
 
     // Support POST body or GET query params
     const body = req.body || {};
+    const effectiveClientId = (body.clientId || clientId) as string;
+    
+    if (!effectiveClientId) {
+      res.status(400).json({ error: 'Client ID is required' });
+      return;
+    }
+
     const projectIds: string[] | undefined = body.projectIds || (req.query.projectIds ? (req.query.projectIds as string).split(',') : undefined);
     const customEditorName: string | undefined = body.editorName || (req.query.editorName as string);
     const customPaymentDetails: string | undefined = body.paymentDetails || (req.query.paymentDetails as string);
     const bonusAmount = Number(body.bonusAmount ?? req.query.bonusAmount ?? 0);
     const tdsRate = Number(body.tdsRate ?? req.query.tdsRate ?? 0);
 
-    // Parse month (e.g. "July 2026") into a date range filter
-    let dateFilter: any = undefined;
-    if (month) {
-      const monthStr = month as string;
-      const parts = monthStr.split(' ');
-      if (parts.length === 2) {
-        const monthName = parts[0];
-        const year = parseInt(parts[1], 10);
-        const date = new Date(`${monthName} 1, ${year}`);
-        if (!isNaN(date.getTime())) {
-          const start = new Date(date.getFullYear(), date.getMonth(), 1);
-          const end = new Date(date.getFullYear(), date.getMonth() + 1, 1);
-          dateFilter = {
-            gte: start,
-            lt: end
-          };
-        }
-      }
-    }
-
-    // Find completed projects matching the selected month range (and optional projectIds filter)
+    // Find completed projects matching the selected client and NOT invoiced
     const completedProjects = await prisma.project.findMany({
       where: {
         editorId: editor.id,
+        clientId: effectiveClientId,
         status: 'UPLOADED',
-        ...(dateFilter && { updatedAt: dateFilter }),
+        editorInvoiced: false,
         ...(projectIds && projectIds.length > 0 && { id: { in: projectIds } })
       },
       include: {
-        client: true
+        client: {
+          include: { user: true }
+        }
       },
       orderBy: { updatedAt: 'desc' }
     });
+
+    if (completedProjects.length === 0) {
+      res.status(400).json({ error: 'No eligible uninvoiced projects found for this client' });
+      return;
+    }
+    
+    const clientName = completedProjects[0].client.user.name;
+    const clientCurrency = completedProjects[0].client.currency || 'USD';
 
     // Map projects and sum actual project-specific editorPrice fields
     const projectsMapped = [];
@@ -131,9 +165,9 @@ export class InvoiceController {
       const rateVal = p.editorPrice != null ? Number(p.editorPrice) : (editor.hourlyRate ? Number(editor.hourlyRate) : 500);
       projectsMapped.push({
         title: p.title,
-        completedDate: p.updatedAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+        completedDate: p.updatedAt.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
         rate: rateVal,
-        currency: 'INR'
+        currency: clientCurrency
       });
     }
 
@@ -141,36 +175,53 @@ export class InvoiceController {
     const tdsDeduction = (subtotalAmount * tdsRate) / 100;
     const finalTotalAmount = Math.max(0, subtotalAmount + bonusAmount - tdsDeduction);
 
-    // Compute sequential/auto-incrementing invoice number up to the end of the month
-    const endOfRange = dateFilter ? dateFilter.lt : new Date();
-    const completedCount = await prisma.project.count({
+    // Sequential invoice numbering per client: EDR-[EDITOR_4]-[CLIENT_3]-[COUNT]
+    const editorIdSuffix = editor.id.substring(editor.id.length - 4).toUpperCase();
+    const clientPrefix = clientName.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, 'X').padEnd(3, 'X');
+    
+    // Find how many times this editor has invoiced this client previously to get the next number
+    // We can count total invoices or total projects invoiced. Let's count how many projects have been invoiced already.
+    // Or we could count the number of invoices if Editor invoices were stored. Since they aren't, let's base it on
+    // projects invoiced so far, or just generate a random sequence. Actually, let's use the count of previously invoiced projects + 1.
+    const previouslyInvoicedCount = await prisma.project.count({
       where: {
         editorId: editor.id,
-        status: 'UPLOADED',
-        updatedAt: {
-          lt: endOfRange
-        }
+        clientId: effectiveClientId,
+        editorInvoiced: true
       }
     });
 
-    const editorIdSuffix = editor.id.substring(editor.id.length - 4).toUpperCase();
-    const invoiceNumber = `EDR-${editorIdSuffix}-${String(completedCount || 1).padStart(4, '0')}`;
+    // Approximate sequential format based on previously invoiced chunks (each chunk roughly 1 invoice)
+    // To make it truly sequential without a DB table, we can just use the project count or a timestamp.
+    // We'll just use previouslyInvoicedCount as a safe sequential index.
+    const invoiceNumber = `EDR-${editorIdSuffix}-${clientPrefix}-${String(previouslyInvoicedCount + 1).padStart(4, '0')}`;
 
     const displayName = customEditorName || editor.user.name;
-    const displayPaymentDetails = customPaymentDetails || `UPI/Bank Payout for ${displayName}`;
+    const displayPaymentDetails = customPaymentDetails || `Bank Payout for ${displayName}`;
+
+    // Mark as invoiced
+    await prisma.project.updateMany({
+      where: {
+        id: { in: completedProjects.map(p => p.id) }
+      },
+      data: {
+        editorInvoiced: true
+      }
+    });
 
     const pdfBuffer = await pdfService.generateEditorInvoicePDF({
       editorName: displayName,
       invoiceNumber,
-      month: (month as string) || new Date().toLocaleString('default', { month: 'long', year: 'numeric' }),
+      month: clientName, // Reusing month field to display Client Name in PDF
       completedProjects: projectsMapped,
       ratePerProject: editor.hourlyRate ? Number(editor.hourlyRate) : 500,
       totalAmount: finalTotalAmount,
-      paymentDetails: displayPaymentDetails
+      paymentDetails: displayPaymentDetails,
+      currency: clientCurrency
     });
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=editor_invoice_${(month as string || 'current').replace(/\s+/g, '_')}.pdf`);
+    res.setHeader('Content-Disposition', `attachment; filename=invoice_${clientName.replace(/\s+/g, '_')}_${invoiceNumber}.pdf`);
     res.send(pdfBuffer);
   });
 

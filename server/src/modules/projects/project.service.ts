@@ -1,4 +1,4 @@
-import { Role, Priority } from '@prisma/client';
+import { Role, Priority, Prisma } from '@prisma/client';
 import { projectRepository } from './project.repository';
 import { serializeProject, serializeProjects, RawProject } from './project.serializer';
 import { resolveProjectId } from '../../utils/project';
@@ -12,6 +12,8 @@ import {
   UpdateProjectPriorityInput,
   ListProjectsQuery,
   ReassignEditorInput,
+  CreateRevisionRequestInput,
+  AdminReviewRevisionInput,
 } from './project.validator';
 import { googleSheetsService, ProjectSheetSnapshot } from '../../services/googleSheets';
 import { googleDriveService } from '../../services/googleDrive';
@@ -361,7 +363,7 @@ export class ProjectService {
       }
     }
 
-    const updateData: any = { status: input.status };
+    const updateData: any = { status: input.status, editorVisibleStatus: input.status };
     if (input.status === 'UPLOADED') {
       updateData.completedAt = new Date();
     } else {
@@ -495,6 +497,112 @@ export class ProjectService {
 
     // 4. Perform the hard delete of the project itself (Prisma handles cascade for project files)
     return projectRepository.delete(realId);
+  }
+
+  // ── Revisions ─────────────────────────────────────────────────────────────
+
+  async createRevisionRequest(idOrSlug: string, input: CreateRevisionRequestInput, requester: AuthUser) {
+    const realId = await resolveProjectId(idOrSlug);
+    const project = await projectRepository.findById(realId);
+    if (!project) throw ApiError.notFound('Project not found');
+
+    if (requester.role === Role.CLIENT) {
+      const clientUser = await prisma.client.findUnique({ where: { userId: requester.id } });
+      if (!clientUser || project.clientId !== clientUser.id) {
+        throw ApiError.forbidden('Clients can only submit revisions for their own projects');
+      }
+    }
+
+    // Advance project status to the requested revision stage
+    const updatedProject = await projectRepository.update(realId, {
+      status: input.stage,
+    });
+
+    // Create the RevisionRequest
+    await prisma.revisionRequest.create({
+      data: {
+        projectId: realId,
+        stage: input.stage,
+        rawClientInput: input.rawClientInput ?? Prisma.DbNull,
+        status: 'PENDING_ADMIN',
+      },
+    });
+
+    // Notify admins
+    const admins = await prisma.user.findMany({ where: { role: Role.ADMIN } });
+    for (const admin of admins) {
+      await notificationService.notifyUser(
+        admin.id,
+        'Revision Request Submitted',
+        `${project.title} has a new revision request from the client and is pending review.`,
+        'PROJECT_STATUS_CHANGED',
+        project.id
+      );
+    }
+
+    const num = await this.getProjectNumberStr(updatedProject);
+    return serializeProject(updatedProject, requester, num);
+  }
+
+  async reviewRevisionRequest(idOrSlug: string, reqId: string, input: AdminReviewRevisionInput, requester: AuthUser) {
+    const realId = await resolveProjectId(idOrSlug);
+    const project = await projectRepository.findById(realId);
+    if (!project) throw ApiError.notFound('Project not found');
+
+    const revReq = await prisma.revisionRequest.findUnique({ where: { id: reqId } });
+    if (!revReq || revReq.projectId !== realId) throw ApiError.notFound('Revision request not found');
+
+    if (input.action === 'APPROVE') {
+      await prisma.revisionRequest.update({
+        where: { id: reqId },
+        data: {
+          status: 'APPROVED',
+          adminInstructions: input.adminInstructions,
+        },
+      });
+
+      await projectRepository.update(realId, {
+        editorVisibleStatus: project.status,
+      });
+
+      if (project.editorId) {
+        const editorUser = await prisma.editor.findUnique({ where: { id: project.editorId }});
+        if (editorUser) {
+           await notificationService.notifyUser(
+             editorUser.userId,
+             'Revision Instructions Ready',
+             `${project.title} has approved revision instructions ready for you.`,
+             'GENERAL',
+             project.id
+           );
+        }
+      }
+    } else if (input.action === 'CLARIFY') {
+      await prisma.revisionRequest.update({
+        where: { id: reqId },
+        data: {
+          status: 'NEEDS_CLARIFICATION',
+          adminMessage: input.adminMessage,
+        },
+      });
+
+      const clientUser = await prisma.client.findUnique({ where: { id: project.clientId }});
+      if (clientUser) {
+        await notificationService.notifyUser(
+          clientUser.userId,
+          'Clarification Needed',
+          `An admin has requested clarification on your revision for ${project.title}.`,
+          'GENERAL',
+          project.id
+        );
+      }
+    }
+
+    // Return the updated project state
+    const updatedProject = await projectRepository.findById(realId);
+    if (!updatedProject) throw ApiError.notFound('Project not found');
+    const num = await this.getProjectNumberStr(updatedProject);
+    return serializeProject(updatedProject, requester, num);
   }
 }
 

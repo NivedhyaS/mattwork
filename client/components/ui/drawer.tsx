@@ -50,7 +50,7 @@ export default function Drawer({
       <div className="fixed inset-y-0 right-0 flex max-w-full pl-10 pointer-events-none">
         <div
           className={cn(
-            'pointer-events-auto relative w-screen bg-white dark:bg-slate-950 shadow-2xl border-l border-slate-200 dark:border-slate-850 flex flex-col h-full transform transition-transform duration-300 ease-in-out translate-x-0',
+            'pointer-events-auto relative w-screen bg-[#F6EFE9] text-[#3D2E24] shadow-[-12px_0_24px_rgba(206,187,172,0.6)] border-0 flex flex-col h-full transform transition-transform duration-300 ease-in-out translate-x-0',
             size === 'sm' && 'max-w-md',
             size === 'md' && 'max-w-lg',
             size === 'lg' && 'max-w-2xl',

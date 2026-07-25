@@ -113,3 +113,20 @@ export const updateCommentSchema = z.object({
   content: z.string().min(1, 'Comment cannot be empty').max(5000),
 });
 export type UpdateCommentInput = z.infer<typeof updateCommentSchema>;
+
+export const createRevisionRequestSchema = z.object({
+  stage: z.enum([
+    'REVISION_1',
+    'REVISION_2',
+    'REVISION_3',
+  ]),
+  rawClientInput: z.any().optional(),
+});
+export type CreateRevisionRequestInput = z.infer<typeof createRevisionRequestSchema>;
+
+export const adminReviewRevisionSchema = z.object({
+  action: z.enum(['APPROVE', 'CLARIFY']),
+  adminInstructions: z.string().optional(),
+  adminMessage: z.string().optional(),
+});
+export type AdminReviewRevisionInput = z.infer<typeof adminReviewRevisionSchema>;

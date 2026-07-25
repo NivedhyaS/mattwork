@@ -43,6 +43,16 @@ export class ProjectController {
     await projectService.deleteProject(req.params.id as string);
     ApiResponse.noContent(res);
   });
+
+  createRevisionRequest = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const project = await projectService.createRevisionRequest(req.params.id as string, req.body, req.user!);
+    ApiResponse.created(res, project, 'Revision request submitted successfully');
+  });
+
+  reviewRevisionRequest = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const project = await projectService.reviewRevisionRequest(req.params.id as string, req.params.reqId as string, req.body, req.user!);
+    ApiResponse.success(res, project, 'Revision request reviewed successfully');
+  });
 }
 
 export const projectController = new ProjectController();

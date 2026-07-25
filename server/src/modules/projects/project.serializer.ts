@@ -21,12 +21,24 @@ type RawComment = {
   author: CommentAuthor;
 };
 
+type RawRevisionRequest = {
+  id: string;
+  stage: string;
+  status: string;
+  rawClientInput: any;
+  adminInstructions: string | null;
+  adminMessage: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 /** The full project shape as returned from the DB (all fields present). */
 export type RawProject = {
   id: string;
   title: string;
   description: string | null;
   status: string;
+  editorVisibleStatus: string;
   priority: string;
   dueDate: Date | null;
   submissionDate: Date | null;
@@ -66,6 +78,7 @@ export type RawProject = {
   files?: unknown[];
   invoices?: unknown[];
   comments?: RawComment[];
+  revisionRequests?: RawRevisionRequest[];
 };
 
 // ─── Per-role response shapes ─────────────────────────────────────────────────
@@ -77,10 +90,11 @@ export type RawProject = {
 export type AdminProjectView = Omit<RawProject, 'clientPrice' | 'editorPrice'> & {
   clientPrice: string | null;
   editorPrice: string | null;
-  profit: string | null;
+  netMargin: string | null;
   projectNumber: string;
   standardName: string;
   standardSlug: string;
+  hasPendingRevisionRequest: boolean;
 };
 
 /**
@@ -109,11 +123,11 @@ export type ClientProjectView = Omit<
 
 /**
  * EDITOR — sees title, status, deadlines, drive links, and comments — but priority, clientPrice,
- * profit, budget, rawMaterialsFolder, and all client contact info (email, phone) are absent.
+ * profit, budget, rawMaterialsFolder, and all client contact info (email, phone, name) are absent.
  */
 export type EditorProjectView = Omit<
   RawProject,
-  'priority' | 'rawMaterialsFolder' | 'clientPrice' | 'editorPrice' | 'budget' | 'client'
+  'priority' | 'rawMaterialsFolder' | 'clientPrice' | 'editorPrice' | 'budget' | 'client' | 'revisionRequests'
 > & {
   client: {
     id: string;
@@ -124,6 +138,7 @@ export type EditorProjectView = Omit<
   projectNumber: string;
   standardName: string;
   standardSlug: string;
+  revisionRequests?: Omit<RawRevisionRequest, 'rawClientInput' | 'adminMessage'>[];
 };
 
 // ─── Serializer ───────────────────────────────────────────────────────────────
@@ -148,23 +163,28 @@ export function serializeProject(
       const clientPrice = toDecimalString(raw.clientPrice);
       const editorPrice = toDecimalString(raw.editorPrice);
 
-      // Compute profit only when both values are present
-      let profit: string | null = null;
+      // Compute netMargin only when both values are present
+      let netMargin: string | null = null;
       if (raw.clientPrice != null && raw.editorPrice != null) {
-        profit = (
+        netMargin = (
           Number(raw.clientPrice) - Number(raw.editorPrice)
         ).toFixed(2);
       }
+
+      const hasPendingRevisionRequest = Array.isArray(raw.revisionRequests) 
+        ? raw.revisionRequests.some((r: any) => r.status === 'PENDING_ADMIN')
+        : false;
 
       const { clientPrice: _cp, editorPrice: _ep, ...rest } = raw;
       return {
         ...rest,
         clientPrice,
         editorPrice,
-        profit,
+        netMargin,
         projectNumber,
         standardName,
-        standardSlug
+        standardSlug,
+        hasPendingRevisionRequest
       } as AdminProjectView;
     }
 
@@ -218,15 +238,40 @@ export function serializeProject(
         editorPrice: _ep,
         budget: _b,
         client: _client,
+        revisionRequests: _reqs,
         ...rest
       } = raw;
 
+      const maskedClient = {
+        id: raw.client.id,
+        company: raw.client.company,
+        user: { 
+          id: raw.client.user.id, 
+          name: "Confidential Client", 
+          avatar: null 
+        }
+      };
+
+      let safeRevisions;
+      if (raw.revisionRequests) {
+        safeRevisions = raw.revisionRequests
+          .filter((r) => r.status === 'APPROVED')
+          .map((r) => {
+            const { rawClientInput: _rci, adminMessage: _am, ...safeFields } = r;
+            return safeFields;
+          });
+      }
+
+      const status = raw.editorVisibleStatus ?? raw.status;
       return {
         ...rest,
+        status,
+        client: maskedClient,
         editorPrice,
         projectNumber,
         standardName,
-        standardSlug
+        standardSlug,
+        ...(safeRevisions !== undefined && { revisionRequests: safeRevisions }),
       } as EditorProjectView;
     }
 

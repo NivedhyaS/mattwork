@@ -49,16 +49,21 @@ export function extractGoogleFormId(url: string): string | null {
   if (!url) return null;
   const trimmed = url.trim();
 
-  // Pattern 1: /forms/d/e/<ID>/ or /forms/d/<ID>/
-  const match = trimmed.match(/\/forms\/d\/(?:e\/)?([a-zA-Z0-9_-]{10,})/);
+  // Explicitly reject responder /e/ URLs as they don't contain the true Form ID
+  if (trimmed.includes('/d/e/')) {
+    return null;
+  }
+
+  // Pattern 1: /forms/d/<ID>/
+  const match = trimmed.match(/\/forms\/d\/([a-zA-Z0-9_-]{10,})/);
   if (match && match[1]) return match[1];
 
   // Pattern 2: Generic /d/<ID>
-  const dMatch = trimmed.match(/\/d\/(?:e\/)?([a-zA-Z0-9_-]{10,})/);
+  const dMatch = trimmed.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
   if (dMatch && dMatch[1]) return dMatch[1];
 
   // Pattern 3: Direct raw form ID
-  if (/^[a-zA-Z0-9_-]{10,}$/.test(trimmed)) return trimmed;
+  if (trimmed.length >= 20 && /^[a-zA-Z0-9_-]+$/.test(trimmed)) return trimmed;
 
   return null;
 }
@@ -71,19 +76,32 @@ export class GoogleFormsService {
    * OAuth2 credentials from environment variables.
    */
   private getClient(): forms_v1.Forms | null {
-    const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN } = env;
+    const { GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY } = env;
 
-    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REFRESH_TOKEN) {
+    if (!GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY) {
       logger.warn(
-        '[GoogleFormsService] Missing OAuth2 credentials (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / GOOGLE_REFRESH_TOKEN)'
+        '[GoogleFormsService] Missing Service Account credentials (GOOGLE_CLIENT_EMAIL / GOOGLE_PRIVATE_KEY)'
       );
       return null;
     }
 
     try {
-      const oauth2Client = new google.auth.OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
-      oauth2Client.setCredentials({ refresh_token: GOOGLE_REFRESH_TOKEN });
-      return google.forms({ version: 'v1', auth: oauth2Client });
+      // Fix private key formatting if newlines were escaped
+      const privateKey = GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n');
+
+      const auth = new google.auth.GoogleAuth({
+        credentials: {
+          client_email: GOOGLE_CLIENT_EMAIL,
+          private_key: privateKey,
+        },
+        scopes: [
+          'https://www.googleapis.com/auth/forms.body.readonly',
+          'https://www.googleapis.com/auth/forms.responses.readonly',
+          'https://www.googleapis.com/auth/drive.readonly'
+        ],
+      });
+
+      return google.forms({ version: 'v1', auth });
     } catch (err: any) {
       logger.error(`[GoogleFormsService] Failed to initialize Google Forms client: ${err?.message}`);
       return null;

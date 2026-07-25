@@ -33,7 +33,6 @@ interface Project {
   projectNumber?: string;
   standardName?: string;
   standardSlug?: string;
-  clientPrice?: number | string | null;
   budget?: number | string | null;
 }
 
@@ -43,7 +42,7 @@ interface BalanceData {
   remainingCredit: number;
   equivalentRemainingVideos: number | null;
   averageNote?: string;
-  completedProjects: { id: string; title: string; clientPrice: number; deliveredAt: string }[];
+  completedProjects: { id: string; title: string; budget: number; deliveredAt: string }[];
 }
 
 const customFormatDate = (dateString: string | Date | undefined | null): string => {
@@ -168,7 +167,7 @@ function BreakdownModal({ isOpen, onClose, title, currency, balanceData, activeC
                         <p className="text-sm font-semibold text-slate-800 dark:text-white">{p.title}</p>
                         <p className="text-xs text-slate-400">{fmtDate(p.deliveredAt)}</p>
                       </div>
-                      <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">{fmt(p.clientPrice)}</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">{fmt(p.budget)}</span>
                     </div>
                   ))}
                   <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-900">
@@ -332,7 +331,7 @@ export default function ClientDashboard() {
   const activeProjectsCount = activeProjects.length;
 
   const activeProjectsValue = activeProjects.reduce((sum, p) => {
-    const price = typeof p.clientPrice === 'string' ? parseFloat(p.clientPrice) : p.clientPrice;
+    const price = typeof p.budget === 'string' ? parseFloat(p.budget) : p.budget;
     return sum + (price || 0);
   }, 0);
 
@@ -344,7 +343,7 @@ export default function ClientDashboard() {
     {
       key: 'money_used' as const,
       label: 'Money Used',
-      // PRD §7: completedWorkValue = sum of clientPrice for UPLOADED projects
+      // PRD §7: completedWorkValue = sum of budget for UPLOADED projects
       value: fmt(balanceData.completedWorkValue),
       description: 'Used',
       isClickable: true,
@@ -398,7 +397,7 @@ export default function ClientDashboard() {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto text-base">
+    <div className="space-y-8 max-w-7xl mx-auto text-base bg-[#F6EFE9] text-[#3D2E24] p-1">
       {/* Breakdown Modal */}
       <BreakdownModal
         isOpen={breakdownCard !== null}
@@ -415,10 +414,10 @@ export default function ClientDashboard() {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[36px] font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
-            Client dashboard
+          <h1 className="text-[36px] font-extrabold tracking-tight text-[#3D2E24] leading-tight">
+            Client Dashboard
           </h1>
-          <p className="text-[16px] text-slate-500 mt-2">
+          <p className="text-[16px] text-[#7C6A5A] mt-1">
             Welcome back. Track your video production progress and credit balance.
           </p>
         </div>
@@ -429,9 +428,9 @@ export default function ClientDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flat-card bg-card/40 p-6 border border-border animate-pulse">
-              <div className="h-3 w-20 bg-slate-200 dark:bg-slate-800 rounded mb-3" />
-              <div className="h-8 w-28 bg-slate-200 dark:bg-slate-800 rounded" />
+            <div key={i} className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] animate-pulse">
+              <div className="h-3 w-20 bg-[#E2D6C8] rounded mb-3" />
+              <div className="h-8 w-28 bg-[#E2D6C8] rounded" />
             </div>
           ))
         ) : stats.map((stat) => {
@@ -444,29 +443,27 @@ export default function ClientDashboard() {
                 onClick: () => setBreakdownCard(stat.key as any),
               })}
               className={cn(
-                "flat-card bg-card/45 p-6 border border-border text-left w-full transition-all duration-200",
-                isClickable
-                  ? "hover:border-accent/40 hover:bg-accent/[0.02] cursor-pointer group"
-                  : ""
+                "p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] text-left w-full transition-all duration-200",
+                isClickable ? "cursor-pointer group" : ""
               )}
             >
               <div>
-                <p className="text-[12px] uppercase font-bold text-slate-450 tracking-wider">
+                <p className="text-[12px] uppercase font-extrabold text-[#8C7769] tracking-wider">
                   {stat.label}
                 </p>
-                <h3 className="kpi-figure text-[40px] font-black mt-2 text-slate-900 dark:text-white leading-none">
+                <h3 className="kpi-figure text-[38px] font-extrabold mt-2 text-[#3D2E24] leading-none">
                   {stat.value}
-                  <span className="text-[18px] font-semibold text-slate-450 ml-1.5 font-normal normal-case">
+                  <span className="text-[18px] font-bold text-[#8C7769] ml-1.5 normal-case">
                     {stat.description}
                   </span>
                 </h3>
                 {stat.secondary && (
-                  <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-2 font-medium">
+                  <p className="text-[13px] text-[#7C6A5A] mt-2 font-bold">
                     {stat.secondary}
                   </p>
                 )}
                 {isClickable ? (
-                  <p className="text-[10px] text-slate-400/50 mt-2.5 group-hover:text-slate-450 transition-colors">
+                  <p className="text-[11px] font-bold text-[#EA580C] mt-3 group-hover:underline">
                     Click to see breakdown →
                   </p>
                 ) : (

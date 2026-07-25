@@ -3,45 +3,51 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #fafafa;
-  --foreground: #09090b;
-  --card: #ffffff;
-  --border: #e4e4e7;
-  /* Brand accent: sleek warm violet — distinct from every semantic status color */
-  --accent: #6366f1;
-  --accent-light: rgba(99, 102, 241, 0.1);
+  --background: #F6EFE9;
+  --foreground: #3D2E24;
+  --card: #F6EFE9;
+  --border: transparent;
+  /* Primary Accent: Warm Mid-Tone Orange */
+  --accent: #F97316;
+  --accent-hover: #EA580C;
+  --accent-light: rgba(249, 115, 22, 0.15);
 
-  --completed: #10b981;
-  --at-risk: #f59e0b;
-  --overdue: #ef4444;
-  --inactive: #71717a;
+  --completed: #10B981;
+  --at-risk: #F59E0B;
+  --overdue: #EF4444;
+  --inactive: #8C7769;
 
-  /* ── Typography Scale ─────────────────────────────────────────────────────
-     Centralised font-size tokens. Every arbitrary text-[Npx] class in the
-     app maps to one of these variables. Adjust here to shift the entire UI.
-  ─────────────────────────────────────────────────────────────────────────── */
-  --fs-9:  11px;   /* was 9px  — tiny badge superscripts           */
-  --fs-10: 11px;   /* was 10px — uppercase section labels          */
-  --fs-11: 12px;   /* was 11px — micro labels                      */
-  --fs-12: 13px;   /* was 12px — badge text, table column headers  */
-  --fs-13: 14px;   /* was 13px — secondary / meta text             */
-  --fs-14: 15px;   /* was 14px — form labels, helper text          */
-  --fs-15: 16px;   /* was 15px — primary body / input text         */
-  --fs-16: 17px;   /* was 16px — sub-headings, card titles         */
-  --fs-18: 19px;   /* was 18px — section headings                  */
-  --fs-20: 21px;   /* was 20px — card-level headings               */
-  --fs-28: 30px;   /* was 28px — page sub-titles                   */
-  --fs-36: 40px;   /* was 36px — page h1 headings                  */
-  --fs-38: 42px;   /* was 38px — large page h1 headings            */
+  /* Neumorphic Shadow Tokens */
+  --neu-light-shadow: -8px -8px 16px rgba(255, 255, 255, 0.9);
+  --neu-dark-shadow: 8px 8px 16px rgba(206, 187, 172, 0.65);
+  --neu-outer: -8px -8px 16px rgba(255, 255, 255, 0.9), 8px 8px 16px rgba(206, 187, 172, 0.65);
+  --neu-outer-hover: -10px -10px 20px rgba(255, 255, 255, 0.95), 10px 10px 20px rgba(201, 180, 163, 0.75);
+  --neu-inset: inset 4px 4px 8px rgba(206, 187, 172, 0.6), inset -4px -4px 8px rgba(255, 255, 255, 0.85);
+  --neu-carved: inset 3px 3px 6px rgba(206, 187, 172, 0.55), inset -3px -3px 6px rgba(255, 255, 255, 0.85);
+
+  /* Typography Scale */
+  --fs-9:  11px;
+  --fs-10: 11px;
+  --fs-11: 12px;
+  --fs-12: 13px;
+  --fs-13: 14px;
+  --fs-14: 15px;
+  --fs-15: 16px;
+  --fs-16: 17px;
+  --fs-18: 19px;
+  --fs-20: 21px;
+  --fs-28: 30px;
+  --fs-36: 40px;
+  --fs-38: 42px;
 }
 
 html.dark {
-  --background: #09090b;
-  --foreground: #f4f4f5;
-  --card: #18181b;
-  --border: #27272a;
-  --accent: #818cf8;
-  --accent-light: rgba(129, 140, 248, 0.15);
+  --background: #F6EFE9;
+  --foreground: #3D2E24;
+  --card: #F6EFE9;
+  --border: transparent;
+  --accent: #F97316;
+  --accent-light: rgba(249, 115, 22, 0.15);
 }
 
 @theme inline {
@@ -65,20 +71,19 @@ html.dark {
   --font-weight-extrabold: 800;
   --font-weight-black: 900;
 
-  /* Remap Tailwind named utility sizes upward for consistency */
-  --text-xs:   0.8125rem;   /* 13px  (was 0.75rem  / 12px) */
-  --text-sm:   0.9375rem;   /* 15px  (was 0.875rem / 14px) */
-  --text-base: 1rem;        /* 16px  (unchanged)           */
-  --text-lg:   1.1875rem;   /* 19px  (was 1.125rem / 18px) */
-  --text-xl:   1.3125rem;   /* 21px  (was 1.25rem  / 20px) */
-  --text-2xl:  1.5625rem;   /* 25px  (was 1.5rem   / 24px) */
-  --text-3xl:  2rem;        /* 32px  (was 1.875rem / 30px) */
-  --text-4xl:  2.5rem;      /* 40px  (was 2.25rem  / 36px) */
+  --text-xs:   0.8125rem;
+  --text-sm:   0.9375rem;
+  --text-base: 1rem;
+  --text-lg:   1.1875rem;
+  --text-xl:   1.3125rem;
+  --text-2xl:  1.5625rem;
+  --text-3xl:  2rem;
+  --text-4xl:  2.5rem;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: #F6EFE9 !important;
+  color: #3D2E24 !important;
   font-family: var(--font-sans);
   font-weight: 400;
   font-size: 16px;
@@ -87,68 +92,180 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Arbitrary-value font-size overrides ─────────────────────────────────────
-   Tailwind JIT emits classes like .text-\[13px\]. We intercept them here and
-   redirect to the centralised scale tokens so every component is upgraded
-   without any JSX changes.
-────────────────────────────────────────────────────────────────────────────── */
-.text-\[9px\]  { font-size: var(--fs-9)  !important; }
-.text-\[10px\] { font-size: var(--fs-10) !important; }
-.text-\[11px\] { font-size: var(--fs-11) !important; }
-.text-\[12px\] { font-size: var(--fs-12) !important; }
-.text-\[13px\] { font-size: var(--fs-13) !important; }
-.text-\[14px\] { font-size: var(--fs-14) !important; }
-.text-\[15px\] { font-size: var(--fs-15) !important; }
-.text-\[16px\] { font-size: var(--fs-16) !important; }
-.text-\[18px\] { font-size: var(--fs-18) !important; }
-.text-\[20px\] { font-size: var(--fs-20) !important; }
-.text-\[28px\] { font-size: var(--fs-28) !important; }
-.text-\[36px\] { font-size: var(--fs-36) !important; }
-.text-\[38px\] { font-size: var(--fs-38) !important; }
+/* ── Neumorphic Utility System ─────────────────────────────────────────────── */
 
-/* Premium Card Design System (Linear/Stripe style) */
-.flat-card {
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* Raised Outer Neumorphic Card */
+.flat-card, .neu-card {
+  background-color: #F6EFE9 !important;
+  border: none !important;
+  border-radius: 20px !important;
+  box-shadow: -8px -8px 16px rgba(255, 255, 255, 0.9), 8px 8px 16px rgba(206, 187, 172, 0.65) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.flat-card:hover {
-  border-color: rgba(129, 140, 248, 0.25);
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.04);
+.flat-card:hover, .neu-card:hover {
+  box-shadow: -10px -10px 20px rgba(255, 255, 255, 0.95), 10px 10px 20px rgba(201, 180, 163, 0.75) !important;
 }
 
-/* Smooth active focus state inputs */
+/* Inset / Carved Neumorphic Element (Selected, Active, Input, Carved Container) */
+.neu-inset {
+  background-color: #F6EFE9 !important;
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: inset 4px 4px 8px rgba(206, 187, 172, 0.6), inset -4px -4px 8px rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Carved Circular Icon Badge */
+.neu-badge {
+  background-color: #F6EFE9 !important;
+  border-radius: 9999px !important;
+  box-shadow: inset 3px 3px 6px rgba(206, 187, 172, 0.55), inset -3px -3px 6px rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Raised Neumorphic Pill Button */
+.neu-btn {
+  background-color: #F6EFE9 !important;
+  color: #3D2E24 !important;
+  border: none !important;
+  border-radius: 14px !important;
+  box-shadow: -4px -4px 10px rgba(255, 255, 255, 0.9), 4px 4px 10px rgba(206, 187, 172, 0.6) !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.neu-btn:hover {
+  box-shadow: -6px -6px 12px rgba(255, 255, 255, 0.95), 6px 6px 12px rgba(201, 180, 163, 0.7) !important;
+}
+
+.neu-btn:active {
+  box-shadow: inset 3px 3px 6px rgba(206, 187, 172, 0.6), inset -3px -3px 6px rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Primary Orange Accent Button */
+.neu-btn-primary {
+  background: linear-gradient(135deg, #FF8A3D 0%, #EA580C 100%) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: 14px !important;
+  box-shadow: -4px -4px 10px rgba(255, 255, 255, 0.7), 4px 4px 12px rgba(234, 88, 12, 0.4) !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.neu-btn-primary:hover {
+  box-shadow: -6px -6px 14px rgba(255, 255, 255, 0.8), 6px 6px 16px rgba(234, 88, 12, 0.5) !important;
+}
+
+/* Form Controls with Inset Soft Shadow */
 .flat-control {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background-color: var(--card);
+  background-color: #F6EFE9 !important;
+  color: #3D2E24 !important;
+  border: none !important;
+  border-radius: 14px !important;
+  box-shadow: inset 4px 4px 8px rgba(206, 187, 172, 0.6), inset -4px -4px 8px rgba(255, 255, 255, 0.85) !important;
   padding: 0.625rem 0.875rem;
   font-size: 16px;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition: box-shadow 0.15s ease-in-out !important;
 }
 
 .flat-control:focus {
-  border-color: var(--accent);
-  outline: none;
-  box-shadow: 0 0 0 2px var(--accent-light);
+  outline: none !important;
+  box-shadow: inset 4px 4px 8px rgba(206, 187, 172, 0.7), inset -4px -4px 8px rgba(255, 255, 255, 0.9), 0 0 0 2px rgba(249, 115, 22, 0.4) !important;
 }
 
-/* KPI numbers for platform dashboard */
+/* KPI Numbers */
 .kpi-figure {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "kern" 1;
   letter-spacing: -0.03em;
   line-height: 1.1;
+  color: #3D2E24 !important;
 }
 
-/* Premium smooth scrollbar overrides */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ── Universal Global Component Overrides for Neumorphism Light Orange ──────── */
+
+/* 1. Global Headings & Primary Text */
+h1, h2, h3, h4, h5, h6,
+.text-slate-900, .text-slate-950, .text-slate-800, .text-slate-700 {
+  color: #3D2E24 !important;
 }
+
+/* 2. Global Secondary / Muted Text */
+.text-slate-500, .text-slate-400, .text-slate-450, .text-slate-600 {
+  color: #7C6A5A !important;
+}
+
+/* 3. Universal Search Bars, Inputs, Selects & Textareas (Pressed / Inset Neumorphism) */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea,
+.flat-control {
+  background-color: #F6EFE9 !important;
+  color: #3D2E24 !important;
+  border-color: transparent !important;
+  border-radius: 16px !important;
+  border: none !important;
+  box-shadow: inset 4px 4px 8px rgba(206, 187, 172, 0.6), inset -4px -4px 8px rgba(255, 255, 255, 0.85) !important;
+  transition: box-shadow 0.15s ease-in-out !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+  outline: none !important;
+  box-shadow: inset 5px 5px 10px rgba(206, 187, 172, 0.7), inset -5px -5px 10px rgba(255, 255, 255, 0.9), 0 0 0 2px rgba(249, 115, 22, 0.4) !important;
+}
+
+/* 4. Universal Card Surfaces, Modals, Drawers & Theme Overrides */
+.bg-card, .bg-white,
+.bg-slate-900, .bg-slate-950, .bg-slate-800, .bg-slate-850, .bg-slate-955, .bg-black {
+  background-color: #F6EFE9 !important;
+  color: #3D2E24 !important;
+  border-color: transparent !important;
+}
+
+/* Special accent overrides for buttons and glow badges */
+.neu-btn-primary,
+button[type="submit"].bg-accent,
+button.bg-accent,
+a.bg-accent {
+  background: linear-gradient(135deg, #FF8A3D 0%, #EA580C 100%) !important;
+  color: #FFFFFF !important;
+}
+
+/* 5. Universal Empty State Containers (Carved Inset Neumorphism) */
+.border-dashed {
+  background-color: #F6EFE9 !important;
+  border: none !important;
+  border-radius: 24px !important;
+  box-shadow: inset 4px 4px 8px rgba(206, 187, 172, 0.55), inset -4px -4px 8px rgba(255, 255, 255, 0.85) !important;
+  color: #3D2E24 !important;
+}
+
+/* 6. Universal Table Styling */
+table {
+  background-color: #F6EFE9 !important;
+}
+
+th {
+  background-color: #F6EFE9 !important;
+  color: #8C7769 !important;
+  font-weight: 800 !important;
+  border-bottom: 1px solid rgba(206, 187, 172, 0.3) !important;
+}
+
+td {
+  color: #3D2E24 !important;
+  border-bottom: 1px solid rgba(206, 187, 172, 0.2) !important;
+}
+
+tr:hover {
+  background-color: rgba(234, 88, 12, 0.04) !important;
+}
+
+/* 7. Universal Borders override */
+.border-slate-200, .border-slate-300, .border-slate-800, .border-slate-700, .border-border, .border-slate-100 {
+  border-color: transparent !important;
+}
+
 
 ::-webkit-scrollbar-track {
   background: transparent;

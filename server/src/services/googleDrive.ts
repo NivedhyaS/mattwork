@@ -238,22 +238,20 @@ export class GoogleDriveService {
 
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REFRESH_TOKEN || !GOOGLE_DRIVE_FOLDER_ID) {
       logger.warn(
-        '[GoogleDriveService] Missing OAuth2 credentials (CLIENT_ID / CLIENT_SECRET / REFRESH_TOKEN / FOLDER_ID) — falling back to simulation mode'
+        '[GoogleDriveService] Missing OAuth credentials (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / GOOGLE_REFRESH_TOKEN / GOOGLE_DRIVE_FOLDER_ID) — falling back to simulation mode'
       );
       return null;
     }
 
     try {
-      const oauth2Client = new google.auth.OAuth2(
+      const auth = new google.auth.OAuth2(
         GOOGLE_CLIENT_ID,
         GOOGLE_CLIENT_SECRET
       );
 
-      oauth2Client.setCredentials({
-        refresh_token: GOOGLE_REFRESH_TOKEN,
-      });
+      auth.setCredentials({ refresh_token: GOOGLE_REFRESH_TOKEN });
 
-      return google.drive({ version: 'v3', auth: oauth2Client });
+      return google.drive({ version: 'v3', auth });
     } catch (err: any) {
       logger.error(
         `[GoogleDriveService] Failed to initialise Drive client: ${err?.message} — falling back to simulation mode`

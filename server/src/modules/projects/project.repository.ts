@@ -7,6 +7,7 @@ const projectSelect = {
   title: true,
   description: true,
   status: true,
+  editorVisibleStatus: true,
   priority: true,
   dueDate: true,
   submissionDate: true,
@@ -36,6 +37,7 @@ const projectSelect = {
       user: { select: { id: true, name: true, email: true, avatar: true } },
     },
   },
+  revisionRequests: true,
   _count: { select: { files: true, invoices: true } },
 } as const;
 

@@ -18,7 +18,7 @@ export class ReportService {
   async getRevenueReport(month: string) {
     const { startDate, endDate } = this.getMonthDateRange(month);
 
-    // Fetch all completed projects in the date range
+    // Fetch all completed projects in the date range (monthly revenue)
     const projects = await prisma.project.findMany({
       where: {
         status: ProjectStatus.UPLOADED,
@@ -36,35 +36,78 @@ export class ReportService {
       },
     });
 
-    const clientMap = new Map<string, { clientName: string; company?: string; totalRevenue: number; currency?: string }>();
+    // Fetch lifetime stats for Remaining Credit and Completed Videos
+    const allCompletedProjects = await prisma.project.groupBy({
+      by: ['clientId'],
+      where: {
+        status: ProjectStatus.UPLOADED,
+      },
+      _sum: {
+        clientPrice: true,
+      },
+      _count: {
+        id: true,
+      },
+    });
+
+    const lifetimeStats = new Map(
+      allCompletedProjects.map(p => [
+        p.clientId,
+        {
+          lifetimeRevenue: Number(p._sum.clientPrice || 0),
+          lifetimeCompletedVideos: p._count.id
+        }
+      ])
+    );
+
+    const clients = await prisma.client.findMany({
+      include: { user: true },
+    });
+
+    const clientMap = new Map<string, { 
+      clientName: string; 
+      company?: string; 
+      totalRevenue: number; 
+      currency?: string;
+      advanceReceived: number;
+      remainingCredit: number;
+      completedVideos: number;
+    }>();
+
+    clients.forEach(c => {
+      const stats = lifetimeStats.get(c.id) || { lifetimeRevenue: 0, lifetimeCompletedVideos: 0 };
+      const advancePaid = Number(c.advancePaid || 0);
+      clientMap.set(c.id, {
+        clientName: c.user.name,
+        company: c.company || undefined,
+        totalRevenue: 0,
+        currency: c.currency,
+        advanceReceived: advancePaid,
+        remainingCredit: Math.max(0, advancePaid - stats.lifetimeRevenue),
+        completedVideos: stats.lifetimeCompletedVideos,
+      });
+    });
+
     let totalRevenue = 0;
 
     // PRD Definition: Revenue = sum of Client Price for approved/completed projects
-    // Here we sum clientPrice. To get Cost, we would sum editorPrice.
-    // Profit (Net Margin) = Revenue - Cost, ensuring Revenue = Cost + Profit.
     projects.forEach((project) => {
       const client = project.client;
-      const clientName = client.user.name;
-      const company = client.company || undefined;
       const amount = Number(project.clientPrice || 0);
-      const currency = client.currency;
-
       totalRevenue += amount;
 
       const existing = clientMap.get(client.id);
       if (existing) {
         existing.totalRevenue += amount;
-      } else {
-        clientMap.set(client.id, {
-          clientName,
-          company,
-          totalRevenue: amount,
-          currency,
-        });
       }
     });
 
-    const clientBreakdown = Array.from(clientMap.values()).sort((a, b) => b.totalRevenue - a.totalRevenue);
+    // Filter out clients with absolutely no activity or advance
+    const activeClients = Array.from(clientMap.values()).filter(c => 
+      c.totalRevenue > 0 || c.advanceReceived > 0 || c.completedVideos > 0
+    );
+
+    const clientBreakdown = activeClients.sort((a, b) => b.totalRevenue - a.totalRevenue);
 
     return {
       month,
@@ -97,7 +140,39 @@ export class ReportService {
       },
     });
 
-    const editorMap = new Map<string, { editorName: string; completedCount: number; totalPayout: number }>();
+    // Fetch lifetime unpaid projects for amountPayable and pendingPayments
+    const allUnpaidProjects = await prisma.project.groupBy({
+      by: ['editorId'],
+      where: {
+        status: { in: COMPLETED_STATUSES },
+        editorId: { not: null },
+        editorInvoiced: false,
+      },
+      _sum: {
+        editorPrice: true,
+      },
+      _count: {
+        id: true,
+      }
+    });
+
+    const unpaidMap = new Map(
+      allUnpaidProjects.map(p => [
+        p.editorId, 
+        {
+          amountPayable: Number(p._sum.editorPrice || 0),
+          pendingPayments: p._count.id
+        }
+      ])
+    );
+
+    const editorMap = new Map<string, { 
+      editorName: string; 
+      completedCount: number; 
+      totalPayout: number;
+      amountPayable: number;
+      pendingPayments: number;
+    }>();
     let totalPayout = 0;
 
     projects.forEach((project) => {
@@ -112,11 +187,31 @@ export class ReportService {
         existing.completedCount += 1;
         existing.totalPayout += editorPrice;
       } else {
+        const unpaidStats = unpaidMap.get(editor.id) || { amountPayable: 0, pendingPayments: 0 };
         editorMap.set(editor.id, {
           editorName,
           completedCount: 1,
           totalPayout: editorPrice,
+          amountPayable: unpaidStats.amountPayable,
+          pendingPayments: unpaidStats.pendingPayments,
         });
+      }
+    });
+
+    // Also include editors who have pending payments but no completed projects THIS month
+    const editors = await prisma.editor.findMany({ include: { user: true } });
+    editors.forEach((editor) => {
+      if (!editorMap.has(editor.id)) {
+        const unpaidStats = unpaidMap.get(editor.id);
+        if (unpaidStats && unpaidStats.pendingPayments > 0) {
+          editorMap.set(editor.id, {
+            editorName: editor.user.name,
+            completedCount: 0,
+            totalPayout: 0,
+            amountPayable: unpaidStats.amountPayable,
+            pendingPayments: unpaidStats.pendingPayments,
+          });
+        }
       }
     });
 
@@ -243,7 +338,7 @@ export class ReportService {
     });
     const editorCosts = Number(editorCostsAgg._sum.editorPrice ?? 0);
 
-    const profit = revenue - editorCosts;
+    const netMargin = revenue - editorCosts;
 
     // 3. Prior Month Calculation
     const [yearStr, monthStr] = month.split('-');
@@ -282,7 +377,7 @@ export class ReportService {
     });
     const priorEditorCosts = Number(priorEditorCostsAgg._sum.editorPrice ?? 0);
 
-    const priorMonthProfit = priorRevenue - priorEditorCosts;
+    const priorMonthNetMargin = priorRevenue - priorEditorCosts;
 
     // Check if prior month records exist
     const hasPriorData = await prisma.payment.count({
@@ -297,27 +392,27 @@ export class ReportService {
       },
     }) > 0;
 
-    let profitChangeAbsolute: number | null = null;
-    let profitChangePercentage: number | null = null;
+    let netMarginChangeAbsolute: number | null = null;
+    let netMarginChangePercentage: number | null = null;
 
     if (hasPriorData) {
-      profitChangeAbsolute = profit - priorMonthProfit;
-      if (priorMonthProfit !== 0) {
-        profitChangePercentage = Number(((profitChangeAbsolute / Math.abs(priorMonthProfit)) * 100).toFixed(2));
+      netMarginChangeAbsolute = netMargin - priorMonthNetMargin;
+      if (priorMonthNetMargin !== 0) {
+        netMarginChangePercentage = Number(((netMarginChangeAbsolute / Math.abs(priorMonthNetMargin)) * 100).toFixed(2));
       } else {
-        profitChangePercentage = profit !== 0 ? 100 : 0;
+        netMarginChangePercentage = netMargin !== 0 ? 100 : 0;
       }
     }
 
     return {
       month,
-      profitReport: {
+      marginReport: {
         revenue,
         editorCosts,
-        profit,
-        priorMonthProfit: hasPriorData ? priorMonthProfit : null,
-        profitChangeAbsolute,
-        profitChangePercentage,
+        netMargin,
+        priorMonthNetMargin: hasPriorData ? priorMonthNetMargin : null,
+        netMarginChangeAbsolute,
+        netMarginChangePercentage,
       },
     };
   }

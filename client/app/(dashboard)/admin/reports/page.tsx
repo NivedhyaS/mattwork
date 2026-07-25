@@ -124,151 +124,149 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 bg-[#F6EFE9] text-[#3D2E24] p-1">
       {/* Page Header */}
       <div>
-        <h1 className="text-[36px] font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
+        <h1 className="text-[36px] font-extrabold tracking-tight text-[#3D2E24] leading-tight">
           Reports & Exports
         </h1>
-        <p className="text-[16px] mt-2 text-slate-500 dark:text-slate-450">
+        <p className="text-[16px] mt-1 text-[#7C6A5A]">
           Generate, preview, and download custom financial and performance reports.
         </p>
       </div>
 
       {/* ── Filters & Options ─────────────────────────────────────────────────── */}
-      <Card className="shadow-none border border-slate-200 dark:border-slate-800 bg-card">
-        <CardContent className="p-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {/* Report Type */}
+      <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] space-y-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {/* Report Type */}
+          <div>
+            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">
+              Report Type
+            </label>
+            <select
+              value={reportType}
+              onChange={(e) => setReportType(e.target.value as any)}
+              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+            >
+              <option value="revenue">Revenue Report</option>
+              <option value="editor-payments">Editor Payouts</option>
+              <option value="client-utilization">Client Utilization</option>
+              <option value="profit">Margin Analysis</option>
+            </select>
+          </div>
+
+          {/* Target Month */}
+          <div>
+            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">
+              Target Month
+            </label>
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+            />
+          </div>
+
+          {/* Optional Client Filter */}
+          {['revenue', 'client-utilization'].includes(reportType) && (
             <div>
-              <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                Report Type
+              <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">
+                Filter Client
               </label>
               <select
-                value={reportType}
-                onChange={(e) => setReportType(e.target.value as any)}
-                className="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px]"
+                value={selectedClient}
+                onChange={(e) => setSelectedClient(e.target.value)}
+                className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
               >
-                <option value="revenue">Revenue Report</option>
-                <option value="editor-payments">Editor Payouts</option>
-                <option value="client-utilization">Client Utilization</option>
-                <option value="profit">Profitability Analysis</option>
+                <option value="">All Clients</option>
+                {clients.map((c: any) => (
+                  <option key={c.id} value={c.id}>
+                    {c.user?.name || c.company}
+                  </option>
+                ))}
               </select>
             </div>
+          )}
 
-            {/* Target Month */}
+          {/* Optional Editor Filter */}
+          {reportType === 'editor-payments' && (
             <div>
-              <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                Target Month
+              <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">
+                Filter Editor
               </label>
-              <input
-                type="month"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px]"
-              />
+              <select
+                value={selectedEditor}
+                onChange={(e) => setSelectedEditor(e.target.value)}
+                className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+              >
+                <option value="">All Editors</option>
+                {editors.map((e: any) => (
+                  <option key={e.id} value={e.id}>
+                    {e.user?.name}
+                  </option>
+                ))}
+              </select>
             </div>
-
-            {/* Optional Client Filter */}
-            {['revenue', 'client-utilization'].includes(reportType) && (
-              <div>
-                <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                  Filter Client
-                </label>
-                <select
-                  value={selectedClient}
-                  onChange={(e) => setSelectedClient(e.target.value)}
-                  className="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px]"
-                >
-                  <option value="">All Clients</option>
-                  {clients.map((c: any) => (
-                    <option key={c.id} value={c.id}>
-                      {c.user?.name || c.company}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Optional Editor Filter */}
-            {reportType === 'editor-payments' && (
-              <div>
-                <label className="block text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                  Filter Editor
-                </label>
-                <select
-                  value={selectedEditor}
-                  onChange={(e) => setSelectedEditor(e.target.value)}
-                  className="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[15px]"
-                >
-                  <option value="">All Editors</option>
-                  {editors.map((e: any) => (
-                    <option key={e.id} value={e.id}>
-                      {e.user?.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+          )}
+        </div>
+      </div>
 
       {/* ── Report Preview / Content ─────────────────────────────────────────── */}
-      <Card className="shadow-none border border-slate-200 dark:border-slate-800 bg-card">
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+      <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-[rgba(206,187,172,0.3)]">
           <div>
-            <CardTitle className="text-[18px] font-bold capitalize text-slate-900 dark:text-white">
+            <h2 className="text-[20px] font-extrabold capitalize text-[#3D2E24]">
               {reportType.replace('-', ' ')} Report Preview
-            </CardTitle>
-            <CardDescription className="text-sm mt-1">
+            </h2>
+            <p className="text-sm text-[#7C6A5A] mt-1">
               Data view for the period of {selectedMonth}.
-            </CardDescription>
+            </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <button
               onClick={() => handleExport('excel')}
               disabled={isExporting || isFetchingReport || !report}
-              className="flex items-center gap-2 px-4 py-2 text-[15px] font-semibold bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-lg transition-all disabled:opacity-50 cursor-pointer"
+              className="flex items-center gap-2 px-5 py-2.5 text-[14px] font-extrabold bg-[#F6EFE9] text-[#10B981] rounded-2xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(201,180,163,0.7)] active:shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] transition-all disabled:opacity-50 cursor-pointer"
             >
               <FileSpreadsheet size={16} /> Export Excel
             </button>
             <button
               onClick={() => handleExport('pdf')}
               disabled={isExporting || isFetchingReport || !report}
-              className="flex items-center gap-2 px-4 py-2 text-[15px] font-semibold bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-lg transition-all disabled:opacity-50 cursor-pointer"
+              className="flex items-center gap-2 px-5 py-2.5 text-[14px] font-extrabold bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white rounded-2xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.7),4px_4px_12px_rgba(234,88,12,0.4)] hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.8),6px_6px_16px_rgba(234,88,12,0.5)] transition-all disabled:opacity-50 cursor-pointer"
             >
               <FileText size={16} /> Export PDF
             </button>
           </div>
-        </CardHeader>
+        </div>
 
-        <CardContent className="p-0">
+        <div>
           {isFetchingReport ? (
-            <div className="flex h-64 items-center justify-center text-slate-400">
+            <div className="flex h-64 items-center justify-center text-[#7C6A5A] font-bold">
               Generating report preview...
             </div>
           ) : !report ? (
-            <div className="flex h-64 items-center justify-center text-slate-400">
+            <div className="flex h-64 items-center justify-center text-[#7C6A5A] font-bold">
               No report data found for this period.
             </div>
           ) : (
-            <div className="p-6">
+            <div>
               {/* Summary Statistics Card Grid */}
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
                 {reportType === 'revenue' && (
-                  <div className="p-5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/20">
-                    <div className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">Total Revenue</div>
-                    <div className="text-[28px] font-extrabold text-emerald-500 mt-1">
+                  <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(206,187,172,0.6)] space-y-2">
+                    <div className="text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider">Total Revenue</div>
+                    <div className="text-[32px] font-extrabold text-[#EA580C]">
                       {formatCurrency(report.totalRevenue || 0)}
                     </div>
                   </div>
                 )}
 
                 {reportType === 'editor-payments' && (
-                  <div className="p-5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/20">
-                    <div className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">Total Editor Payouts</div>
-                    <div className="text-[28px] font-extrabold text-slate-950 dark:text-white mt-1">
+                  <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(206,187,172,0.6)] space-y-2">
+                    <div className="text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider">Total Editor Payouts</div>
+                    <div className="text-[32px] font-extrabold text-[#3D2E24]">
                       {formatEditorCurrency(report.totalPayout || 0)}
                     </div>
                   </div>
@@ -276,50 +274,59 @@ export default function ReportsPage() {
 
                 {reportType === 'profit' && (
                   <>
-                    <div className="p-5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/20">
-                      <div className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">Gross Billings</div>
-                      <div className="text-[28px] font-extrabold text-slate-950 dark:text-white mt-1">
-                        {formatCurrency(report.profitReport?.revenue || 0)}
+                    <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(206,187,172,0.6)] space-y-2">
+                      <div className="text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider">Gross Billings</div>
+                      <div className="text-[32px] font-extrabold text-[#3D2E24]">
+                        {formatCurrency(report.marginReport?.revenue || 0)}
                       </div>
                     </div>
-                    <div className="p-5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/20">
-                      <div className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">Total Editor Costs</div>
-                      <div className="text-[28px] font-extrabold text-slate-500 mt-1">
-                        {formatCurrency(report.profitReport?.editorCosts || 0)}
+                    <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(206,187,172,0.6)] space-y-2">
+                      <div className="text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider">Total Editor Cost</div>
+                      <div className="text-[32px] font-extrabold text-[#7C6A5A]">
+                        {formatCurrency(report.marginReport?.editorCosts || 0)}
                       </div>
                     </div>
-                    <div className="p-5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/20">
-                      <div className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">Net Profit</div>
-                      <div className="text-[28px] font-extrabold text-emerald-500 mt-1">
-                        {formatCurrency(report.profitReport?.profit || 0)}
+                    <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(206,187,172,0.6)] space-y-2">
+                      <div className="text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider">Net Margin</div>
+                      <div className="text-[32px] font-extrabold text-[#10B981] flex items-baseline gap-3">
+                        {formatCurrency(report.marginReport?.netMargin || 0)}
+                        <span className="text-sm font-bold text-[#8C7769]">
+                          {report.marginReport?.revenue > 0 ? ((report.marginReport.netMargin / report.marginReport.revenue) * 100).toFixed(1) : 0}%
+                        </span>
                       </div>
                     </div>
                   </>
                 )}
               </div>
 
-              {/* Data Table */}
-              <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl">
+              {/* Data Table Container */}
+              <div className="overflow-x-auto rounded-3xl shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] p-2 bg-[#F6EFE9]">
                 {reportType === 'revenue' && (
                   <table className="w-full text-left border-collapse text-[15px]">
                     <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider">Client Name</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider">Company</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Revenue (USD)</th>
+                      <tr className="border-b border-[rgba(206,187,172,0.3)] bg-[#F6EFE9]">
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider">Client Name</th>
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider">Company</th>
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider text-center">Completed Videos</th>
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider text-right">Revenue (USD)</th>
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider text-right">Advance Received</th>
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider text-right">Remaining Credit</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-[rgba(206,187,172,0.2)]">
                       {getFilteredRevenueData().map((item: any, idx: number) => (
-                        <tr key={idx} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                          <td className="p-4 font-medium text-slate-900 dark:text-white">{item.clientName}</td>
-                          <td className="p-4 text-slate-500">{item.company || '—'}</td>
-                          <td className="p-4 text-right font-medium text-emerald-500">{formatCurrency(item.totalRevenue)}</td>
+                        <tr key={idx} className="hover:bg-[rgba(234,88,12,0.04)] transition-colors">
+                          <td className="p-4 font-extrabold text-[#3D2E24]">{item.clientName}</td>
+                          <td className="p-4 font-semibold text-[#7C6A5A]">{item.company || '—'}</td>
+                          <td className="p-4 text-center font-extrabold text-[#3D2E24]">{item.completedVideos || 0}</td>
+                          <td className="p-4 text-right font-extrabold text-[#EA580C]">{formatCurrency(item.totalRevenue)}</td>
+                          <td className="p-4 text-right font-extrabold text-[#3D2E24]">{formatCurrency(item.advanceReceived || 0)}</td>
+                          <td className={`p-4 text-right font-extrabold ${(item.remainingCredit || 0) <= 0 ? 'text-[#8C7769]' : 'text-[#10B981]'}`}>{formatCurrency(item.remainingCredit || 0)}</td>
                         </tr>
                       ))}
                       {getFilteredRevenueData().length === 0 && (
                         <tr>
-                          <td colSpan={3} className="p-8 text-center text-slate-400">No records found.</td>
+                          <td colSpan={6} className="p-8 text-center text-[#7C6A5A] font-bold">No records found.</td>
                         </tr>
                       )}
                     </tbody>
@@ -329,25 +336,27 @@ export default function ReportsPage() {
                 {reportType === 'editor-payments' && (
                   <table className="w-full text-left border-collapse text-[15px]">
                     <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider">Editor Name</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-center">Completed Count</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Avg Rate (INR)</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Total Payout (INR)</th>
+                      <tr className="border-b border-[rgba(206,187,172,0.3)] bg-[#F6EFE9]">
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider">Editor Name</th>
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider text-center">Completed Projects</th>
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider text-center">Pending Payments</th>
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider text-right">Amount Payable (INR)</th>
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider text-right">Total Payout (INR)</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-[rgba(206,187,172,0.2)]">
                       {getFilteredEditorData().map((item: any, idx: number) => (
-                        <tr key={idx} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                          <td className="p-4 font-medium text-slate-900 dark:text-white">{item.editorName}</td>
-                          <td className="p-4 text-center font-semibold text-slate-600 dark:text-slate-400">{item.completedCount}</td>
-                          <td className="p-4 text-right text-slate-500">{formatEditorCurrency(item.averageRate || 0)}</td>
-                          <td className="p-4 text-right font-medium text-emerald-500">{formatEditorCurrency(item.totalPayout)}</td>
+                        <tr key={idx} className="hover:bg-[rgba(234,88,12,0.04)] transition-colors">
+                          <td className="p-4 font-extrabold text-[#3D2E24]">{item.editorName}</td>
+                          <td className="p-4 text-center font-extrabold text-[#3D2E24]">{item.completedCount}</td>
+                          <td className="p-4 text-center font-extrabold text-[#EA580C]">{item.pendingPayments || 0}</td>
+                          <td className="p-4 text-right font-extrabold text-[#EA580C]">{formatEditorCurrency(item.amountPayable || 0)}</td>
+                          <td className="p-4 text-right font-extrabold text-[#10B981]">{formatEditorCurrency(item.totalPayout)}</td>
                         </tr>
                       ))}
                       {getFilteredEditorData().length === 0 && (
                         <tr>
-                          <td colSpan={4} className="p-8 text-center text-slate-400">No records found.</td>
+                          <td colSpan={5} className="p-8 text-center text-[#7C6A5A] font-bold">No records found.</td>
                         </tr>
                       )}
                     </tbody>
@@ -357,29 +366,29 @@ export default function ReportsPage() {
                 {reportType === 'client-utilization' && (
                   <table className="w-full text-left border-collapse text-[15px]">
                     <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider">Client Name</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider">Company</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-center">Submitted</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-center">Completed</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-center">Avg Turnaround</th>
+                      <tr className="border-b border-[rgba(206,187,172,0.3)] bg-[#F6EFE9]">
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider">Client Name</th>
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider">Company</th>
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider text-center">Submitted</th>
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider text-center">Completed</th>
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider text-center">Avg Turnaround</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-[rgba(206,187,172,0.2)]">
                       {getFilteredUtilizationData().map((item: any, idx: number) => (
-                        <tr key={idx} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                          <td className="p-4 font-medium text-slate-900 dark:text-white">{item.clientName}</td>
-                          <td className="p-4 text-slate-500">{item.company || '—'}</td>
-                          <td className="p-4 text-center font-semibold text-slate-650">{item.projectsSubmitted}</td>
-                          <td className="p-4 text-center font-semibold text-emerald-500">{item.projectsCompleted}</td>
-                          <td className="p-4 text-center text-slate-500">
+                        <tr key={idx} className="hover:bg-[rgba(234,88,12,0.04)] transition-colors">
+                          <td className="p-4 font-extrabold text-[#3D2E24]">{item.clientName}</td>
+                          <td className="p-4 font-semibold text-[#7C6A5A]">{item.company || '—'}</td>
+                          <td className="p-4 text-center font-extrabold text-[#3D2E24]">{item.projectsSubmitted}</td>
+                          <td className="p-4 text-center font-extrabold text-[#10B981]">{item.projectsCompleted}</td>
+                          <td className="p-4 text-center font-semibold text-[#7C6A5A]">
                             {item.avgTurnaroundDays !== null ? `${item.avgTurnaroundDays} days` : '—'}
                           </td>
                         </tr>
                       ))}
                       {getFilteredUtilizationData().length === 0 && (
                         <tr>
-                          <td colSpan={5} className="p-8 text-center text-slate-400">No records found.</td>
+                          <td colSpan={5} className="p-8 text-center text-[#7C6A5A] font-bold">No records found.</td>
                         </tr>
                       )}
                     </tbody>
@@ -389,66 +398,38 @@ export default function ReportsPage() {
                 {reportType === 'profit' && (
                   <table className="w-full text-left border-collapse text-[15px]">
                     <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider">Metric</th>
-                        <th className="p-4 font-bold text-slate-500 uppercase tracking-wider text-right">Value (USD)</th>
+                      <tr className="border-b border-[rgba(206,187,172,0.3)] bg-[#F6EFE9]">
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider">Metric</th>
+                        <th className="p-4 font-extrabold text-[#8C7769] uppercase tracking-wider text-right">Value (USD)</th>
                       </tr>
                     </thead>
-                    <tbody>
-                      <tr className="border-b border-slate-100 dark:border-slate-850">
-                        <td className="p-4 font-medium text-slate-700 dark:text-slate-350">Gross Revenue</td>
-                        <td className="p-4 text-right font-medium text-slate-900 dark:text-white">
-                          {formatCurrency(report.profitReport?.revenue || 0)}
+                    <tbody className="divide-y divide-[rgba(206,187,172,0.2)]">
+                      <tr>
+                        <td className="p-4 font-extrabold text-[#3D2E24]">Gross Revenue</td>
+                        <td className="p-4 text-right font-extrabold text-[#3D2E24]">
+                          {formatCurrency(report.marginReport?.revenue || 0)}
                         </td>
                       </tr>
-                      <tr className="border-b border-slate-100 dark:border-slate-850">
-                        <td className="p-4 font-medium text-slate-700 dark:text-slate-350">Total Editor Costs</td>
-                        <td className="p-4 text-right font-medium text-slate-900 dark:text-white">
-                          {formatCurrency(report.profitReport?.editorCosts || 0)}
+                      <tr>
+                        <td className="p-4 font-extrabold text-[#3D2E24]">Total Editor Cost</td>
+                        <td className="p-4 text-right font-extrabold text-[#7C6A5A]">
+                          {formatCurrency(report.marginReport?.editorCosts || 0)}
                         </td>
                       </tr>
-                      <tr className="border-b border-slate-100 dark:border-slate-850 bg-emerald-500/5">
-                        <td className="p-4 font-bold text-emerald-600 dark:text-emerald-450">Net Profit</td>
-                        <td className="p-4 text-right font-bold text-emerald-600 dark:text-emerald-450">
-                          {formatCurrency(report.profitReport?.profit || 0)}
+                      <tr>
+                        <td className="p-4 font-extrabold text-[#10B981]">Net Margin</td>
+                        <td className="p-4 text-right font-extrabold text-[#10B981]">
+                          {formatCurrency(report.marginReport?.netMargin || 0)}
                         </td>
                       </tr>
-                      {report.profitReport?.profitChangeAbsolute !== null && (
-                        <>
-                          <tr className="border-b border-slate-100 dark:border-slate-850">
-                            <td className="p-4 font-medium text-slate-700 dark:text-slate-350">Prior Month Profit</td>
-                            <td className="p-4 text-right text-slate-500">
-                              {formatCurrency(report.profitReport?.priorMonthProfit || 0)}
-                            </td>
-                          </tr>
-                          <tr className="border-b border-slate-100 dark:border-slate-850">
-                            <td className="p-4 font-medium text-slate-700 dark:text-slate-350">Profit Change (Absolute)</td>
-                            <td className={`p-4 text-right font-semibold ${
-                              report.profitReport?.profitChangeAbsolute >= 0 ? 'text-emerald-500' : 'text-rose-500'
-                            }`}>
-                              {report.profitReport?.profitChangeAbsolute >= 0 ? '+' : ''}
-                              {formatCurrency(report.profitReport?.profitChangeAbsolute || 0)}
-                            </td>
-                          </tr>
-                          <tr className="border-b border-slate-100 dark:border-slate-850">
-                            <td className="p-4 font-medium text-slate-700 dark:text-slate-350">Profit Change (Percentage)</td>
-                            <td className={`p-4 text-right font-semibold ${
-                              report.profitReport?.profitChangePercentage >= 0 ? 'text-emerald-500' : 'text-rose-500'
-                            }`}>
-                              {report.profitReport?.profitChangePercentage >= 0 ? '+' : ''}
-                              {report.profitReport?.profitChangePercentage || 0}%
-                            </td>
-                          </tr>
-                        </>
-                      )}
                     </tbody>
                   </table>
                 )}
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -26,34 +26,34 @@ export default function Header({ onMenuClick }: HeaderProps) {
   });
 
   return (
-    <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-30">
+    <header className="h-20 bg-[#F6EFE9] px-8 flex items-center justify-between sticky top-0 z-30 shadow-[0_4px_12px_rgba(206,187,172,0.3)]">
       {/* Left side: Menu button & breadcrumbs */}
       <div className="flex items-center gap-4">
         {onMenuClick && (
           <button
             onClick={onMenuClick}
-            className="md:hidden rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900 transition-colors focus:outline-none"
+            className="md:hidden rounded-2xl p-2.5 bg-[#F6EFE9] text-[#7C6A5A] hover:text-[#EA580C] transition-all shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)]"
           >
             <Menu className="h-5 w-5" />
           </button>
         )}
 
         {/* Breadcrumb Navigation */}
-        <nav className="hidden sm:flex items-center gap-1.5 text-[15px] font-semibold select-none">
-          <Link href="/" className="text-slate-500 hover:text-slate-950 dark:hover:text-white transition-colors">
+        <nav className="hidden sm:flex items-center gap-2 text-[15px] font-bold select-none text-[#7C6A5A]">
+          <Link href="/" className="text-[#8C7769] hover:text-[#EA580C] transition-colors">
             Mattwork
           </Link>
-          {breadcrumbs.map((crumb, idx) => (
-            <div key={crumb.href} className="flex items-center gap-1.5">
-              <span className="text-slate-350 dark:text-slate-600">/</span>
+          {breadcrumbs.map((crumb) => (
+            <div key={crumb.href} className="flex items-center gap-2">
+              <span className="text-[#BCAEA2]">/</span>
               {crumb.isLast ? (
-                <span className="text-slate-950 dark:text-white truncate max-w-[120px] sm:max-w-none">
+                <span className="text-[#3D2E24] font-extrabold capitalize truncate max-w-[120px] sm:max-w-none">
                   {crumb.label}
                 </span>
               ) : (
                 <Link
                   href={crumb.href}
-                  className="text-slate-500 hover:text-slate-950 dark:hover:text-white transition-colors"
+                  className="text-[#8C7769] hover:text-[#EA580C] transition-colors capitalize"
                 >
                   {crumb.label}
                 </Link>
@@ -63,23 +63,25 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </nav>
       </div>
 
-      {/* Right side: Actions */}
-      <div className="flex items-center gap-3">
-        {/* Light/Dark Mode Switcher */}
-        <button
-          onClick={toggleTheme}
-          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900 transition-colors cursor-pointer"
-          title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} mode`}
-        >
-          {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-        </button>
-
-        {/* Notification dropdown */}
+      {/* Right side: Notifications, theme toggle & user dropdown */}
+      <div className="flex items-center gap-4">
+        {/* Notification Icon Dropdown */}
         <NotificationDropdown />
 
-        <div className="h-5 w-[1px] bg-slate-200 dark:bg-slate-800" />
+        {/* Theme Toggle Pill Button */}
+        <button
+          onClick={toggleTheme}
+          title="Toggle color mode"
+          className="rounded-2xl p-2.5 bg-[#F6EFE9] text-[#7C6A5A] hover:text-[#EA580C] transition-all shadow-[-4px_-4px_8px_rgba(255,255,255,0.9),4px_4px_8px_rgba(206,187,172,0.6)] active:shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] cursor-pointer"
+        >
+          {theme === 'dark' ? (
+            <Sun className="h-5 w-5 text-[#F97316]" />
+          ) : (
+            <Moon className="h-5 w-5 text-[#7C6A5A]" />
+          )}
+        </button>
 
-        {/* Profile User Menu */}
+        {/* User Account Menu */}
         <UserMenu />
       </div>
     </header>

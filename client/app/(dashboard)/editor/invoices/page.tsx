@@ -39,6 +39,12 @@ interface Project {
   editorPrice?: number | string | null;
 }
 
+interface EligibleClient {
+  id: string;
+  name: string;
+  company?: string;
+}
+
 interface StatementHistoryItem {
   id: string;
   statementNo: string;
@@ -56,8 +62,11 @@ export default function EditorInvoicesPage() {
   const [completedProjects, setCompletedProjects] = useState<Project[]>([]);
   const [allCompletedProjects, setAllCompletedProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingProjects, setLoadingProjects] = useState(false);
   const [ratePerVideo, setRatePerVideo] = useState(500);
-  const [selectedMonth, setSelectedMonth] = useState('');
+  const [eligibleClients, setEligibleClients] = useState<EligibleClient[]>([]);
+  const [selectedClientId, setSelectedClientId] = useState('');
+  const [clientSearch, setClientSearch] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Selection & Config state
@@ -70,7 +79,7 @@ export default function EditorInvoicesPage() {
   const [panNumber, setPanNumber] = useState('ABCDE1234F');
   const [currency, setCurrency] = useState('INR');
   const [bonusAmount, setBonusAmount] = useState<number | string>(0);
-  const [tdsRate, setTdsRate] = useState<number>(0); // e.g. 0% or 10%
+  const [tdsRate, setTdsRate] = useState<number>(0);
 
   // Modals & Tabs state
   const [activeTab, setActiveTab] = useState<'generator' | 'history'>('generator');
@@ -81,77 +90,27 @@ export default function EditorInvoicesPage() {
   const [disputeSubmitting, setDisputeSubmitting] = useState(false);
   const [disputeSuccessMsg, setDisputeSuccessMsg] = useState<string | null>(null);
 
-  // Statement History Mock Data
-  const [statementHistory, setStatementHistory] = useState<StatementHistoryItem[]>([
-    {
-      id: 'stmt-1',
-      statementNo: 'EDR-8ZI4-0001',
-      period: 'July 2026',
-      dateCompiled: '23 Jul 2026',
-      deliverablesCount: 3,
-      subtotal: 1500,
-      netTotal: 1500,
-      status: 'PAID',
-      txnId: 'TXN9845720193',
-      payoutDate: '23 Jul 2026'
-    },
-    {
-      id: 'stmt-2',
-      statementNo: 'EDR-8ZI4-0002',
-      period: 'June 2026',
-      dateCompiled: '30 Jun 2026',
-      deliverablesCount: 5,
-      subtotal: 2500,
-      netTotal: 2500,
-      status: 'PAID',
-      txnId: 'TXN8734190512',
-      payoutDate: '01 Jul 2026'
-    },
-    {
-      id: 'stmt-3',
-      statementNo: 'EDR-8ZI4-0003',
-      period: 'May 2026',
-      dateCompiled: '31 May 2026',
-      deliverablesCount: 4,
-      subtotal: 2000,
-      netTotal: 2000,
-      status: 'PAID',
-      txnId: 'TXN7612984301',
-      payoutDate: '02 Jun 2026'
-    }
-  ]);
-
-  // Last 6 months list
-  const months = useMemo(() => {
-    const list: string[] = [];
-    const date = new Date();
-    for (let i = 0; i < 6; i++) {
-      const mStr = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-      list.push(mStr);
-      date.setMonth(date.getMonth() - 1);
-    }
-    return list;
-  }, []);
+  // Statement History
+  const [statementHistory] = useState<StatementHistoryItem[]>([]);
 
   useEffect(() => {
-    if (months.length > 0) {
-      setSelectedMonth(months[0]);
-    }
-
     Promise.all([
-      api.get('/projects?limit=100'),
+      api.get('/invoices/editor/eligible-clients'),
       api.get('/editors/me'),
+      api.get('/projects?limit=100')
     ])
-      .then(([projectsRes, editorRes]) => {
-        const data: Project[] = projectsRes.data.data;
-        const uploaded = data.filter((p) => p.status === 'UPLOADED');
+      .then(([clientsRes, editorRes, projectsRes]) => {
+        const clientsList: EligibleClient[] = clientsRes.data.data || [];
+        setEligibleClients(clientsList);
+
+        const data: Project[] = projectsRes.data.data || [];
+        const uploaded = data.filter((p) => p.status === 'UPLOADED' && !(p as any).editorInvoiced);
         setAllCompletedProjects(uploaded);
-        setCompletedProjects(uploaded);
-        setSelectedProjectIds(uploaded.map((p) => p.id));
 
         const profile = editorRes.data.data;
         if (profile?.user?.name) {
           setEditorName(profile.user.name);
+          setAccountName(profile.user.name);
         }
         if (profile?.hourlyRate) {
           setRatePerVideo(Number(profile.hourlyRate));
@@ -159,26 +118,28 @@ export default function EditorInvoicesPage() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [months]);
+  }, []);
 
-  // Filter completed deliverables whenever target month changes
+  // Live Sync: Filter completed deliverables whenever selected client changes
   useEffect(() => {
-    if (!selectedMonth) return;
-    const parts = selectedMonth.split(' ');
-    if (parts.length === 2) {
-      const monthName = parts[0];
-      const year = parseInt(parts[1], 10);
-      const filtered = allCompletedProjects.filter((p) => {
-        const d = new Date(p.updatedAt);
-        return (
-          d.toLocaleString('default', { month: 'long' }) === monthName &&
-          d.getFullYear() === year
-        );
-      });
-      setCompletedProjects(filtered.length > 0 ? filtered : allCompletedProjects);
-      setSelectedProjectIds((filtered.length > 0 ? filtered : allCompletedProjects).map((p) => p.id));
+    if (!selectedClientId) {
+      setCompletedProjects([]);
+      setSelectedProjectIds([]);
+      return;
     }
-  }, [selectedMonth, allCompletedProjects]);
+    setLoadingProjects(true);
+    api.get('/projects?limit=100')
+      .then((res) => {
+        const data: Project[] = res.data.data || [];
+        const filtered = data.filter(
+          (p: any) => p.status === 'UPLOADED' && p.clientId === selectedClientId && !p.editorInvoiced
+        );
+        setCompletedProjects(filtered);
+        setSelectedProjectIds(filtered.map((p) => p.id));
+      })
+      .catch(console.error)
+      .finally(() => setLoadingProjects(false));
+  }, [selectedClientId]);
 
   // Live Calculations
   const selectedProjects = useMemo(() => {
@@ -217,10 +178,12 @@ export default function EditorInvoicesPage() {
     );
   };
 
+  const selectedClient = eligibleClients.find((c) => c.id === selectedClientId);
+
   // PDF Generator API call
   const generatePdfBlob = async (): Promise<Blob> => {
     const payload = {
-      month: selectedMonth,
+      clientId: selectedClientId,
       projectIds: selectedProjectIds,
       editorName,
       paymentDetails: `Bank: ${bankName} | A/C Name: ${accountName} | A/C No: ${accountNumber} | IFSC: ${ifscCode} | PAN: ${panNumber}`,
@@ -235,7 +198,13 @@ export default function EditorInvoicesPage() {
     return new Blob([response.data], { type: 'application/pdf' });
   };
 
+  const selectedClientName = eligibleClients.find(c => c.id === selectedClientId)?.name || 'Client';
+
   const handleDownloadPdf = async () => {
+    if (!selectedClientId) {
+      alert('Please select a client first.');
+      return;
+    }
     if (selectedProjectIds.length === 0) {
       alert('Please select at least one completed deliverable to compile a payout statement.');
       return;
@@ -246,9 +215,14 @@ export default function EditorInvoicesPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `editor_payout_${selectedMonth.replace(/\s+/g, '_')}.pdf`;
+      a.download = `editor_payout_${selectedClientName.replace(/\s+/g, '_')}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
+
+      // Re-fetch eligible clients and clear selected client after generation
+      const res = await api.get('/invoices/editor/eligible-clients');
+      setEligibleClients(res.data.data || []);
+      setSelectedClientId('');
     } catch (err) {
       console.error('PDF download failed:', err);
       alert('Failed to generate payout PDF.');
@@ -258,6 +232,10 @@ export default function EditorInvoicesPage() {
   };
 
   const handlePreviewPdf = async () => {
+    if (!selectedClientId) {
+      alert('Please select a client first.');
+      return;
+    }
     if (selectedProjectIds.length === 0) {
       alert('Please select at least one completed deliverable to preview.');
       return;
@@ -299,6 +277,12 @@ export default function EditorInvoicesPage() {
     }
   };
 
+  const filteredClients = eligibleClients.filter(c =>
+    !clientSearch ||
+    c.name.toLowerCase().includes(clientSearch.toLowerCase()) ||
+    (c.company || '').toLowerCase().includes(clientSearch.toLowerCase())
+  );
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12">
       {/* 1. Header Section & Navigation Tabs */}
@@ -309,7 +293,7 @@ export default function EditorInvoicesPage() {
             Editor Payout Statements
           </h1>
           <p className="text-[15px] text-slate-500 dark:text-slate-400 mt-1">
-            Compile monthly earnings statements, customize payout accounts, and manage official PDF records.
+            Compile client payout statements, customize payout accounts, and manage official PDF records.
           </p>
         </div>
 
@@ -344,14 +328,16 @@ export default function EditorInvoicesPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="flat-card bg-card p-5 border border-border space-y-2 relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">This Month's Earnings</span>
-            <Calendar className="h-4 w-4 text-accent" />
+            <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">
+              {selectedClientId ? `Earnings for ${selectedClientName}` : 'Selected Client Earnings'}
+            </span>
+            <DollarSign className="h-4 w-4 text-accent" />
           </div>
           <p className="text-[26px] font-extrabold text-slate-900 dark:text-white">
             {formatEditorCurrency(subtotal)}
           </p>
           <p className="text-[12px] text-slate-500">
-            From {selectedProjects.length} selected deliverable(s) in {selectedMonth}
+            From {selectedProjects.length} selected deliverable(s) {selectedClientId ? `for ${selectedClientName}` : ''}
           </p>
         </div>
 
@@ -390,20 +376,39 @@ export default function EditorInvoicesPage() {
                 </span>
               </div>
 
-              {/* Target Month Selector */}
+              {/* Searchable Client Selector */}
               <div className="space-y-2">
                 <label className="text-[12px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block">
-                  Target Month / Period
+                  Select Assigned Client
                 </label>
-                <select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="w-full text-[14px] font-semibold border border-slate-300 dark:border-slate-700 rounded-xl p-3 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-accent focus:outline-none"
-                >
-                  {months.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
+                
+                {eligibleClients.length === 0 ? (
+                  <div className="p-3 text-[13px] text-slate-500 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
+                    No eligible uninvoiced clients found.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      placeholder="Search client by name..."
+                      value={clientSearch}
+                      onChange={(e) => setClientSearch(e.target.value)}
+                      className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-1 focus:ring-accent outline-none"
+                    />
+                    <select
+                      value={selectedClientId}
+                      onChange={(e) => setSelectedClientId(e.target.value)}
+                      className="w-full text-[14px] font-semibold border border-slate-300 dark:border-slate-700 rounded-xl p-3 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-accent focus:outline-none"
+                    >
+                      <option value="">-- Choose a Client --</option>
+                      {filteredClients.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} {c.company ? `(${c.company})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
 
               {/* Editor Details (Confirmable) */}
@@ -413,7 +418,7 @@ export default function EditorInvoicesPage() {
                 </span>
 
                 <div className="space-y-1.5">
-                  <label className="text-[12px] text-slate-500 font-medium">Billed To Name</label>
+                  <label className="text-[12px] text-slate-500 font-medium">From (Editor Name)</label>
                   <input
                     type="text"
                     value={editorName}
@@ -559,24 +564,42 @@ export default function EditorInvoicesPage() {
                     Completed Deliverables Line Items
                   </h3>
                   <p className="text-[13px] text-slate-500 mt-0.5">
-                    Check or uncheck deliverables to include in this month's payout statement.
+                    {selectedClientId
+                      ? `Uninvoiced completed deliverables for ${selectedClientName}. Check or uncheck to include.`
+                      : 'Select an assigned client on the left to view eligible deliverables.'}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
-                  <label className="flex items-center gap-2 text-[13px] font-bold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={selectedProjectIds.length === completedProjects.length && completedProjects.length > 0}
-                      onChange={toggleSelectAll}
-                      className="rounded border-slate-300 text-accent focus:ring-accent h-4 w-4"
-                    />
-                    Select All ({completedProjects.length})
-                  </label>
-                </div>
+                {completedProjects.length > 0 && (
+                  <div className="flex items-center gap-3 shrink-0">
+                    <label className="flex items-center gap-2 text-[13px] font-bold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={selectedProjectIds.length === completedProjects.length && completedProjects.length > 0}
+                        onChange={toggleSelectAll}
+                        className="rounded border-slate-300 text-accent focus:ring-accent h-4 w-4"
+                      />
+                      Select All ({completedProjects.length})
+                    </label>
+                  </div>
+                )}
               </div>
 
-              {completedProjects.length === 0 ? (
+              {!selectedClientId ? (
+                <div className="text-center py-16 px-4 flat-card bg-slate-50/50 dark:bg-slate-900/20 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl">
+                  <AlertCircle className="h-10 w-10 mx-auto mb-3 text-slate-400" />
+                  <h4 className="font-bold text-[16px] text-slate-800 dark:text-slate-200">
+                    No Client Selected
+                  </h4>
+                  <p className="text-[14px] text-slate-500 max-w-md mx-auto mt-1">
+                    Please select a client from the dropdown on the left to compile a payout statement for their completed deliverables.
+                  </p>
+                </div>
+              ) : loadingProjects ? (
+                <div className="flex items-center justify-center py-16 text-slate-400">
+                  <Loader2 className="h-6 w-6 animate-spin text-accent mr-2" /> Loading deliverables...
+                </div>
+              ) : completedProjects.length === 0 ? (
                 /* Empty State */
                 <div className="text-center py-16 px-4 flat-card bg-slate-50/50 dark:bg-slate-900/20 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl">
                   <AlertCircle className="h-10 w-10 mx-auto mb-3 text-slate-400" />
@@ -584,7 +607,7 @@ export default function EditorInvoicesPage() {
                     No Completed Deliverables Found
                   </h4>
                   <p className="text-[14px] text-slate-500 max-w-md mx-auto mt-1">
-                    There are no projects marked as completed ({'UPLOADED'}) for {selectedMonth}. Complete project tasks on your board to compile statements.
+                    There are no uninvoiced completed projects ({'UPLOADED'}) for {selectedClientName}.
                   </p>
                 </div>
               ) : (

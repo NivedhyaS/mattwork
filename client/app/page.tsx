@@ -10,26 +10,18 @@ function RootPageContent() {
   const searchParams = useSearchParams();
   const { isAuthenticated, user } = useAuthStore();
 
-  const performRedirect = () => {
+  useEffect(() => {
     if (typeof window === 'undefined') return;
     if (isAuthenticated && user) {
-      if (user.role === 'ADMIN') window.location.href = '/admin';
-      else if (user.role === 'EDITOR') window.location.href = '/editor';
-      else if (user.role === 'CLIENT') window.location.href = '/client';
-      else window.location.href = '/unauthorized';
+      if (user.role === 'ADMIN') router.replace('/admin');
+      else if (user.role === 'EDITOR') router.replace('/editor');
+      else if (user.role === 'CLIENT') router.replace('/client');
+      else router.replace('/unauthorized');
     } else {
       const q = searchParams ? searchParams.toString() : '';
-      window.location.href = q ? `/login?${q}` : '/login';
+      router.replace(q ? `/login?${q}` : '/login');
     }
-  };
-
-  if (typeof window !== 'undefined') {
-    performRedirect();
-  }
-
-  useEffect(() => {
-    performRedirect();
-  }, [isAuthenticated, user, searchParams]);
+  }, [isAuthenticated, user, searchParams, router]);
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-slate-50 dark:bg-slate-900">

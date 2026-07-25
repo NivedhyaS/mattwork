@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
@@ -13,12 +14,14 @@ import {
   Building,
   CreditCard,
   RefreshCw,
+  Trash2,
   Mail,
   Phone,
   MapPin,
   Clock
 } from 'lucide-react';
 import Button from '@/components/ui/button';
+import Modal from '@/components/ui/modal';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
 
@@ -59,6 +62,21 @@ export default function InvoiceDetailsPage() {
     onError: (err: any) => {
       console.error('Invoice PDF download failed:', err);
       alert('Failed to download invoice PDF. Please try again.');
+    }
+  });
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const deleteInvoiceMutation = useMutation({
+    mutationFn: async () => {
+      await api.delete(`/invoices/${id}`);
+    },
+    onSuccess: () => {
+      router.push('/admin/invoices');
+    },
+    onError: (err: any) => {
+      alert(err?.response?.data?.message || 'Failed to delete invoice');
+      setIsDeleteModalOpen(false);
     }
   });
 
@@ -114,7 +132,17 @@ export default function InvoiceDetailsPage() {
         >
           <ArrowLeft className="h-4 w-4" /> Back to Invoices
         </button>
-
+        <div className="flex items-center gap-3">
+        {invoiceData.status !== 'PAID' && (
+          <Button
+            variant="outline"
+            onClick={() => setIsDeleteModalOpen(true)}
+            className="cursor-pointer border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 dark:border-rose-900/50 dark:text-rose-500 dark:hover:bg-rose-950/30 shadow-sm"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete Invoice
+          </Button>
+        )}
         <Button 
           onClick={() => downloadPdfMutation.mutate()} 
           disabled={downloadPdfMutation.isPending}
@@ -127,6 +155,7 @@ export default function InvoiceDetailsPage() {
           )}
           Download PDF
         </Button>
+      </div>
       </div>
 
       {/* Main Premium Invoice Details Card */}
@@ -399,6 +428,33 @@ export default function InvoiceDetailsPage() {
 
         </CardContent>
       </Card>
+
+      {/* ── Delete Confirmation Modal ────────────────────────────────────────────── */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Invoice"
+        description="Are you sure you want to delete this invoice? This action cannot be undone."
+      >
+        <div className="flex justify-end gap-3 mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsDeleteModalOpen(false)}
+            className="rounded-xl font-bold"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={() => deleteInvoiceMutation.mutate()}
+            isLoading={deleteInvoiceMutation.isPending}
+            className="bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl px-5 border-transparent"
+          >
+            Delete Invoice
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

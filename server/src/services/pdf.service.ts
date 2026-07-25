@@ -202,6 +202,7 @@ export class PDFService {
     ratePerProject: number;
     totalAmount: number;
     paymentDetails?: string;
+    currency?: string;
   }): Promise<Buffer> {
     const doc = new PDFDocument({ size: 'A4', margin: 45 });
     doc.registerFont('Arial', 'C:\\Windows\\Fonts\\arial.ttf');
@@ -216,46 +217,41 @@ export class PDFService {
     );
     const finalTotal = totalINR > 0 ? totalINR : params.totalAmount;
 
-    // 1. Header Layout with Mattwork Logo (Invoice Generator style)
-    const logoPath = path.join(__dirname, '../assets/logo.png');
-    if (fs.existsSync(logoPath)) {
-      doc.image(logoPath, 45, 38, { fit: [150, 48] });
-    } else {
-      doc.roundedRect(45, 40, 32, 32, 6).fill('#4f46e5');
-      doc.fillColor('#ffffff').fontSize(14).font('Arial-Bold').text('MW', 51, 49);
-      doc.font('Arial-Bold').fontSize(14).fillColor('#0f172a').text('MATTWORK', 88, 40);
-    }
+    // 1. Clean Header Layout without logo (per spec: no logo anywhere in PDF)
+    doc.fontSize(22).font('Arial-Bold').fillColor('#0f172a').text('EDITOR PAYOUT INVOICE', 45, 36);
+    doc.fontSize(10).font('Arial').fillColor('#64748b').text(`Invoice #: ${params.invoiceNumber}`, 45, 64);
 
-    doc.fontSize(26).font('Arial-Bold').fillColor('#0f172a').text('INVOICE', 350, 36, { align: 'right', width: 200 });
-
-    doc.moveTo(45, 98).lineTo(550, 98).strokeColor('#e2e8f0').lineWidth(0.75).stroke();
+    doc.moveTo(45, 88).lineTo(550, 88).strokeColor('#e2e8f0').lineWidth(0.75).stroke();
 
     // 2. Info Cards Grid (Equal Width: 245pt each with 15pt gap)
-    const cardY = 112;
-    const cardHeight = 78;
+    const cardY = 100;
+    const cardHeight = 90;
     const cardWidth = 245;
 
+    // Left Card: FROM (Editor) & TO (Mattwork Pvt Ltd)
     doc.roundedRect(45, cardY, cardWidth, cardHeight, 6).fill('#f8fafc');
     doc.roundedRect(45, cardY, cardWidth, cardHeight, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
 
+    doc.fillColor('#64748b').fontSize(7.5).font('Arial-Bold').text('FROM (EDITOR):', 57, cardY + 10);
+    doc.fillColor('#0f172a').fontSize(10).font('Arial-Bold').text(params.editorName, 57, cardY + 22, { width: 220, ellipsis: true });
+
+    doc.fillColor('#64748b').fontSize(7.5).font('Arial-Bold').text('TO:', 57, cardY + 44);
+    doc.fillColor('#0f172a').fontSize(10).font('Arial-Bold').text('Mattwork Pvt Ltd', 57, cardY + 56, { width: 220, ellipsis: true });
+
+    // Right Card: Date / Due Date / Balance Due
     doc.roundedRect(305, cardY, cardWidth, cardHeight, 6).fill('#f8fafc');
     doc.roundedRect(305, cardY, cardWidth, cardHeight, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
 
-    // Fill Left Card (Bill To)
-    doc.fillColor('#64748b').fontSize(7.5).font('Arial-Bold').text('BILL TO', 57, cardY + 14);
-    doc.fillColor('#0f172a').fontSize(11).font('Arial-Bold').text(params.editorName, 57, cardY + 30, { width: 220, ellipsis: true });
-
-    // Fill Right Card details (Date / Due Date / Balance Due)
-    let infoRowY = cardY + 10;
+    let infoRowY = cardY + 12;
     doc.fillColor('#64748b').fontSize(8.5).font('Arial').text('Date:', 317, infoRowY);
     doc.fillColor('#0f172a').fontSize(8.5).font('Arial').text(new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }), 415, infoRowY, { align: 'right', width: 123 });
-    infoRowY += 14;
+    infoRowY += 16;
 
     doc.fillColor('#64748b').fontSize(8.5).font('Arial').text('Due Date:', 317, infoRowY);
     doc.fillColor('#0f172a').fontSize(8.5).font('Arial').text('Upon Receipt', 415, infoRowY, { align: 'right', width: 123 });
 
     // Highlighted Balance Due inside Card
-    const balY = cardY + 46;
+    const balY = cardY + 54;
     doc.roundedRect(315, balY, 225, 24, 4).fill('#f5f3ff');
     doc.roundedRect(315, balY, 225, 24, 4).strokeColor('#e0e7ff').lineWidth(0.5).stroke();
     doc.fillColor('#0f172a').fontSize(9).font('Arial-Bold').text('Balance Due:', 323, balY + 6);
@@ -515,13 +511,13 @@ export class PDFService {
 
   async generateProfitReportPDF(params: {
     month: string;
-    profitReport: {
+    marginReport: {
       revenue: number;
       editorCosts: number;
-      profit: number;
-      priorMonthProfit: number | null;
-      profitChangeAbsolute: number | null;
-      profitChangePercentage: number | null;
+      netMargin: number;
+      priorMonthNetMargin: number | null;
+      netMarginChangeAbsolute: number | null;
+      netMarginChangePercentage: number | null;
     };
   }): Promise<Buffer> {
     const doc = new PDFDocument({ margin: 50 });
@@ -532,11 +528,11 @@ export class PDFService {
       .fillColor('#4f46e5')
       .fontSize(20)
       .font('Arial-Bold')
-      .text('MATTWORK PROFITABILITY REPORT', 50, 50)
+      .text('MATTWORK MARGIN ANALYSIS', 50, 50)
       .fontSize(10)
       .fillColor('#64748b')
       .font('Arial')
-      .text(`Monthly Business Profit & Comparison — ${params.month}`, 50, 75);
+      .text(`Monthly Business Margin & Comparison — ${params.month}`, 50, 75);
 
     doc.moveTo(50, 100).lineTo(550, 100).strokeColor('#cbd5e1').stroke();
 
@@ -553,20 +549,20 @@ export class PDFService {
 
     // Revenue
     doc.text('Total Monthly Revenue (Received)', 60, y + 7)
-      .text(`${baseCur.symbol}${params.profitReport.revenue.toLocaleString(baseCur.locale)}`, 400, y + 7, { width: 140, align: 'right' });
+      .text(`${baseCur.symbol}${params.marginReport.revenue.toLocaleString(baseCur.locale)}`, 400, y + 7, { width: 140, align: 'right' });
     y += 25;
 
     // Editor Costs
     doc.rect(50, y, 500, 25).fill('#f5f3ff');
     doc.fillColor('#0f172a')
-      .text('Total Editor Costs (Payable/Paid)', 60, y + 7)
-      .text(`${baseCur.symbol}${params.profitReport.editorCosts.toLocaleString(baseCur.locale)}`, 400, y + 7, { width: 140, align: 'right' });
+      .text('Total Editor Cost (Payable/Paid)', 60, y + 7)
+      .text(`${baseCur.symbol}${params.marginReport.editorCosts.toLocaleString(baseCur.locale)}`, 400, y + 7, { width: 140, align: 'right' });
     y += 25;
 
-    // Profit
+    // Net Margin
     doc.font('Arial-Bold')
-      .text('Operating Profit (Net)', 60, y + 7)
-      .text(`${baseCur.symbol}${params.profitReport.profit.toLocaleString(baseCur.locale)}`, 400, y + 7, { width: 140, align: 'right' })
+      .text('Net Margin', 60, y + 7)
+      .text(`${baseCur.symbol}${params.marginReport.netMargin.toLocaleString(baseCur.locale)}`, 400, y + 7, { width: 140, align: 'right' })
       .font('Arial');
     y += 35;
 
@@ -576,23 +572,25 @@ export class PDFService {
       .font('Arial').fontSize(10).fillColor('#0f172a');
     y += 20;
 
-    if (params.profitReport.priorMonthProfit !== null) {
-      doc.text('Prior Month Profit:', 60, y)
-        .text(`${baseCur.symbol}${params.profitReport.priorMonthProfit.toLocaleString(baseCur.locale)}`, 400, y, { width: 140, align: 'right' });
+    if (params.marginReport.priorMonthNetMargin !== null) {
+      doc.text('Prior Month Net Margin:', 60, y)
+        .text(`${baseCur.symbol}${params.marginReport.priorMonthNetMargin.toLocaleString(baseCur.locale)}`, 400, y, { width: 140, align: 'right' });
       y += 20;
 
-      const changeAbs = params.profitReport.profitChangeAbsolute ?? 0;
-      const changePct = params.profitReport.profitChangePercentage ?? 0;
+      const changeAbs = params.marginReport.netMarginChangeAbsolute ?? 0;
+      const changePct = params.marginReport.netMarginChangePercentage ?? 0;
       const sign = changeAbs >= 0 ? '+' : '';
       const color = changeAbs >= 0 ? '#10b981' : '#ef4444';
 
-      doc.text('Net Profit Change:', 60, y)
+      doc.text('Net Margin Change:', 60, y)
         .fillColor(color).font('Arial-Bold')
         .text(`${sign}${baseCur.symbol}${changeAbs.toLocaleString(baseCur.locale)} (${sign}${changePct.toFixed(1)}%)`, 400, y, { width: 140, align: 'right' })
         .font('Arial');
     } else {
       doc.fillColor('#64748b').text('Prior month profit data is unavailable for MoM comparison.', 60, y);
     }
+
+    doc.end();
 
     return this.streamToBuffer(doc);
   }

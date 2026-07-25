@@ -366,7 +366,7 @@ export default function ClientsPage() {
             <div className="space-y-2">
               <Label>Client Budget <span className="text-slate-400 font-normal">(Total advance paid, in client currency)</span></Label>
               <Input
-                {...createForm.register('advancePaid')}
+                {...createForm.register('advancePaid', { valueAsNumber: true })}
                 type="number"
                 step="0.01"
                 min="0"
@@ -447,7 +447,7 @@ export default function ClientsPage() {
             <div className="space-y-2">
               <Label>Client Budget <span className="text-slate-400 font-normal">(Total advance paid, in client currency)</span></Label>
               <Input
-                {...editForm.register('advancePaid')}
+                {...editForm.register('advancePaid', { valueAsNumber: true })}
                 type="number"
                 step="0.01"
                 min="0"

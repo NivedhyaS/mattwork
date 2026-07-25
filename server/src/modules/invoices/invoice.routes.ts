@@ -42,6 +42,12 @@ router.post(
   invoiceController.downloadEditorInvoicePdf
 );
 
+router.get(
+  '/editor/eligible-clients',
+  authorize(Role.EDITOR),
+  invoiceController.getEligibleClients
+);
+
 router.post(
   '/editor/email',
   authorize(Role.EDITOR),

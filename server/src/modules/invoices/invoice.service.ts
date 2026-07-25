@@ -152,6 +152,7 @@ export class InvoiceService {
     if (invoice.status === InvoiceStatus.PAID) {
       throw ApiError.badRequest('Cannot delete a paid invoice');
     }
+    await prisma.payment.deleteMany({ where: { invoiceId: id } });
     return invoiceRepository.delete(id);
   }
 }

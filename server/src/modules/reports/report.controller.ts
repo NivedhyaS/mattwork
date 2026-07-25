@@ -178,16 +178,16 @@ export class ReportController {
 
       sheet.getRow(1).font = { bold: true };
 
-      sheet.addRow({ metric: 'Total Revenue', value: report.profitReport.revenue });
-      sheet.addRow({ metric: 'Total Editor Costs', value: report.profitReport.editorCosts });
+      sheet.addRow({ metric: 'Total Revenue', value: report.marginReport.revenue });
+      sheet.addRow({ metric: 'Total Editor Cost', value: report.marginReport.editorCosts });
       
-      const profitRow = sheet.addRow({ metric: 'Net Profit', value: report.profitReport.profit });
+      const profitRow = sheet.addRow({ metric: 'Net Margin', value: report.marginReport.netMargin });
       profitRow.font = { bold: true };
 
-      if (report.profitReport.priorMonthProfit !== null) {
-        sheet.addRow({ metric: 'Prior Month Profit', value: report.profitReport.priorMonthProfit });
-        sheet.addRow({ metric: 'Profit Change Absolute', value: report.profitReport.profitChangeAbsolute });
-        sheet.addRow({ metric: 'Profit Change Percentage', value: `${report.profitReport.profitChangePercentage}%` });
+      if (report.marginReport.priorMonthNetMargin !== null) {
+        sheet.addRow({ metric: 'Prior Month Net Margin', value: report.marginReport.priorMonthNetMargin });
+        sheet.addRow({ metric: 'Net Margin Change Absolute', value: report.marginReport.netMarginChangeAbsolute });
+        sheet.addRow({ metric: 'Net Margin Change Percentage', value: `${report.marginReport.netMarginChangePercentage}%` });
       }
 
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
