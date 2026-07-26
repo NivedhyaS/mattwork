@@ -416,9 +416,39 @@ function ConnectFormDrawer({ isOpen, onClose, onSuccess }: ConnectFormDrawerProp
                 disabled={isDetecting}
               />
               {detectError && (
-                <div className="flex items-start gap-2 p-4 rounded-2xl bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)]">
-                  <AlertTriangle className="h-4 w-4 text-[#EF4444] shrink-0 mt-0.5" />
-                  <p className="text-[13px] text-[#EF4444] font-extrabold">{detectError}</p>
+                <div className="space-y-3 p-4 rounded-2xl bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)]">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-[#EF4444] shrink-0 mt-0.5" />
+                    <p className="text-[13px] text-[#EF4444] font-extrabold">{detectError}</p>
+                  </div>
+
+                  {(detectError.includes('permission') || detectError.includes('caller')) && (
+                    <div className="pt-3 border-t border-[rgba(239,68,68,0.2)] text-[12.5px] text-[#3D2E24] space-y-2">
+                      <p className="font-extrabold text-[#EA580C] flex items-center gap-1.5">
+                        <span>💡 How to fix this in 30 seconds:</span>
+                      </p>
+                      <ol className="list-decimal list-inside space-y-1.5 font-semibold text-[#7C6A5A] leading-relaxed">
+                        <li>Open your Google Form in your browser.</li>
+                        <li>Click <strong className="text-[#3D2E24]">⋮ (Add collaborators)</strong> in the top right.</li>
+                        <li>Add the app&apos;s Service Account Email below as an <strong className="text-[#3D2E24]">Editor</strong>:</li>
+                      </ol>
+                      <div className="flex items-center gap-2 mt-2 p-2.5 rounded-xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+                        <code className="text-[11.5px] font-mono text-[#3D2E24] font-extrabold truncate flex-1 select-all">
+                          mattwork-service@mattwork-501419.iam.gserviceaccount.com
+                        </code>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText('mattwork-service@mattwork-501419.iam.gserviceaccount.com');
+                            alert('Service account email copied to clipboard!');
+                          }}
+                          className="px-3 py-1.5 text-[11px] font-extrabold bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white rounded-xl shadow-[-2px_-2px_4px_rgba(255,255,255,0.7),2px_2px_5px_rgba(234,88,12,0.4)] shrink-0 cursor-pointer hover:opacity-90 active:scale-95 transition-all"
+                        >
+                          Copy Email
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
