@@ -200,14 +200,14 @@ export default function EditorCombobox({
               onClick={() => selectEditor(null)}
               className={`
                 flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all text-[13px]
-                ${activeIndex === 0 ? 'bg-indigo-500/15 text-slate-100' : 'hover:bg-slate-800/60 text-slate-300'}
+                ${activeIndex === 0 ? 'bg-[rgba(234,88,12,0.08)]' : 'hover:bg-[rgba(234,88,12,0.05)]'}
               `}
             >
-              <div className="h-8 w-8 rounded-full bg-slate-800 border border-slate-700/60 flex items-center justify-center shrink-0">
-                <UserX className="h-4 w-4 text-slate-400" />
+              <div className="h-8 w-8 rounded-full bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
+                <UserX className="h-4 w-4 text-[#8C7769]" />
               </div>
-              <span className="flex-1 font-semibold text-slate-300">Unassigned</span>
-              {value === null && <Check className="h-4 w-4 text-indigo-400 shrink-0 font-bold" />}
+              <span className="flex-1 font-semibold text-[#8C7769]">Unassigned</span>
+              {value === null && <Check className="h-4 w-4 text-[#EA580C] shrink-0 font-bold" />}
             </li>
 
             {/* Editor options */}
@@ -224,11 +224,11 @@ export default function EditorCombobox({
                   onClick={() => selectEditor(editor.id)}
                   className={`
                     flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all
-                    ${activeIndex === idx + 1 ? 'bg-indigo-500/15 text-slate-100' : 'hover:bg-slate-800/60 text-slate-200'}
+                    ${activeIndex === idx + 1 ? 'bg-[rgba(234,88,12,0.08)]' : 'hover:bg-[rgba(234,88,12,0.05)]'}
                   `}
                 >
                   {/* Avatar */}
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500/30 to-purple-500/30 text-indigo-300 font-extrabold border border-indigo-500/30 flex items-center justify-center text-[12px] shrink-0 shadow-xs overflow-hidden">
+                  <div className="h-8 w-8 rounded-full bg-[#F6EFE9] text-[#EA580C] font-extrabold shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center text-[12px] shrink-0 overflow-hidden">
                     {editor.user.avatar ? (
                       <img src={editor.user.avatar} alt="" className="h-full w-full object-cover" />
                     ) : (
@@ -238,10 +238,10 @@ export default function EditorCombobox({
 
                   {/* Name + email */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-[13.5px] text-slate-100 truncate">
+                    <p className="font-bold text-[13.5px] text-[#3D2E24] truncate">
                       {editor.user.name}
                     </p>
-                    <p className="text-[11px] text-slate-400 font-medium truncate">{editor.user.email}</p>
+                    <p className="text-[11px] text-[#8C7769] font-medium truncate">{editor.user.email}</p>
                   </div>
 
                   {/* Active project count */}
@@ -249,7 +249,7 @@ export default function EditorCombobox({
                     {editor.activeProjects} active
                   </span>
 
-                  {editor.id === value && <Check className="h-4 w-4 text-indigo-400 shrink-0 font-bold" />}
+                  {editor.id === value && <Check className="h-4 w-4 text-[#EA580C] shrink-0 font-bold" />}
                 </li>
               ))
             )}

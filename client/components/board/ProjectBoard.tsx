@@ -1252,9 +1252,9 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
         {selectedProject ? (
           <div className="space-y-6 text-[15px] text-slate-800 dark:text-slate-200">
             {/* Upper Stage Header (Sleek Page Title & Stage status) */}
-            <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-slate-100 dark:border-slate-900">
+            <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-[#E0D5CB]">
               <div className="space-y-1">
-                <h2 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+                <h2 className="text-[28px] font-extrabold tracking-tight text-[#3D2E24] leading-tight">
                   {selectedProject.standardName}
                 </h2>
               </div>
@@ -1274,34 +1274,24 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                     {selectedProject.priority || 'MEDIUM'} Priority
                   </span>
                 )}
-                {role === 'ADMIN' && (
-                  <button
-                    onClick={() => handleDeleteProject(selectedProject.id)}
-                    className="flex items-center gap-1.5 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border border-rose-500/20 px-3.5 py-2 rounded-xl transition-all cursor-pointer text-[13px] font-bold"
-                    title="Delete Project Completely"
-                  >
-                    <Trash2 className="h-4.5 w-4.5" />
-                    Delete Project
-                  </button>
-                )}
               </div>
             </div>
 
             {/* 1. Grouped Card: Project Details */}
-            <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
-              <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Project Details</h3>
+            <div className="bg-[#F6EFE9] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4">
+              <h3 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Project Details</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Client Section */}
                 {role !== 'EDITOR' && (
                   <div className="space-y-2">
-                    <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block">Client (Owner)</span>
+                    <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Client (Owner)</span>
                     {role === 'ADMIN' ? (
                       <Select
                         value={selectedProject.clientId}
                         disabled={isSavingField === 'clientId'}
                         onChange={(e) => handleUpdateField('clientId', e.target.value)}
-                        className="text-[14px] py-2 h-11 border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white w-full rounded-xl"
+                        className="text-[14px] py-2 h-11 border-0 bg-[#F6EFE9] text-[#3D2E24] w-full rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] font-semibold"
                       >
                         {clients.map((c) => (
                           <option key={c.id} value={c.id}>
@@ -1311,11 +1301,11 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       </Select>
                     ) : (
                       <div className="py-1">
-                        <p className="font-bold text-[16px] text-slate-900 dark:text-white">
+                        <p className="font-bold text-[16px] text-[#3D2E24]">
                           {selectedProject.client?.user?.name}
                         </p>
                         {selectedProject.client?.company && (
-                          <p className="text-[14px] text-slate-650 dark:text-slate-350 font-bold">{selectedProject.client.company}</p>
+                          <p className="text-[14px] text-[#8C7769] font-bold">{selectedProject.client.company}</p>
                         )}
                       </div>
                     )}
@@ -1325,7 +1315,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                 {/* Editor Section */}
                 {role !== 'CLIENT' && (
                   <div className="space-y-2">
-                    <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block">Assigned Editor</span>
+                    <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Assigned Editor</span>
                     {role === 'ADMIN' ? (
                       <EditorCombobox
                         editors={editors}
@@ -1335,15 +1325,15 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       />
                     ) : selectedProject.editor ? (
                       <div className="py-1">
-                        <p className="font-bold text-[16px] text-slate-900 dark:text-white">
+                        <p className="font-bold text-[16px] text-[#3D2E24]">
                           {selectedProject.editor.user.name}
                         </p>
                         {selectedProject.editor.user.email && (
-                          <p className="text-[14px] text-slate-650 dark:text-slate-350 font-normal">{selectedProject.editor.user.email}</p>
+                          <p className="text-[14px] text-[#8C7769] font-normal">{selectedProject.editor.user.email}</p>
                         )}
                       </div>
                     ) : (
-                      <p className="text-[15px] text-slate-450 dark:text-slate-400 italic font-semibold py-1">No editor assigned</p>
+                      <p className="text-[15px] text-[#8C7769] italic font-semibold py-1">No editor assigned</p>
                     )}
                   </div>
                 )}
@@ -1351,7 +1341,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                 {/* Priority Section (ADMIN only) */}
                 {role === 'ADMIN' && (
                   <div className="space-y-2">
-                    <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block font-bold">Priority Level</span>
+                    <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Priority Level</span>
                     <PriorityCombobox
                       value={selectedProject.priority || 'MEDIUM'}
                       disabled={isSavingField === `priority_${selectedProject.id}`}
@@ -1364,7 +1354,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
               {/* Submission Date & Deadline Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                 <div className="space-y-2">
-                  <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block font-bold">Submission Date</span>
+                  <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Submission Date</span>
                   {role === 'ADMIN' ? (
                     <input
                       type="date"
@@ -1377,17 +1367,17 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       onBlur={(e) => {
                         handleUpdateField('submissionDate', e.target.value);
                       }}
-                      className="w-full text-[14px] p-2.5 rounded-xl border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-accent"
+                      className="w-full text-[14px] p-3 rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none font-semibold"
                     />
                   ) : (
-                    <p className="font-semibold text-slate-900 dark:text-white py-1">
+                    <p className="font-semibold text-[#3D2E24] py-1">
                       {selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
                     </p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block font-bold">Final Deadline</span>
+                  <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Final Deadline</span>
                   {role === 'ADMIN' ? (
                     <input
                       type="date"
@@ -1400,10 +1390,10 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       onBlur={(e) => {
                         handleUpdateField('dueDate', e.target.value);
                       }}
-                      className="w-full text-[14px] p-2.5 rounded-xl border border-slate-355 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-accent"
+                      className="w-full text-[14px] p-3 rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none font-semibold"
                     />
                   ) : (
-                    <p className="font-semibold text-slate-900 dark:text-white py-1">
+                    <p className="font-semibold text-[#3D2E24] py-1">
                       {selectedProject.dueDate ? new Date(selectedProject.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
                     </p>
                   )}
@@ -1973,6 +1963,28 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                     </span>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Danger Zone — Delete Project (ADMIN only, bottom of drawer) */}
+            {role === 'ADMIN' && (
+              <div className="pt-6 mt-2 border-t border-[#E0D5CB]">
+                <div className="bg-[#F6EFE9] p-4 rounded-2xl shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[13px] font-extrabold text-[#3D2E24]">Danger Zone</p>
+                      <p className="text-[12px] text-[#8C7769] mt-0.5">Permanently delete this project and all associated data.</p>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteProject(selectedProject.id)}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-extrabold text-[#DC2626] bg-[#F6EFE9] shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)] hover:bg-[#DC2626] hover:text-white hover:shadow-[-3px_-3px_6px_rgba(255,255,255,0.7),3px_3px_8px_rgba(220,38,38,0.4)] transition-all cursor-pointer"
+                      title="Delete Project Completely"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete Project
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>

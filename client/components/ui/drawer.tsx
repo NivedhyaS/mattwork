@@ -59,14 +59,14 @@ export default function Drawer({
           )}
         >
           {/* Header */}
-          <div className="flex items-start justify-between p-6 border-b border-slate-100 dark:border-slate-900">
+          <div className="flex items-start justify-between p-6 border-b border-[#E0D5CB]">
             <div>
-              {title && <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">{title}</h3>}
-              {description && <p className="text-sm text-slate-500 mt-1">{description}</p>}
+              {title && <h3 className="text-lg font-bold text-[#3D2E24]">{title}</h3>}
+              {description && <p className="text-sm text-[#8C7769] mt-1">{description}</p>}
             </div>
             <button
               onClick={onClose}
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors focus:outline-none"
+              className="rounded-xl p-2 text-[#7C6A5A] bg-[#F6EFE9] shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)] hover:shadow-[-4px_-4px_8px_rgba(255,255,255,0.95),4px_4px_8px_rgba(206,187,172,0.7)] hover:text-[#3D2E24] transition-all focus:outline-none"
             >
               <X className="h-5 w-5" />
             </button>
