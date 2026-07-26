@@ -4,9 +4,9 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 
 export const PRIORITY_OPTIONS = [
-  { value: 'HIGH', label: 'High Priority', icon: '🔴', triggerColor: 'text-[#DC2626]', activeClass: 'bg-[rgba(220,38,38,0.08)]', dotColor: 'bg-[#DC2626]' },
-  { value: 'MEDIUM', label: 'Medium Priority', icon: '🟡', triggerColor: 'text-[#D97706]', activeClass: 'bg-[rgba(217,119,6,0.08)]', dotColor: 'bg-[#D97706]' },
-  { value: 'LOW', label: 'Low Priority', icon: '🟢', triggerColor: 'text-[#16A34A]', activeClass: 'bg-[rgba(22,163,74,0.08)]', dotColor: 'bg-[#16A34A]' }
+  { value: 'HIGH', label: 'High Priority', icon: '🔴', triggerColor: 'text-[#EF4444]', activeClass: 'bg-[rgba(239,68,68,0.1)] text-[#EF4444]', dotColor: 'bg-[#EF4444]' },
+  { value: 'MEDIUM', label: 'Medium Priority', icon: '🟡', triggerColor: 'text-[#D97706]', activeClass: 'bg-[rgba(217,119,6,0.1)] text-[#D97706]', dotColor: 'bg-[#D97706]' },
+  { value: 'LOW', label: 'Low Priority', icon: '🟢', triggerColor: 'text-[#16A34A]', activeClass: 'bg-[rgba(22,163,74,0.1)] text-[#16A34A]', dotColor: 'bg-[#16A34A]' }
 ];
 
 interface PriorityComboboxProps {
@@ -90,7 +90,7 @@ export default function PriorityCombobox({
         onClick={() => setOpen(!open)}
         onKeyDown={handleKeyDown}
         className={`
-          flex items-center justify-between w-full px-4 py-2.5 h-11 rounded-2xl text-left transition-all
+          flex items-center justify-between w-full px-3.5 py-2.5 h-11 rounded-2xl text-left transition-all
           bg-[#F6EFE9] border-0
           shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]
           focus:outline-none
@@ -99,32 +99,32 @@ export default function PriorityCombobox({
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <div className="flex items-center gap-3 overflow-hidden">
+        <div className="flex items-center gap-2.5 overflow-hidden min-w-0 flex-1">
           <div className={`h-3 w-3 rounded-full shrink-0 ${selected.dotColor}`} />
 
           <div className="min-w-0 flex-1">
             {isLoading ? (
-              <span className="text-[#8C7769] font-medium text-[14px]">Saving…</span>
+              <span className="text-[#8C7769] font-semibold text-[13px]">Saving…</span>
             ) : (
-              <span className={`font-extrabold truncate block text-[14px] ${selected.triggerColor}`}>
+              <span className={`font-extrabold truncate block text-[13px] ${selected.triggerColor}`}>
                 {selected.label}
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1 shrink-0 ml-1">
           <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-200 text-[#8C7769] ${open ? 'rotate-180 text-[#EA580C]' : ''}`} />
         </div>
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Floating Neumorphic Dropdown Menu */}
       {open && (
-        <div className="absolute z-[60] mt-2 w-full min-w-[200px] rounded-2xl bg-[#F6EFE9] shadow-[-8px_-8px_16px_rgba(255,255,255,0.95),8px_8px_16px_rgba(201,180,163,0.75)] p-2 space-y-1">
+        <div className="absolute z-[100] mt-2 w-full min-w-[210px] rounded-3xl bg-[#F6EFE9] text-[#3D2E24] shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.8)] border border-[rgba(206,187,172,0.4)] p-2 space-y-1">
           <ul
             ref={listRef}
             role="listbox"
-            className="max-h-[260px] overflow-y-auto space-y-0.5"
+            className="max-h-[260px] overflow-y-auto space-y-1 custom-scrollbar"
           >
             {PRIORITY_OPTIONS.map((option, idx) => {
               const isSelected = option.value === value;
@@ -136,20 +136,19 @@ export default function PriorityCombobox({
                   aria-selected={isSelected}
                   onClick={() => selectOption(option.value)}
                   className={`
-                    flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all
+                    flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer transition-all
                     ${isActive ? option.activeClass : 'hover:bg-[rgba(234,88,12,0.06)]'}
-                    ${isSelected && !isActive ? 'bg-[rgba(234,88,12,0.04)]' : ''}
+                    ${isSelected && !isActive ? 'bg-[rgba(234,88,12,0.05)]' : ''}
                   `}
                 >
-                  <div className={`h-3 w-3 rounded-full shrink-0 ${option.dotColor}`} />
-
-                  <div className="flex-1 min-w-0">
-                    <p className={`font-extrabold text-[14px] truncate ${isSelected ? 'text-[#3D2E24]' : 'text-[#5C4A3E]'}`}>
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className={`h-3 w-3 rounded-full shrink-0 ${option.dotColor}`} />
+                    <p className={`font-extrabold text-[13px] truncate ${isSelected ? 'text-[#3D2E24]' : 'text-[#5C4A3E]'}`}>
                       {option.label}
                     </p>
                   </div>
                   
-                  {isSelected && <Check className="h-4 w-4 text-[#EA580C] shrink-0" />}
+                  {isSelected && <Check className="h-4 w-4 text-[#EA580C] shrink-0 font-bold ml-1" />}
                 </li>
               );
             })}

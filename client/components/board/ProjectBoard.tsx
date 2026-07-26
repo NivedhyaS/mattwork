@@ -1335,7 +1335,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
                 {/* Priority Section (ADMIN only) */}
                 {role === 'ADMIN' && (
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative z-30">
                     <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Priority Level</span>
                     <PriorityCombobox
                       value={selectedProject.priority || 'MEDIUM'}
@@ -1401,48 +1401,48 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
             {/* Admin Revision Review Section */}
             {role === 'ADMIN' && selectedProject.revisionRequests && selectedProject.revisionRequests.some((r: any) => r.status === 'PENDING_ADMIN') && (
-              <div className="bg-orange-50/50 dark:bg-orange-900/10 p-5 rounded-2xl border border-orange-200 dark:border-orange-800/30 space-y-4">
-                <h3 className="text-[18px] font-extrabold text-orange-900 dark:text-orange-400 tracking-tight flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5" />
+              <div className="bg-[#F6EFE9] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4">
+                <h3 className="text-[18px] font-extrabold text-[#EA580C] tracking-tight flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-[#EA580C]" />
                   Pending Revision Review
                 </h3>
                 {selectedProject.revisionRequests
                   .filter((r: any) => r.status === 'PENDING_ADMIN')
                   .map((req: any) => (
-                    <div key={req.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4">
+                    <div key={req.id} className="bg-[#F6EFE9] p-5 rounded-2xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] space-y-4">
                       <div>
-                        <span className="text-slate-500 dark:text-slate-400 text-[12px] font-bold uppercase tracking-wider block">Target Stage</span>
-                        <p className="font-semibold text-slate-900 dark:text-white">{req.stage.replace(/_/g, ' ')}</p>
+                        <span className="text-[#8C7769] text-[12px] font-extrabold uppercase tracking-wider block">Target Stage</span>
+                        <p className="font-extrabold text-[#3D2E24] mt-0.5">{req.stage.replace(/_/g, ' ')}</p>
                       </div>
                       {req.rawClientInput?.timecodes && (
                         <div>
-                          <span className="text-slate-500 dark:text-slate-400 text-[12px] font-bold uppercase tracking-wider block">Client Timecodes</span>
-                          <pre className="mt-1 p-3 bg-slate-50 dark:bg-slate-950 rounded-lg text-sm text-slate-800 dark:text-slate-300 font-mono whitespace-pre-wrap">
+                          <span className="text-[#8C7769] text-[12px] font-extrabold uppercase tracking-wider block">Client Timecodes</span>
+                          <pre className="mt-1 p-3 bg-[#F6EFE9] rounded-xl text-sm text-[#3D2E24] font-mono whitespace-pre-wrap shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
                             {req.rawClientInput.timecodes}
                           </pre>
                         </div>
                       )}
                       {req.rawClientInput?.generalComment && (
                         <div>
-                          <span className="text-slate-500 dark:text-slate-400 text-[12px] font-bold uppercase tracking-wider block">Client Comment</span>
-                          <p className="mt-1 p-3 bg-slate-50 dark:bg-slate-950 rounded-lg text-sm text-slate-800 dark:text-slate-300">
+                          <span className="text-[#8C7769] text-[12px] font-extrabold uppercase tracking-wider block">Client Comment</span>
+                          <p className="mt-1 p-3 bg-[#F6EFE9] rounded-xl text-sm text-[#3D2E24] font-medium shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
                             {req.rawClientInput.generalComment}
                           </p>
                         </div>
                       )}
                       
-                      <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                      <div className="pt-4 border-t border-[rgba(206,187,172,0.4)] space-y-3">
                         <div className="flex flex-col gap-2">
-                           <Label className="text-[13px] font-bold text-slate-700 dark:text-slate-300">Final Instructions for Editor</Label>
+                           <Label className="text-[13px] font-extrabold text-[#3D2E24]">Final Instructions for Editor</Label>
                            <textarea
                              id={`adminInstructions-${req.id}`}
-                             className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-sm focus:ring-2 focus:ring-accent outline-none min-h-[80px]"
+                             className="w-full p-3.5 rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] font-medium shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none min-h-[85px] placeholder:text-[#8C7769]"
                              placeholder="Translate client comments into clear instructions..."
                            ></textarea>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-3.5">
                            <Button 
-                             className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl"
+                             className="bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white font-extrabold rounded-2xl px-5 py-2.5 shadow-[-3px_-3px_6px_rgba(255,255,255,0.7),3px_3px_8px_rgba(234,88,12,0.4)]"
                              onClick={async () => {
                                const el = document.getElementById(`adminInstructions-${req.id}`) as HTMLTextAreaElement;
                                if (!el.value.trim()) { alert('Instructions required'); return; }
@@ -1452,10 +1452,10 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                  setSelectedProject(null);
                                } catch (e: any) { alert(e.response?.data?.message || 'Error'); }
                              }}
-                           >Approve & Forward to Editor</Button>
+                           >Approve &amp; Forward to Editor</Button>
                            <Button 
                              variant="outline" 
-                             className="border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl"
+                             className="bg-[#F6EFE9] text-[#DC2626] font-extrabold rounded-2xl px-4 py-2.5 shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)] hover:bg-[#DC2626] hover:text-white"
                              onClick={async () => {
                                const msg = prompt('Enter clarification message for the client:');
                                if (!msg) return;
@@ -1475,22 +1475,44 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
             {/* Approved Revision Instructions (Visible to Editor and Admin) */}
             {selectedProject.revisionRequests && selectedProject.revisionRequests.some((r: any) => r.adminInstructions) && (
-              <div className="bg-indigo-50/50 dark:bg-indigo-900/10 p-5 rounded-2xl border border-indigo-200 dark:border-indigo-800/30 space-y-4">
-                <h3 className="text-[18px] font-extrabold text-indigo-900 dark:text-indigo-400 tracking-tight">
-                  Revision Instructions
+              <div className="bg-[#F6EFE9] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4">
+                <h3 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight flex items-center justify-between">
+                  <span>Revision Instructions</span>
+                  <span className="text-[12px] font-extrabold px-3 py-1 rounded-full bg-[#F6EFE9] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+                    {selectedProject.revisionRequests.filter((r: any) => r.adminInstructions).length} active
+                  </span>
                 </h3>
-                {selectedProject.revisionRequests
-                  .filter((r: any) => r.adminInstructions)
-                  .map((req: any) => (
-                    <div key={req.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-500 dark:text-slate-400 text-[12px] font-bold uppercase tracking-wider block">{req.stage.replace(/_/g, ' ')}</span>
+
+                <div className="space-y-4">
+                  {selectedProject.revisionRequests
+                    .filter((r: any) => r.adminInstructions)
+                    .map((req: any) => (
+                      <div key={req.id} className="bg-[#F6EFE9] p-5 rounded-2xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] space-y-3">
+                        {/* Header: Stage Badge + Timestamp */}
+                        <div className="flex items-center justify-between pb-2.5 border-b border-[rgba(206,187,172,0.4)]">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-xl bg-[#F6EFE9] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+                              {req.stage.replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                          <span className="text-[12px] font-bold text-[#8C7769] flex items-center gap-1.5">
+                            <Clock className="h-3.5 w-3.5 text-[#EA580C]" />
+                            {req.updatedAt ? formatDate(req.updatedAt) : req.createdAt ? formatDate(req.createdAt) : 'Recently'}
+                          </span>
+                        </div>
+
+                        {/* Instruction Body */}
+                        <div>
+                          <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#8C7769] block mb-1.5">
+                            Editor Action Plan:
+                          </span>
+                          <div className="p-4 rounded-xl bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] font-mono text-[13.5px] leading-relaxed whitespace-pre-wrap">
+                            {req.adminInstructions}
+                          </div>
+                        </div>
                       </div>
-                      <pre className="mt-1 p-3 bg-slate-50 dark:bg-slate-950 rounded-lg text-sm text-slate-800 dark:text-slate-300 font-mono whitespace-pre-wrap">
-                        {req.adminInstructions}
-                      </pre>
-                    </div>
-                  ))}
+                    ))}
+                </div>
               </div>
             )}
 

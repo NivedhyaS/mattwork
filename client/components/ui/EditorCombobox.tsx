@@ -124,17 +124,17 @@ export default function EditorCombobox({
         disabled={disabled || isLoading}
         onClick={() => setOpen((o) => !o)}
         className={`
-          w-full min-h-[44px] flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl text-left text-[14px]
+          w-full h-11 flex items-center justify-between gap-2 px-3 py-2 rounded-2xl text-left text-[13px]
           transition-all duration-200 outline-none border-0 bg-[#F6EFE9] text-[#3D2E24]
           shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         `}
       >
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin text-[#EA580C] shrink-0" />
           ) : selected ? (
-            <div className="h-7 w-7 rounded-full bg-[#F6EFE9] text-[#EA580C] font-extrabold flex items-center justify-center text-[11px] shrink-0 overflow-hidden shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6),inset_-2px_-2px_4px_rgba(255,255,255,0.85)]">
+            <div className="h-6.5 w-6.5 rounded-full bg-[#F6EFE9] text-[#EA580C] font-extrabold flex items-center justify-center text-[10.5px] shrink-0 overflow-hidden shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6),inset_-2px_-2px_4px_rgba(255,255,255,0.85)]">
               {selected.user.avatar ? (
                 <img src={selected.user.avatar} alt="" className="h-full w-full object-cover" />
               ) : (
@@ -142,27 +142,27 @@ export default function EditorCombobox({
               )}
             </div>
           ) : (
-            <div className="h-7 w-7 rounded-full bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6),inset_-2px_-2px_4px_rgba(255,255,255,0.85)] flex items-center justify-center shrink-0">
+            <div className="h-6.5 w-6.5 rounded-full bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6),inset_-2px_-2px_4px_rgba(255,255,255,0.85)] flex items-center justify-center shrink-0">
               <UserX className="h-3.5 w-3.5 text-[#EA580C]" />
             </div>
           )}
 
           <div className="min-w-0 flex-1">
             {isLoading ? (
-              <span className="text-[#EA580C] font-medium">Assigning…</span>
+              <span className="text-[#EA580C] font-semibold text-[13px]">Assigning…</span>
             ) : selected ? (
-              <span className="font-extrabold text-[#3D2E24] truncate block">
+              <span className="font-extrabold text-[#3D2E24] truncate block text-[13px]">
                 {selected.user.name}
               </span>
             ) : (
-              <span className="text-[#EA580C] font-extrabold truncate block">Unassigned (click to assign)</span>
+              <span className="text-[#EA580C] font-extrabold truncate block text-[13px]">Unassigned</span>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0 ml-1">
           {!isLoading && selected && (
-            <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shrink-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_1.5px_1.5px_3px_rgba(206,187,172,0.5),inset_-1.5px_-1.5px_3px_rgba(255,255,255,0.8)]">
               {selected.activeProjects} active
             </span>
           )}
