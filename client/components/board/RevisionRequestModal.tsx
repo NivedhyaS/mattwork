@@ -19,12 +19,14 @@ export default function RevisionRequestModal({ isOpen, project, targetStage, onC
   const [timecodes, setTimecodes] = useState('');
   const [generalComment, setGeneralComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   if (!isOpen || !project) return null;
 
   const handleSubmit = async () => {
+    setErrorMsg(null);
     if (!generalComment.trim() && !timecodes.trim()) {
-      alert('Please provide at least a comment or timecode instruction.');
+      setErrorMsg('Please provide at least a comment or timecode instruction.');
       return;
     }
     setIsSubmitting(true);
@@ -40,7 +42,7 @@ export default function RevisionRequestModal({ isOpen, project, targetStage, onC
       onClose();
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.message || 'Failed to submit revision request');
+      setErrorMsg(err.response?.data?.message || 'Failed to submit revision request');
     } finally {
       setIsSubmitting(false);
     }
@@ -89,6 +91,12 @@ export default function RevisionRequestModal({ isOpen, project, targetStage, onC
             />
           </div>
           
+          {errorMsg && (
+            <div className="p-3.5 rounded-xl bg-[#DC2626]/10 text-[#DC2626] font-extrabold text-[13px] border border-[#DC2626]/30">
+              {errorMsg}
+            </div>
+          )}
+
           <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 text-sm text-slate-600 dark:text-slate-400 flex items-start gap-3">
              <Paperclip className="h-4 w-4 mt-0.5 shrink-0 text-slate-400" />
              <p>Your request will be sent to the Admin team for review before being forwarded to the editor. Please upload any required attachments directly to the project's Google Drive folder.</p>

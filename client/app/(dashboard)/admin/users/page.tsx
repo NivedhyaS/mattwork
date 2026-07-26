@@ -13,6 +13,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '@/store/authStore';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import Toast from '@/components/ui/Toast';
 
 interface User {
   id: string;
@@ -66,6 +68,8 @@ export default function UsersPage() {
   // Modals state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
+  const [deleteUserTarget, setDeleteUserTarget] = useState<User | null>(null);
+  const [toast, setToast] = useState<{ message: string; type?: 'success' | 'error' | 'info' } | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [updateError, setUpdateError] = useState<string | null>(null);
 
@@ -308,11 +312,7 @@ export default function UsersPage() {
                           <Edit2 className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => {
-                            if (confirm(`Delete ${user.name}? This cannot be undone.`)) {
-                              deleteMutation.mutate(user.id);
-                            }
-                          }}
+                          onClick={() => setDeleteUserTarget(user)}
                           disabled={deleteMutation.isPending}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer disabled:opacity-50"
                         >
@@ -449,6 +449,36 @@ export default function UsersPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onDismiss={() => setToast(null)}
+        />
+      )}
+
+      {/* Delete User Modal */}
+      <ConfirmModal
+        isOpen={!!deleteUserTarget}
+        onClose={() => setDeleteUserTarget(null)}
+        onConfirm={async () => {
+          if (!deleteUserTarget) return;
+          try {
+            await deleteMutation.mutateAsync(deleteUserTarget.id);
+            setToast({ message: `User "${deleteUserTarget.name}" deleted.`, type: 'success' });
+          } catch {
+            setToast({ message: 'Failed to delete user.', type: 'error' });
+          } finally {
+            setDeleteUserTarget(null);
+          }
+        }}
+        title="Delete User?"
+        description={`Are you sure you want to delete ${deleteUserTarget?.name}? This action cannot be undone.`}
+        confirmText="Delete User"
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   );
 }

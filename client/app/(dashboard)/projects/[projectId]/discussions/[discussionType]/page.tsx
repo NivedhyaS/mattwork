@@ -20,8 +20,12 @@ import {
   FileVideo,
   Scissors,
   Sparkles,
-  Volume2
+  Volume2,
+  X,
+  FileText,
 } from 'lucide-react';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import Toast from '@/components/ui/Toast';
 
 function getAvailableTabs(status: string, commentsList: any[]): string[] {
   const tabs = ['GENERAL'];
@@ -109,6 +113,18 @@ export default function DiscussionPage() {
   const [reactions, setReactions] = useState<Record<string, number>>({});
   const [activeTimestampToast, setActiveTimestampToast] = useState<string | null>(null);
 
+  // Attachment upload states
+  const [attachedFile, setAttachedFile] = useState<{ name: string; size: string; type: string; url?: string } | null>(null);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Non-blocking toast state
+  const [toast, setToast] = useState<{ message: string; type?: 'success' | 'error' | 'info' } | null>(null);
+
+  // Delete comment confirmation modal state
+  const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
+  const [isDeletingComment, setIsDeletingComment] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const getDiscussionKey = () => {
@@ -173,12 +189,61 @@ export default function DiscussionPage() {
 
   useEffect(() => { if (!loading) scrollToBottom(); }, [comments, loading]);
 
+  // Handle File Selection & Validation
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Max file size: 50MB
+    const MAX_SIZE = 50 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      setToast({ message: 'File size exceeds 50MB limit.', type: 'error' });
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    setIsUploadingAttachment(true);
+    try {
+      const formattedSize = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+      const formData = new FormData();
+      formData.append('file', file);
+
+      let fileUrl = '';
+      try {
+        const res = await api.post(`/projects/${projectId}/files`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        fileUrl = res.data?.data?.url || '';
+      } catch {
+        fileUrl = URL.createObjectURL(file);
+      }
+
+      setAttachedFile({
+        name: file.name,
+        size: formattedSize,
+        type: file.type,
+        url: fileUrl,
+      });
+
+      setToast({ message: `Attachment ready: "${file.name}" (${formattedSize})`, type: 'success' });
+    } catch {
+      setToast({ message: 'Failed to upload attachment — please try again.', type: 'error' });
+    } finally {
+      setIsUploadingAttachment(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handlePostComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim() || submitting || !project) return;
+    if ((!newComment.trim() && !attachedFile) || submitting || !project) return;
     setSubmitting(true);
     try {
       let finalContent = newComment.trim();
+      if (attachedFile) {
+        finalContent += `${finalContent ? '\n\n' : ''}📎 Attachment: ${attachedFile.name} (${attachedFile.size})`;
+      }
+
       const activeKey = getDiscussionKey();
       if (activeKey === 'REVISION_1') finalContent = `[Revision 1] ${finalContent}`;
       else if (activeKey === 'REVISION_2') finalContent = `[Revision 2] ${finalContent}`;
@@ -186,23 +251,29 @@ export default function DiscussionPage() {
       const res = await api.post(`/projects/${projectId}/comments`, { content: finalContent });
       setComments((prev) => [...prev, res.data.data]);
       setNewComment('');
+      setAttachedFile(null);
+      setToast({ message: 'Message posted.', type: 'success' });
     } catch (err) {
       console.error('Failed to submit comment:', err);
-      alert('Failed to post comment.');
+      setToast({ message: 'Failed to post message. Please try again.', type: 'error' });
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDeleteComment = async (commentId: string) => {
-    if (user?.role !== 'ADMIN') return;
-    if (!confirm('Are you sure you want to delete this comment?')) return;
+  const confirmDeleteComment = async () => {
+    if (!deleteCommentId || user?.role !== 'ADMIN') return;
+    setIsDeletingComment(true);
     try {
-      await api.delete(`/projects/${projectId}/comments/${commentId}`);
-      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      await api.delete(`/projects/${projectId}/comments/${deleteCommentId}`);
+      setComments((prev) => prev.filter((c) => c.id !== deleteCommentId));
+      setToast({ message: 'Comment deleted successfully.', type: 'success' });
     } catch (err) {
       console.error('Failed to delete comment:', err);
-      alert('Failed to delete comment.');
+      setToast({ message: 'Failed to delete comment.', type: 'error' });
+    } finally {
+      setIsDeletingComment(false);
+      setDeleteCommentId(null);
     }
   };
 
@@ -257,6 +328,15 @@ export default function DiscussionPage() {
     return (
       <div className={`space-y-1 ${isResolved ? 'opacity-50 line-through' : ''}`}>
         {lines.map((line, lIdx) => {
+          if (line.startsWith('📎 Attachment:')) {
+            return (
+              <div key={lIdx} className="mt-2 p-2.5 rounded-xl bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.85)] flex items-center gap-2 font-extrabold text-[13px]">
+                <FileText className="h-4 w-4 text-[#EA580C] shrink-0" />
+                <span className="truncate">{line}</span>
+              </div>
+            );
+          }
+
           const parts = line.split(timestampRegex);
           return (
             <p key={lIdx} className="text-[14.5px] leading-relaxed font-semibold text-[#3D2E24]">
@@ -287,6 +367,35 @@ export default function DiscussionPage() {
   return (
     <div className="max-w-5xl mx-auto flex flex-col min-h-[calc(100vh-80px)] px-4 sm:px-6">
       {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onDismiss={() => setToast(null)}
+        />
+      )}
+
+      {/* Delete Comment Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!deleteCommentId}
+        onClose={() => setDeleteCommentId(null)}
+        onConfirm={confirmDeleteComment}
+        title="Delete Comment?"
+        description="Are you sure you want to delete this comment? This action cannot be undone."
+        confirmText="Delete Comment"
+        isLoading={isDeletingComment}
+      />
+
+      {/* Hidden File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        onChange={handleFileSelect}
+        accept="image/*,video/*,.pdf,.doc,.docx,.zip,.txt"
+        className="hidden"
+      />
+
+      {/* Timestamp Toast Notification */}
       {activeTimestampToast && (
         <div className="fixed top-6 right-6 z-50 flex items-center gap-2.5 px-5 py-3.5 bg-[#F6EFE9] text-[#EA580C] text-[13px] font-extrabold rounded-2xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] animate-in slide-in-from-top-3">
           <FileVideo className="h-4.5 w-4.5 text-[#EA580C] animate-bounce" />
@@ -294,7 +403,7 @@ export default function DiscussionPage() {
         </div>
       )}
 
-      {/* Minimal Top Header Line (Refined with Neumorphic Styling & High Contrast) */}
+      {/* Minimal Top Header Line */}
       <div className="sticky top-0 z-20 bg-[#F6EFE9]/95 backdrop-blur-md border-b border-[rgba(206,187,172,0.4)] py-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
@@ -317,7 +426,6 @@ export default function DiscussionPage() {
           </div>
         </div>
 
-        {/* Item 4: Prominent Clickable Board Navigation Link */}
         <button
           onClick={handleBack}
           className="flex items-center gap-2 px-4.5 py-2.5 rounded-2xl bg-[#F6EFE9] text-[#3D2E24] hover:text-[#EA580C] shadow-[-4px_-4px_8px_rgba(255,255,255,0.9),4px_4px_8px_rgba(206,187,172,0.6)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(201,180,163,0.75)] font-extrabold text-[13.5px] transition-all cursor-pointer"
@@ -330,7 +438,6 @@ export default function DiscussionPage() {
       {/* Natural Conversation Stream */}
       <div className="flex-1 py-6 space-y-4">
         {filteredComments.length === 0 ? (
-          /* Item 1 & 2: Solid readable heading & Compact Neumorphic Empty State Container */
           <div className="flex flex-col items-center justify-center my-10 py-10 px-8 text-center gap-3.5 bg-[#F6EFE9] rounded-3xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.55),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] max-w-md mx-auto">
             <div className="h-14 w-14 rounded-2xl bg-[#F6EFE9] shadow-[-4px_-4px_8px_rgba(255,255,255,0.9),4px_4px_8px_rgba(206,187,172,0.6)] flex items-center justify-center">
               <MessageSquare className={`h-6 w-6 ${colors.icon}`} />
@@ -354,7 +461,6 @@ export default function DiscussionPage() {
                 key={c.id}
                 className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'} ${sameSender ? 'mt-1' : 'mt-4'}`}
               >
-                {/* Header line for author/timestamp */}
                 {!sameSender && (
                   <div className={`flex items-center gap-2 mb-1 px-1 ${isSelf ? 'flex-row-reverse' : ''}`}>
                     <span className="text-[13px] font-extrabold text-[#3D2E24]">
@@ -371,7 +477,6 @@ export default function DiscussionPage() {
                   </div>
                 )}
 
-                {/* Bubble constrained to 60-65% max width */}
                 <div
                   className={`group relative max-w-[88%] sm:max-w-[65%] rounded-3xl px-5 py-3.5 transition-all ${
                     isSelf
@@ -383,7 +488,6 @@ export default function DiscussionPage() {
                 >
                   {renderBubbleText(c.content, isResolved)}
 
-                  {/* Reaction / Resolved Status Badges */}
                   {(reactionCount > 0 || isResolved) && (
                     <div className="flex items-center gap-1.5 mt-2.5 pt-1.5 border-t border-[rgba(206,187,172,0.4)]">
                       {isResolved && (
@@ -399,7 +503,6 @@ export default function DiscussionPage() {
                     </div>
                   )}
 
-                  {/* Hover Actions Bar */}
                   <div className={`absolute ${isSelf ? '-left-12' : '-right-12'} top-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-[#F6EFE9] shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)] rounded-2xl p-1`}>
                     <button
                       onClick={() => toggleResolve(c.id)}
@@ -431,7 +534,7 @@ export default function DiscussionPage() {
 
                     {user?.role === 'ADMIN' && (
                       <button
-                        onClick={() => handleDeleteComment(c.id)}
+                        onClick={() => setDeleteCommentId(c.id)}
                         className="p-1.5 text-[#8C7769] hover:text-[#EF4444] rounded-xl transition-all"
                         title="Delete note"
                       >
@@ -449,7 +552,7 @@ export default function DiscussionPage() {
 
       {/* Floating Sticky Composer Bar */}
       <div className="sticky bottom-0 z-20 bg-[#F6EFE9]/95 backdrop-blur-xl border-t border-[rgba(206,187,172,0.4)] pt-3.5 pb-4 space-y-3">
-        {/* Item 3: Quick Tools Shortcuts Pills with Timestamp Chip Styling & Icons */}
+        {/* Quick Tools Shortcuts Pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1.5 custom-scrollbar text-[12px]">
           <span className="text-[#8C7769] font-extrabold uppercase text-[10px] tracking-wider shrink-0 mr-1">Quick Tools:</span>
           <button
@@ -489,23 +592,48 @@ export default function DiscussionPage() {
           </button>
         </div>
 
+        {/* Attached File Preview Chip */}
+        {attachedFile && (
+          <div className="flex items-center justify-between p-2.5 px-4 bg-[#F6EFE9] rounded-2xl shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.85)] border border-[rgba(234,88,12,0.3)] animate-in fade-in">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Paperclip className="h-4 w-4 text-[#EA580C] shrink-0" />
+              <span className="font-extrabold text-[13px] text-[#3D2E24] truncate">{attachedFile.name}</span>
+              <span className="text-[11px] font-extrabold text-[#8C7769] bg-[#F6EFE9] px-2 py-0.5 rounded-full shadow-[inset_1px_1px_3px_rgba(206,187,172,0.4)] shrink-0">
+                {attachedFile.size}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAttachedFile(null)}
+              className="p-1 rounded-xl text-[#7C6A5A] hover:text-[#EF4444] hover:bg-[rgba(239,68,68,0.1)] transition-colors cursor-pointer"
+              title="Remove attachment"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
         {/* Floating Composer Bar */}
         <form
           onSubmit={handlePostComment}
-          className="flex items-center gap-3 bg-[#F6EFE9] rounded-2xl px-4 py-2.5 shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] transition-all"
+          className="flex items-center gap-3 bg-[#F6EFE9] rounded-2xl px-4 py-2.5 shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] transition-all focus-within:shadow-[inset_4px_4px_8px_rgba(206,187,172,0.7),inset_-4px_-4px_8px_rgba(255,255,255,0.9)]"
         >
           <button
             type="button"
-            onClick={() => alert('Attachment upload ready.')}
-            className="p-1.5 text-[#7C6A5A] hover:text-[#EA580C] transition-colors cursor-pointer shrink-0"
-            title="Attach reference"
+            disabled={isUploadingAttachment}
+            onClick={() => fileInputRef.current?.click()}
+            className="p-2 rounded-xl text-[#7C6A5A] hover:text-[#EA580C] hover:bg-[#F6EFE9] hover:shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(206,187,172,0.6)] active:shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6)] transition-all cursor-pointer shrink-0 disabled:opacity-50"
+            title="Attach file (Max 50MB)"
           >
-            <Paperclip className="h-4.5 w-4.5" />
+            {isUploadingAttachment ? (
+              <Loader2 className="h-4.5 w-4.5 animate-spin text-[#EA580C]" />
+            ) : (
+              <Paperclip className="h-4.5 w-4.5" />
+            )}
           </button>
 
           <textarea
             rows={1}
-            required
             placeholder={`Message #${getDiscussionTitle()}...`}
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
@@ -520,12 +648,11 @@ export default function DiscussionPage() {
             }}
           />
 
-          {/* Item 5: Clarified Enabled & Disabled Visual States for Send Button */}
           <button
             type="submit"
-            disabled={submitting || !newComment.trim()}
+            disabled={submitting || (!newComment.trim() && !attachedFile)}
             className={`h-10 shrink-0 rounded-2xl px-5 font-extrabold flex items-center gap-2 transition-all shadow-md ${
-              submitting || !newComment.trim()
+              submitting || (!newComment.trim() && !attachedFile)
                 ? 'bg-[#E0D5CB] text-[#8C7769] shadow-none opacity-50 cursor-not-allowed pointer-events-none'
                 : 'bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white shadow-[-3px_-3px_6px_rgba(255,255,255,0.7),3px_3px_8px_rgba(234,88,12,0.4)] hover:scale-[1.02] active:scale-95 cursor-pointer'
             }`}
@@ -541,7 +668,6 @@ export default function DiscussionPage() {
           </button>
         </form>
 
-        {/* Item 6: Status Indicator for "Synced with Video Player" */}
         <div className="flex items-center justify-between text-[11px] text-[#8C7769] font-semibold px-1">
           <span>
             <kbd className="px-2 py-0.5 rounded-lg text-[10px] bg-[#F6EFE9] text-[#3D2E24] font-extrabold font-mono shadow-[inset_1px_1px_3px_rgba(206,187,172,0.5)]">Enter</kbd> to send ·{' '}

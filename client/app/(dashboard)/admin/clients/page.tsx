@@ -14,6 +14,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import Toast from '@/components/ui/Toast';
 
 interface Client {
   id: string;
@@ -53,9 +55,11 @@ export default function ClientsPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
 
-  // Drawers state
+  // Drawers & Toast state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editClient, setEditClient] = useState<Client | null>(null);
+  const [deleteClientTarget, setDeleteClientTarget] = useState<Client | null>(null);
+  const [toast, setToast] = useState<{ message: string; type?: 'success' | 'error' | 'info' } | null>(null);
 
   const { isAuthenticated } = useAuthStore();
 
@@ -278,11 +282,7 @@ export default function ClientsPage() {
                           <ExternalLink className="h-4 w-4" />
                         </Link>
                         <button
-                          onClick={() => {
-                            if (confirm(`Remove ${client.user.name}? This cannot be undone.`)) {
-                              deleteMutation.mutate(client.id);
-                            }
-                          }}
+                          onClick={() => setDeleteClientTarget(client)}
                           disabled={deleteMutation.isPending}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer disabled:opacity-50"
                         >
@@ -463,6 +463,36 @@ export default function ClientsPage() {
           </div>
         </form>
       </Drawer>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onDismiss={() => setToast(null)}
+        />
+      )}
+
+      {/* Delete Client Modal */}
+      <ConfirmModal
+        isOpen={!!deleteClientTarget}
+        onClose={() => setDeleteClientTarget(null)}
+        onConfirm={async () => {
+          if (!deleteClientTarget) return;
+          try {
+            await deleteMutation.mutateAsync(deleteClientTarget.id);
+            setToast({ message: `Client "${deleteClientTarget.user.name}" removed.`, type: 'success' });
+          } catch {
+            setToast({ message: 'Failed to remove client.', type: 'error' });
+          } finally {
+            setDeleteClientTarget(null);
+          }
+        }}
+        title="Remove Client?"
+        description={`Are you sure you want to remove ${deleteClientTarget?.user.name}? This cannot be undone.`}
+        confirmText="Remove Client"
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   );
 }

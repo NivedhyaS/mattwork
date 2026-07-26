@@ -12,6 +12,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '@/store/authStore';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import Toast from '@/components/ui/Toast';
 
 interface Editor {
   id: string;
@@ -44,9 +46,11 @@ export default function EditorsPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
 
-  // Drawers state
+  // Drawers & Toast state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editEditor, setEditEditor] = useState<Editor | null>(null);
+  const [deleteEditorTarget, setDeleteEditorTarget] = useState<Editor | null>(null);
+  const [toast, setToast] = useState<{ message: string; type?: 'success' | 'error' | 'info' } | null>(null);
 
   const { isAuthenticated } = useAuthStore();
 
@@ -271,11 +275,7 @@ export default function EditorsPage() {
                     <Edit2 className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => {
-                      if (confirm(`Remove ${editor.user.name}? This cannot be undone.`)) {
-                        deleteMutation.mutate(editor.id);
-                      }
-                    }}
+                    onClick={() => setDeleteEditorTarget(editor)}
                     disabled={deleteMutation.isPending}
                     className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer disabled:opacity-50"
                   >
@@ -396,6 +396,36 @@ export default function EditorsPage() {
           </div>
         </form>
       </Drawer>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onDismiss={() => setToast(null)}
+        />
+      )}
+
+      {/* Delete Editor Modal */}
+      <ConfirmModal
+        isOpen={!!deleteEditorTarget}
+        onClose={() => setDeleteEditorTarget(null)}
+        onConfirm={async () => {
+          if (!deleteEditorTarget) return;
+          try {
+            await deleteMutation.mutateAsync(deleteEditorTarget.id);
+            setToast({ message: `Editor "${deleteEditorTarget.user.name}" removed.`, type: 'success' });
+          } catch {
+            setToast({ message: 'Failed to remove editor.', type: 'error' });
+          } finally {
+            setDeleteEditorTarget(null);
+          }
+        }}
+        title="Remove Editor?"
+        description={`Are you sure you want to remove ${deleteEditorTarget?.user.name}? This cannot be undone.`}
+        confirmText="Remove Editor"
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   );
 }

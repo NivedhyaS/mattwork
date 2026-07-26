@@ -42,6 +42,9 @@ import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label';
 import EditorCombobox from '@/components/ui/EditorCombobox';
 import RevisionRequestModal from './RevisionRequestModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import PromptModal from '@/components/ui/PromptModal';
+import Toast from '@/components/ui/Toast';
 import { formatCurrency, formatDate, formatEditorCurrency } from '@/lib/utils';
 import { getCurrencySymbol } from '@/lib/currency';
 import { useExchangeRate, buildProfitDisplay, formatFetchedAgo } from '@/lib/exchangeRate';
@@ -299,6 +302,16 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
   const [newProjectRawMaterials, setNewProjectRawMaterials] = useState('');
   const [isCreatingProject, setIsCreatingProject] = useState(false);
 
+  // Toast Notification State
+  const [toast, setToast] = useState<{ message: string; type?: 'success' | 'error' | 'info' } | null>(null);
+
+  // Dialog states replacing native confirm & prompt
+  const [deleteProjectConfirmId, setDeleteProjectConfirmId] = useState<string | null>(null);
+  const [deleteCommentConfirmId, setDeleteCommentConfirmId] = useState<string | null>(null);
+  const [deleteFileConfirmId, setDeleteFileConfirmId] = useState<string | null>(null);
+  const [clarificationPromptReqId, setClarificationPromptReqId] = useState<string | null>(null);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+
   const resetCreateProjectForm = () => {
     setNewProjectTitle('');
     setNewProjectDesc('');
@@ -314,11 +327,11 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
   const handleCreateProjectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProjectTitle.trim()) {
-      alert('Project Title is required');
+      setToast({ message: 'Project Title is required', type: 'error' });
       return;
     }
     if (!newProjectClientId) {
-      alert('Client Owner is required');
+      setToast({ message: 'Client Owner is required', type: 'error' });
       return;
     }
 
@@ -344,11 +357,11 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
       setIsCreateProjectOpen(false);
       resetCreateProjectForm();
-      alert('Project created successfully.');
+      setToast({ message: 'Project created successfully.', type: 'success' });
     } catch (err: any) {
       console.error('Failed to create project:', err);
       const errMsg = err?.response?.data?.message || 'Failed to create project.';
-      alert(errMsg);
+      setToast({ message: errMsg, type: 'error' });
     } finally {
       setIsCreatingProject(false);
     }
@@ -447,7 +460,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
       console.error('Failed to update project status:', err);
       // Rollback on failure
       setProjects(oldProjects);
-      alert('Failed to update project status. Restored previous column.');
+      setToast({ message: 'Failed to update project status. Restored previous column.', type: 'error' });
     } finally {
       setUpdatingId(null);
     }
@@ -515,7 +528,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
       }
     } catch (err) {
       console.error(`Failed to update ${fieldName}:`, err);
-      alert(`Failed to update ${fieldName}.`);
+      setToast({ message: `Failed to update ${fieldName}.`, type: 'error' });
     } finally {
       setIsSavingField(null);
     }
@@ -536,23 +549,31 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
       }
     } catch (err) {
       console.error('Failed to update priority:', err);
-      alert('Failed to update priority.');
+      setToast({ message: 'Failed to update priority.', type: 'error' });
     } finally {
       setIsSavingField(null);
     }
   };
 
-  const handleDeleteProject = async (projectId: string) => {
+  const handleDeleteProject = (projectId: string) => {
     if (role !== 'ADMIN') return;
-    if (!confirm('Are you sure you want to delete this project completely? This action is permanent.')) return;
+    setDeleteProjectConfirmId(projectId);
+  };
+
+  const confirmDeleteProject = async () => {
+    if (!deleteProjectConfirmId || role !== 'ADMIN') return;
+    setIsActionLoading(true);
     try {
-      await api.delete(`/projects/${projectId}`);
-      setProjects((prev) => prev.filter((p) => p.id !== projectId));
+      await api.delete(`/projects/${deleteProjectConfirmId}`);
+      setProjects((prev) => prev.filter((p) => p.id !== deleteProjectConfirmId));
       setSelectedProject(null);
-      alert('Project deleted successfully.');
+      setToast({ message: 'Project deleted successfully.', type: 'success' });
     } catch (err) {
       console.error('Failed to delete project:', err);
-      alert('Failed to delete project.');
+      setToast({ message: 'Failed to delete project.', type: 'error' });
+    } finally {
+      setIsActionLoading(false);
+      setDeleteProjectConfirmId(null);
     }
   };
 
@@ -576,21 +597,30 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
       setNewComment('');
     } catch (err) {
       console.error('Failed to post comment:', err);
-      alert('Failed to post comment.');
+      setToast({ message: 'Failed to post comment.', type: 'error' });
     } finally {
       setIsSubmittingComment(false);
     }
   };
 
-  const handleDeleteComment = async (commentId: string) => {
+  const handleDeleteComment = (commentId: string) => {
     if (!selectedProject || role !== 'ADMIN') return;
-    if (!confirm('Are you sure you want to delete this comment?')) return;
+    setDeleteCommentConfirmId(commentId);
+  };
+
+  const confirmDeleteComment = async () => {
+    if (!deleteCommentConfirmId || !selectedProject) return;
+    setIsActionLoading(true);
     try {
-      await api.delete(`/projects/${selectedProject.id}/comments/${commentId}`);
-      setComments(prev => prev.filter(c => c.id !== commentId));
+      await api.delete(`/projects/${selectedProject.id}/comments/${deleteCommentConfirmId}`);
+      setComments(prev => prev.filter(c => c.id !== deleteCommentConfirmId));
+      setToast({ message: 'Comment deleted successfully.', type: 'success' });
     } catch (err) {
       console.error('Failed to delete comment:', err);
-      alert('Failed to delete comment.');
+      setToast({ message: 'Failed to delete comment.', type: 'error' });
+    } finally {
+      setIsActionLoading(false);
+      setDeleteCommentConfirmId(null);
     }
   };
 
@@ -681,10 +711,10 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
       const res = await api.get(`/projects/${selectedProject.id}`);
       setSelectedProject(res.data.data);
       setUploadUrl('');
-      alert('Review Folder submitted successfully.');
+      setToast({ message: 'Review Folder submitted successfully.', type: 'success' });
     } catch (err) {
       console.error('Failed to submit Review Folder:', err);
-      alert('Failed to submit Review Folder.');
+      setToast({ message: 'Failed to submit Review Folder.', type: 'error' });
     } finally {
       setIsSubmittingFile(false);
     }
@@ -709,7 +739,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
       }
     } catch (err) {
       console.error('Status update failed:', err);
-      alert('Status update failed.');
+      setToast({ message: 'Status update failed.', type: 'error' });
     }
   };
 
@@ -1445,26 +1475,24 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                              className="bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white font-extrabold rounded-2xl px-5 py-2.5 shadow-[-3px_-3px_6px_rgba(255,255,255,0.7),3px_3px_8px_rgba(234,88,12,0.4)]"
                              onClick={async () => {
                                const el = document.getElementById(`adminInstructions-${req.id}`) as HTMLTextAreaElement;
-                               if (!el.value.trim()) { alert('Instructions required'); return; }
+                               if (!el.value.trim()) {
+                                 setToast({ message: 'Instructions required.', type: 'error' });
+                                 return;
+                               }
                                try {
                                  await api.patch(`/projects/${selectedProject.id}/revisions/${req.id}`, { action: 'APPROVE', adminInstructions: el.value });
                                  fetchProjects();
                                  setSelectedProject(null);
-                               } catch (e: any) { alert(e.response?.data?.message || 'Error'); }
+                                 setToast({ message: 'Revision approved and forwarded to editor.', type: 'success' });
+                               } catch (e: any) {
+                                 setToast({ message: e.response?.data?.message || 'Failed to approve revision.', type: 'error' });
+                               }
                              }}
                            >Approve &amp; Forward to Editor</Button>
                            <Button 
                              variant="outline" 
                              className="bg-[#F6EFE9] text-[#DC2626] font-extrabold rounded-2xl px-4 py-2.5 shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)] hover:bg-[#DC2626] hover:text-white"
-                             onClick={async () => {
-                               const msg = prompt('Enter clarification message for the client:');
-                               if (!msg) return;
-                               try {
-                                 await api.patch(`/projects/${selectedProject.id}/revisions/${req.id}`, { action: 'CLARIFY', adminMessage: msg });
-                                 fetchProjects();
-                                 setSelectedProject(null);
-                               } catch (e: any) { alert(e.response?.data?.message || 'Error'); }
-                             }}
+                             onClick={() => setClarificationPromptReqId(req.id)}
                            >Request Clarification</Button>
                         </div>
                       </div>
@@ -1625,16 +1653,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                               </a>
                               {role === 'ADMIN' && (
                                 <button
-                                  onClick={async () => {
-                                    if (confirm('Are you sure you want to delete this file?')) {
-                                      try {
-                                        await api.delete(`/projects/${selectedProject.id}/files/${file.id}`);
-                                        setSelectedProject(prev => prev ? { ...prev, files: prev.files?.filter(f => f.id !== file.id) } : null);
-                                      } catch (err) {
-                                        alert('Failed to delete file.');
-                                      }
-                                    }
-                                  }}
+                                  onClick={() => setDeleteFileConfirmId(file.id)}
                                   className="p-2 text-[#EF4444] hover:bg-[rgba(239,68,68,0.1)] transition-all rounded-xl cursor-pointer"
                                   title="Delete File"
                                 >
@@ -2433,6 +2452,90 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
           </div>
         </div>
       </Drawer>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onDismiss={() => setToast(null)}
+        />
+      )}
+
+      {/* Delete Project Modal */}
+      <ConfirmModal
+        isOpen={!!deleteProjectConfirmId}
+        onClose={() => setDeleteProjectConfirmId(null)}
+        onConfirm={confirmDeleteProject}
+        title="Delete Project?"
+        description="Are you sure you want to delete this project completely? This action is permanent and cannot be undone."
+        confirmText="Delete Project"
+        isLoading={isActionLoading}
+      />
+
+      {/* Delete Comment Modal */}
+      <ConfirmModal
+        isOpen={!!deleteCommentConfirmId}
+        onClose={() => setDeleteCommentConfirmId(null)}
+        onConfirm={confirmDeleteComment}
+        title="Delete Comment?"
+        description="Are you sure you want to delete this comment?"
+        confirmText="Delete Comment"
+        isLoading={isActionLoading}
+      />
+
+      {/* Delete File Modal */}
+      <ConfirmModal
+        isOpen={!!deleteFileConfirmId}
+        onClose={() => setDeleteFileConfirmId(null)}
+        onConfirm={async () => {
+          if (!deleteFileConfirmId || !selectedProject) return;
+          setIsActionLoading(true);
+          try {
+            await api.delete(`/projects/${selectedProject.id}/files/${deleteFileConfirmId}`);
+            setSelectedProject((prev) => (prev ? { ...prev, files: prev.files?.filter((f) => f.id !== deleteFileConfirmId) } : null));
+            setToast({ message: 'File deleted successfully.', type: 'success' });
+          } catch {
+            setToast({ message: 'Failed to delete file.', type: 'error' });
+          } finally {
+            setIsActionLoading(false);
+            setDeleteFileConfirmId(null);
+          }
+        }}
+        title="Delete File?"
+        description="Are you sure you want to delete this file?"
+        confirmText="Delete File"
+        isLoading={isActionLoading}
+      />
+
+      {/* Request Clarification Modal */}
+      <PromptModal
+        isOpen={!!clarificationPromptReqId}
+        onClose={() => setClarificationPromptReqId(null)}
+        title="Request Clarification from Client"
+        description="Provide a message for the client explaining what clarification is required:"
+        placeholder="Type clarification message..."
+        confirmText="Send Request"
+        isLoading={isActionLoading}
+        onSubmit={async (msg) => {
+          if (!clarificationPromptReqId || !selectedProject) return;
+          setIsActionLoading(true);
+          try {
+            await api.patch(`/projects/${selectedProject.id}/revisions/${clarificationPromptReqId}`, {
+              action: 'CLARIFY',
+              adminMessage: msg,
+            });
+            fetchProjects();
+            setSelectedProject(null);
+            setToast({ message: 'Clarification request sent to client.', type: 'success' });
+          } catch (e: any) {
+            setToast({ message: e.response?.data?.message || 'Failed to send request.', type: 'error' });
+          } finally {
+            setIsActionLoading(false);
+            setClarificationPromptReqId(null);
+          }
+        }}
+      />
     </div>
   );
 }
