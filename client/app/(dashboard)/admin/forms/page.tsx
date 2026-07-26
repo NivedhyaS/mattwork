@@ -43,6 +43,7 @@ import {
 import { cn } from '@/lib/utils';
 import Button from '@/components/ui/button';
 import Label from '@/components/ui/label';
+import CustomDropdown from '@/components/ui/CustomDropdown';
 import Drawer from '@/components/ui/drawer';
 import { useAuthStore } from '@/store/authStore';
 
@@ -862,6 +863,15 @@ export default function FormsManagerPage() {
     onSettled: () => setSyncingId(null),
   });
 
+  const connectedAdminsList = useMemo(() => {
+    if (!forms) return [];
+    const names = new Set<string>();
+    forms.forEach(f => {
+      if (f.connectedByAdmin?.name) names.add(f.connectedByAdmin.name);
+    });
+    return Array.from(names);
+  }, [forms]);
+
   // Summary Metrics Computation
   const summary = useMemo(() => {
     if (!forms) return { totalForms: 0, activeWatches: 0, totalResponses: 0, lastSyncTime: null };
@@ -876,14 +886,25 @@ export default function FormsManagerPage() {
     return { totalForms, activeWatches, totalResponses, lastSyncTime };
   }, [forms]);
 
-  const connectedAdminsList = useMemo(() => {
-    if (!forms) return [];
-    const names = new Set<string>();
-    forms.forEach(f => {
-      if (f.connectedByAdmin?.name) names.add(f.connectedByAdmin.name);
-    });
-    return Array.from(names);
-  }, [forms]);
+  const statusOptions = useMemo(() => [
+    { value: 'ALL', label: 'All Statuses' },
+    { value: 'ACTIVE', label: 'Active (Live)' },
+    { value: 'WATCH_EXPIRING', label: 'Expiring Soon' },
+    { value: 'WATCH_EXPIRED', label: 'Expired' },
+    { value: 'ERROR', label: 'Never Connected' },
+  ], []);
+
+  const adminOptions = useMemo(() => [
+    { value: 'ALL', label: 'Connected By (All)' },
+    ...connectedAdminsList.map(name => ({ value: name, label: name }))
+  ], [connectedAdminsList]);
+
+  const sortOptions = useMemo(() => [
+    { value: 'newest', label: 'Newest Connected' },
+    { value: 'oldest', label: 'Oldest Connected' },
+    { value: 'title', label: 'Client Name (A-Z)' },
+    { value: 'responses', label: 'Most Responses' },
+  ], []);
 
   const filteredForms = useMemo(() => {
     if (!forms) return [];
@@ -902,8 +923,12 @@ export default function FormsManagerPage() {
       })
       .sort((a, b) => {
         if (sortBy === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        if (sortBy === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        if (sortBy === 'title') return a.formTitle.localeCompare(b.formTitle);
+        if (sortBy === 'oldest') return new Date(a.createdAt).getTime() - new Date(a.createdAt).getTime();
+        if (sortBy === 'title') {
+          const nameA = a.connectedByAdmin?.name || a.formTitle;
+          const nameB = b.connectedByAdmin?.name || b.formTitle;
+          return nameA.localeCompare(nameB);
+        }
         if (sortBy === 'responses') return (b._count?.processedResponses || 0) - (a._count?.processedResponses || 0);
         return 0;
       });
@@ -983,9 +1008,9 @@ export default function FormsManagerPage() {
         </div>
       </div>
 
-      {/* ── 3. Search & Filter Controls Bar ── */}
-      <div className="flex flex-col md:flex-row gap-3 pt-1">
-        <div className="relative flex-1">
+      {/* ── 3. Search & Filter Bar ── */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#F6EFE9] p-4 rounded-3xl shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(206,187,172,0.6)]">
+        <div className="relative flex-1 min-w-[260px]">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8C7769]" />
           <input
             type="text"
@@ -996,49 +1021,29 @@ export default function FormsManagerPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <Filter className="h-3.5 w-3.5 text-[#8C7769] shrink-0" />
-          <select
+        <div className="flex flex-wrap items-center gap-3">
+          <CustomDropdown
+            options={statusOptions}
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-[13px] font-extrabold border-0 rounded-2xl px-3.5 py-2.5 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none cursor-pointer"
-          >
-            <option value="ALL">All Statuses</option>
-            <option value="ACTIVE">Active</option>
-            <option value="WATCH_EXPIRING">Expiring Soon</option>
-            <option value="WATCH_EXPIRED">Expired</option>
-            <option value="ERROR">Never Connected</option>
-          </select>
-        </div>
+            onChange={(val) => setStatusFilter(val)}
+            icon={<Filter className="h-3.5 w-3.5 text-[#8C7769]" />}
+          />
 
-        {connectedAdminsList.length > 0 && (
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="h-3.5 w-3.5 text-[#8C7769] shrink-0" />
-            <select
+          {connectedAdminsList.length > 0 && (
+            <CustomDropdown
+              options={adminOptions}
               value={adminFilter}
-              onChange={(e) => setAdminFilter(e.target.value)}
-              className="text-[13px] font-extrabold border-0 rounded-2xl px-3.5 py-2.5 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none cursor-pointer"
-            >
-              <option value="ALL">Connected By (All)</option>
-              {connectedAdminsList.map(name => (
-                <option key={name} value={name}>{name}</option>
-              ))}
-            </select>
-          </div>
-        )}
+              onChange={(val) => setAdminFilter(val)}
+              icon={<SlidersHorizontal className="h-3.5 w-3.5 text-[#8C7769]" />}
+            />
+          )}
 
-        <div className="flex items-center gap-2">
-          <ArrowUpDown className="h-3.5 w-3.5 text-[#8C7769] shrink-0" />
-          <select
+          <CustomDropdown
+            options={sortOptions}
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="text-[13px] font-extrabold border-0 rounded-2xl px-3.5 py-2.5 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none cursor-pointer"
-          >
-            <option value="newest">Newest Connected</option>
-            <option value="oldest">Oldest Connected</option>
-            <option value="title">Client Name (A-Z)</option>
-            <option value="responses">Most Responses</option>
-          </select>
+            onChange={(val) => setSortBy(val as any)}
+            icon={<ArrowUpDown className="h-3.5 w-3.5 text-[#8C7769]" />}
+          />
         </div>
       </div>
 
