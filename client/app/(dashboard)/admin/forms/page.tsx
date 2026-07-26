@@ -954,52 +954,32 @@ export default function FormsManagerPage() {
 
       {/* ── 2. Summary Metric Cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#F6EFE9] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] flex items-center justify-between">
-          <div>
-            <p className="text-[12px] font-extrabold text-[#7C6A5A] uppercase tracking-wider">Connected Forms</p>
-            <p className="text-[28px] font-black text-[#3D2E24] leading-tight mt-0.5">{summary.totalForms}</p>
-            <p className="text-[11px] text-[#8C7769] font-medium mt-0.5">Active form integrations</p>
-          </div>
-          <div className="h-11 w-11 rounded-2xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
-            <FileText className="h-5 w-5 text-[#EA580C]" />
-          </div>
+        <div className="bg-[#F6EFE9] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)]">
+          <p className="text-[12px] font-extrabold text-[#7C6A5A] uppercase tracking-wider">Connected Forms</p>
+          <p className="text-[28px] font-black text-[#3D2E24] leading-tight mt-0.5">{summary.totalForms}</p>
+          <p className="text-[11px] text-[#8C7769] font-medium mt-0.5">Active form integrations</p>
         </div>
 
-        <div className="bg-[#F6EFE9] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] flex items-center justify-between">
-          <div>
-            <p className="text-[12px] font-extrabold text-[#7C6A5A] uppercase tracking-wider">Active Watches</p>
-            <p className="text-[28px] font-black text-[#3D2E24] leading-tight mt-0.5">{summary.activeWatches}</p>
-            <p className="text-[11px] text-[#8C7769] font-medium mt-0.5">Google webhooks live</p>
-          </div>
-          <div className="h-11 w-11 rounded-2xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
-            <Activity className="h-5 w-5 text-[#10B981]" />
-          </div>
+        <div className="bg-[#F6EFE9] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)]">
+          <p className="text-[12px] font-extrabold text-[#7C6A5A] uppercase tracking-wider">Active Watches</p>
+          <p className="text-[28px] font-black text-[#3D2E24] leading-tight mt-0.5">{summary.activeWatches}</p>
+          <p className="text-[11px] text-[#8C7769] font-medium mt-0.5">Google webhooks live</p>
         </div>
 
-        <div className="bg-[#F6EFE9] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] flex items-center justify-between">
-          <div>
-            <p className="text-[12px] font-extrabold text-[#7C6A5A] uppercase tracking-wider">Total Responses</p>
-            <p className="text-[28px] font-black text-[#3D2E24] leading-tight mt-0.5">{summary.totalResponses}</p>
-            <p className="text-[11px] text-[#8C7769] font-medium mt-0.5">Auto-generated projects</p>
-          </div>
-          <div className="h-11 w-11 rounded-2xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
-            <Database className="h-5 w-5 text-[#EA580C]" />
-          </div>
+        <div className="bg-[#F6EFE9] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)]">
+          <p className="text-[12px] font-extrabold text-[#7C6A5A] uppercase tracking-wider">Total Responses</p>
+          <p className="text-[28px] font-black text-[#3D2E24] leading-tight mt-0.5">{summary.totalResponses}</p>
+          <p className="text-[11px] text-[#8C7769] font-medium mt-0.5">Auto-generated projects</p>
         </div>
 
-        <div className="bg-[#F6EFE9] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] flex items-center justify-between">
-          <div>
-            <p className="text-[12px] font-extrabold text-[#7C6A5A] uppercase tracking-wider">Last Sync</p>
-            <p className="text-[18px] font-black text-[#3D2E24] leading-tight mt-0.5 truncate max-w-[140px]">
-              {formatRelativeTime(summary.lastSyncTime)}
-            </p>
-            <p className="text-[10px] text-[#8C7769] font-medium mt-0.5 truncate max-w-[140px]">
-              {summary.lastSyncTime ? summary.lastSyncTime.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'No sync recorded'}
-            </p>
-          </div>
-          <div className="h-11 w-11 rounded-2xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
-            <RefreshCw className="h-5 w-5 text-[#EA580C]" />
-          </div>
+        <div className="bg-[#F6EFE9] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)]">
+          <p className="text-[12px] font-extrabold text-[#7C6A5A] uppercase tracking-wider">Last Sync</p>
+          <p className="text-[18px] font-black text-[#3D2E24] leading-tight mt-0.5 truncate">
+            {formatRelativeTime(summary.lastSyncTime)}
+          </p>
+          <p className="text-[10px] text-[#8C7769] font-medium mt-0.5 truncate">
+            {summary.lastSyncTime ? summary.lastSyncTime.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'No sync recorded'}
+          </p>
         </div>
       </div>
 
