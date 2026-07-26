@@ -74,11 +74,8 @@ export default function EditorDashboardPage() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Pending Works */}
         <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Pending Works</span>
-            <div className="h-11 w-11 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
-              <FolderKanban className="h-5 w-5 text-[#EA580C]" />
-            </div>
           </div>
           <div>
             <div className="kpi-figure text-[38px] font-extrabold text-[#3D2E24]">{pendingWorksCount}</div>
@@ -88,11 +85,8 @@ export default function EditorDashboardPage() {
 
         {/* Deadline Close */}
         <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Deadline Close</span>
-            <div className="h-11 w-11 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
-              <Clock className="h-5 w-5 text-[#EA580C]" />
-            </div>
           </div>
           <div>
             <div className="kpi-figure text-[38px] font-extrabold text-[#EA580C]">{deadlineCloseCount}</div>
@@ -102,11 +96,8 @@ export default function EditorDashboardPage() {
 
         {/* Works Done */}
         <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Works Done</span>
-            <div className="h-11 w-11 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
-              <CheckCircle2 className="h-5 w-5 text-[#EA580C]" />
-            </div>
           </div>
           <div>
             <div className="kpi-figure text-[38px] font-extrabold text-[#3D2E24]">{totalWorksDone}</div>
@@ -116,11 +107,8 @@ export default function EditorDashboardPage() {
 
         {/* Money Earned */}
         <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Money Earned</span>
-            <div className="h-11 w-11 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
-              <DollarSign className="h-5 w-5 text-[#EA580C]" />
-            </div>
           </div>
           <div>
             <div className="kpi-figure text-[38px] font-extrabold text-[#EA580C]">{formatEditorCurrency(totalMoneyEarned)}</div>
@@ -154,9 +142,6 @@ export default function EditorDashboardPage() {
             ))
           ) : (
             <div className="col-span-full p-10 text-center bg-[#F6EFE9] rounded-3xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.5),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] space-y-2">
-              <div className="h-12 w-12 rounded-full bg-[#F6EFE9] flex items-center justify-center mx-auto text-[#EA580C] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
-                <Clock className="h-6 w-6" />
-              </div>
               <p className="font-extrabold text-[16px] text-[#3D2E24]">No upcoming deadlines</p>
               <p className="text-[13px] text-[#7C6A5A]">You have no active projects due in the next {threshold} days.</p>
             </div>
