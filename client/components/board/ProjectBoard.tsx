@@ -37,6 +37,7 @@ import Badge from '@/components/ui/badge';
 import Button from '@/components/ui/button';
 import Select from '@/components/ui/select';
 import PriorityCombobox from '@/components/ui/PriorityCombobox';
+import ClientCombobox from '@/components/ui/ClientCombobox';
 import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label';
 import EditorCombobox from '@/components/ui/EditorCombobox';
@@ -1287,18 +1288,12 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   <div className="space-y-2">
                     <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Client (Owner)</span>
                     {role === 'ADMIN' ? (
-                      <Select
+                      <ClientCombobox
+                        clients={clients}
                         value={selectedProject.clientId}
-                        disabled={isSavingField === 'clientId'}
-                        onChange={(e) => handleUpdateField('clientId', e.target.value)}
-                        className="text-[14px] py-2 h-11 border-0 bg-[#F6EFE9] text-[#3D2E24] w-full rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] font-semibold"
-                      >
-                        {clients.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.user.name} {c.company ? `(${c.company})` : ''}
-                          </option>
-                        ))}
-                      </Select>
+                        isLoading={isSavingField === 'clientId'}
+                        onChange={(val) => handleUpdateField('clientId', val)}
+                      />
                     ) : (
                       <div className="py-1">
                         <p className="font-bold text-[16px] text-[#3D2E24]">
@@ -2050,48 +2045,21 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectClient" className="text-[13px] font-extrabold text-[#8C7769]">Client Owner</Label>
-                    <div className="relative w-full">
-                      <select
-                        id="projectClient"
-                        required
-                        value={newProjectClientId}
-                        onChange={(e) => setNewProjectClientId(e.target.value)}
-                        className="w-full appearance-none bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl px-4 py-3 pr-10 text-[15px] shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none"
-                      >
-                        <option value="" className="bg-[#F6EFE9] text-[#3D2E24]">Select a client…</option>
-                        {clients.map((c) => (
-                          <option key={c.id} value={c.id} className="bg-[#F6EFE9] text-[#3D2E24]">
-                            {c.user.name} {c.company ? `(${c.company})` : ''}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#8C7769]">
-                        <ChevronDown className="h-4 w-4" />
-                      </div>
-                    </div>
+                    <Label className="text-[13px] font-extrabold text-[#8C7769]">Client Owner</Label>
+                    <ClientCombobox
+                      clients={clients}
+                      value={newProjectClientId}
+                      onChange={(val) => setNewProjectClientId(val)}
+                    />
                   </div>
 
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectEditor" className="text-[13px] font-extrabold text-[#8C7769]">Assigned Editor</Label>
-                    <div className="relative w-full">
-                      <select
-                        id="projectEditor"
-                        value={newProjectEditorId}
-                        onChange={(e) => setNewProjectEditorId(e.target.value)}
-                        className="w-full appearance-none bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl px-4 py-3 pr-10 text-[15px] shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none"
-                      >
-                        <option value="" className="bg-[#F6EFE9] text-[#3D2E24]">Unassigned (None)</option>
-                        {editors.map((e) => (
-                          <option key={e.id} value={e.id} className="bg-[#F6EFE9] text-[#3D2E24]">
-                            {e.user.name}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#8C7769]">
-                        <ChevronDown className="h-4 w-4" />
-                      </div>
-                    </div>
+                    <Label className="text-[13px] font-extrabold text-[#8C7769]">Assigned Editor</Label>
+                    <EditorCombobox
+                      editors={editors}
+                      value={newProjectEditorId || null}
+                      onChange={(val) => setNewProjectEditorId(val || '')}
+                    />
                   </div>
                 </div>
 
