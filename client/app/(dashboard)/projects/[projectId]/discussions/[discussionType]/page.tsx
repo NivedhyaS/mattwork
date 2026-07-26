@@ -17,7 +17,10 @@ import {
   Smile,
   CornerDownRight,
   Eye,
-  FileVideo
+  FileVideo,
+  Scissors,
+  Sparkles,
+  Volume2
 } from 'lucide-react';
 
 function getAvailableTabs(status: string, commentsList: any[]): string[] {
@@ -73,32 +76,20 @@ function isSameSenderGroup(c1: any, c2: any): boolean {
 // Returns accent color tokens per discussion type
 function getDiscussionColors(discussionType: string) {
   if (discussionType === 'revision-1') return {
-    icon: 'text-amber-400',
-    iconBg: 'bg-amber-500/15 border-amber-500/30',
-    badge: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-    ring: 'focus-within:ring-amber-500/40',
-    btnBg: 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold',
+    icon: 'text-[#F59E0B]',
+    badge: 'bg-[#F6EFE9] text-[#F59E0B] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]',
   };
   if (discussionType === 'revision-2') return {
-    icon: 'text-rose-400',
-    iconBg: 'bg-rose-500/15 border-rose-500/30',
-    badge: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
-    ring: 'focus-within:ring-rose-500/40',
-    btnBg: 'bg-rose-500 hover:bg-rose-400 text-white font-bold',
+    icon: 'text-[#EF4444]',
+    badge: 'bg-[#F6EFE9] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]',
   };
   if (discussionType === 'revision-3') return {
-    icon: 'text-pink-400',
-    iconBg: 'bg-pink-500/15 border-pink-500/30',
-    badge: 'bg-pink-500/20 text-pink-300 border-pink-500/40',
-    ring: 'focus-within:ring-pink-500/40',
-    btnBg: 'bg-pink-500 hover:bg-pink-400 text-white font-bold',
+    icon: 'text-[#EC4899]',
+    badge: 'bg-[#F6EFE9] text-[#EC4899] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]',
   };
   return {
-    icon: 'text-indigo-400',
-    iconBg: 'bg-indigo-500/15 border-indigo-500/30',
-    badge: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
-    ring: 'focus-within:ring-indigo-500/40',
-    btnBg: 'bg-indigo-500 hover:bg-indigo-400 text-white font-bold',
+    icon: 'text-[#EA580C]',
+    badge: 'bg-[#F6EFE9] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]',
   };
 }
 
@@ -235,8 +226,8 @@ export default function DiscussionPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-amber-400" />
-        <p className="text-sm font-semibold text-slate-400">Loading conversation...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-[#EA580C]" />
+        <p className="text-sm font-extrabold text-[#8C7769]">Loading conversation...</p>
       </div>
     );
   }
@@ -268,7 +259,7 @@ export default function DiscussionPage() {
         {lines.map((line, lIdx) => {
           const parts = line.split(timestampRegex);
           return (
-            <p key={lIdx} className="text-[14.5px] leading-relaxed font-normal text-slate-100">
+            <p key={lIdx} className="text-[14.5px] leading-relaxed font-semibold text-[#3D2E24]">
               {parts.map((part, pIdx) => {
                 if (part.match(/^(:\d{2}(?:-\:\d{2})?|\b\d{1,2}:\d{2}(?:-\d{1,2}:\d{2})?\b)$/)) {
                   return (
@@ -276,10 +267,10 @@ export default function DiscussionPage() {
                       key={pIdx}
                       type="button"
                       onClick={() => handleTimestampClick(part)}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 mx-1 rounded-md bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/35 text-[12px] font-bold transition-all cursor-pointer shadow-xs"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 mx-1 rounded-2xl bg-[#F6EFE9] text-[#EA580C] hover:text-[#EA580C] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(206,187,172,0.6)] active:shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6)] text-[12px] font-extrabold transition-all cursor-pointer"
                       title="Click to jump to video timestamp"
                     >
-                      <Clock className="h-3 w-3 text-amber-400" />
+                      <Clock className="h-3.5 w-3.5 text-[#EA580C]" />
                       {part}
                     </button>
                   );
@@ -297,40 +288,41 @@ export default function DiscussionPage() {
     <div className="max-w-5xl mx-auto flex flex-col min-h-[calc(100vh-80px)] px-4 sm:px-6">
       {/* Toast Notification */}
       {activeTimestampToast && (
-        <div className="fixed top-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 bg-slate-900 border border-amber-500/50 text-amber-300 text-[13px] font-bold rounded-2xl shadow-2xl backdrop-blur-md animate-in slide-in-from-top-3">
-          <FileVideo className="h-4 w-4 text-amber-400 animate-bounce" />
+        <div className="fixed top-6 right-6 z-50 flex items-center gap-2.5 px-5 py-3.5 bg-[#F6EFE9] text-[#EA580C] text-[13px] font-extrabold rounded-2xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] animate-in slide-in-from-top-3">
+          <FileVideo className="h-4.5 w-4.5 text-[#EA580C] animate-bounce" />
           <span>{activeTimestampToast}</span>
         </div>
       )}
 
-      {/* Minimal Top Header Line (Linear/Slack Style) */}
-      <div className="sticky top-0 z-20 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/60 py-3 flex items-center justify-between gap-4">
+      {/* Minimal Top Header Line (Refined with Neumorphic Styling & High Contrast) */}
+      <div className="sticky top-0 z-20 bg-[#F6EFE9]/95 backdrop-blur-md border-b border-[rgba(206,187,172,0.4)] py-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
             onClick={handleBack}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all cursor-pointer"
+            className="p-2.5 rounded-2xl bg-[#F6EFE9] text-[#7C6A5A] hover:text-[#EA580C] shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)] transition-all cursor-pointer"
             title="Back to board"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4.5 w-4.5" />
           </button>
-          <div className="flex items-center gap-2">
-            <span className="text-[17px] font-extrabold text-white tracking-tight">
+          <div className="flex items-center gap-2.5">
+            <span className="text-[20px] font-extrabold text-[#3D2E24] tracking-tight">
               #{getDiscussionTitle()}
             </span>
-            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${colors.badge}`}>
+            <span className={`text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-xl ${colors.badge}`}>
               {discussionType}
             </span>
-            <span className="text-[12px] text-slate-400 font-medium hidden sm:inline">
+            <span className="text-[13px] text-[#8C7769] font-bold hidden sm:inline">
               • {project.standardName}
             </span>
           </div>
         </div>
 
+        {/* Item 4: Prominent Clickable Board Navigation Link */}
         <button
           onClick={handleBack}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/60 text-slate-300 hover:text-white text-[12px] font-medium transition-all cursor-pointer"
+          className="flex items-center gap-2 px-4.5 py-2.5 rounded-2xl bg-[#F6EFE9] text-[#3D2E24] hover:text-[#EA580C] shadow-[-4px_-4px_8px_rgba(255,255,255,0.9),4px_4px_8px_rgba(206,187,172,0.6)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(201,180,163,0.75)] font-extrabold text-[13.5px] transition-all cursor-pointer"
         >
-          <FolderKanban className="h-3.5 w-3.5 text-slate-400" />
+          <FolderKanban className="h-4 w-4 text-[#EA580C]" />
           <span>Board</span>
         </button>
       </div>
@@ -338,13 +330,14 @@ export default function DiscussionPage() {
       {/* Natural Conversation Stream */}
       <div className="flex-1 py-6 space-y-4">
         {filteredComments.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
-            <div className={`h-12 w-12 rounded-2xl border ${colors.iconBg} flex items-center justify-center`}>
-              <MessageSquare className={`h-5 w-5 ${colors.icon}`} />
+          /* Item 1 & 2: Solid readable heading & Compact Neumorphic Empty State Container */
+          <div className="flex flex-col items-center justify-center my-10 py-10 px-8 text-center gap-3.5 bg-[#F6EFE9] rounded-3xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.55),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] max-w-md mx-auto">
+            <div className="h-14 w-14 rounded-2xl bg-[#F6EFE9] shadow-[-4px_-4px_8px_rgba(255,255,255,0.9),4px_4px_8px_rgba(206,187,172,0.6)] flex items-center justify-center">
+              <MessageSquare className={`h-6 w-6 ${colors.icon}`} />
             </div>
-            <p className="text-[15px] font-bold text-slate-200">Start of #{getDiscussionTitle()}</p>
-            <p className="text-[13px] font-medium text-slate-500 max-w-sm">
-              No notes added yet for {project.standardName}. Use the composer below to share feedback.
+            <p className="text-[17px] font-extrabold text-[#3D2E24]">Start of #{getDiscussionTitle()}</p>
+            <p className="text-[13px] font-semibold text-[#8C7769] max-w-xs leading-relaxed">
+              No notes added yet for <span className="text-[#3D2E24]">{project.standardName}</span>. Use the composer below to share feedback.
             </p>
           </div>
         ) : (
@@ -364,18 +357,15 @@ export default function DiscussionPage() {
                 {/* Header line for author/timestamp */}
                 {!sameSender && (
                   <div className={`flex items-center gap-2 mb-1 px-1 ${isSelf ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-[13px] font-bold text-slate-200">
+                    <span className="text-[13px] font-extrabold text-[#3D2E24]">
                       {c.author?.name}
                     </span>
-                    <span className={`text-[9.5px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded
-                      ${isAuthorAdmin
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                        : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                      }`}
-                    >
+                    <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] ${
+                      isAuthorAdmin ? 'text-[#EA580C]' : 'text-[#3D2E24]'
+                    }`}>
                       {c.author?.role}
                     </span>
-                    <span className="text-[11px] text-slate-500 font-medium">
+                    <span className="text-[11px] text-[#8C7769] font-bold">
                       {formatFriendlyTime(c.createdAt)}
                     </span>
                   </div>
@@ -383,26 +373,26 @@ export default function DiscussionPage() {
 
                 {/* Bubble constrained to 60-65% max width */}
                 <div
-                  className={`group relative max-w-[88%] sm:max-w-[65%] rounded-2xl px-4 py-3 transition-all shadow-xs ${
+                  className={`group relative max-w-[88%] sm:max-w-[65%] rounded-3xl px-5 py-3.5 transition-all ${
                     isSelf
-                      ? 'bg-amber-500/15 border border-amber-500/30 text-slate-100 rounded-tr-xs'
+                      ? 'bg-[#F6EFE9] text-[#3D2E24] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] border-l-4 border-l-[#EA580C] rounded-tr-xs'
                       : isAuthorAdmin
-                        ? 'bg-slate-900 border border-slate-800 text-slate-100 rounded-tl-xs'
-                        : 'bg-slate-900/70 border border-slate-800/60 text-slate-200 rounded-tl-xs'
-                  } ${isResolved ? 'opacity-50' : 'hover:border-slate-700/80'}`}
+                        ? 'bg-[#F6EFE9] text-[#3D2E24] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] rounded-tl-xs'
+                        : 'bg-[#F6EFE9] text-[#3D2E24] shadow-[-3px_-3px_8px_rgba(255,255,255,0.9),3px_3px_8px_rgba(206,187,172,0.6)] rounded-tl-xs'
+                  } ${isResolved ? 'opacity-50' : ''}`}
                 >
                   {renderBubbleText(c.content, isResolved)}
 
                   {/* Reaction / Resolved Status Badges */}
                   {(reactionCount > 0 || isResolved) && (
-                    <div className="flex items-center gap-1.5 mt-2 pt-1 border-t border-slate-800/50">
+                    <div className="flex items-center gap-1.5 mt-2.5 pt-1.5 border-t border-[rgba(206,187,172,0.4)]">
                       {isResolved && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3" /> Resolved
+                        <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-[#F6EFE9] text-[#16A34A] shadow-[inset_2px_2px_4px_rgba(22,163,74,0.3)] flex items-center gap-1">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-[#16A34A]" /> Resolved
                         </span>
                       )}
                       {reactionCount > 0 && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 text-[10px] font-bold text-amber-300 border border-slate-700">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#F6EFE9] text-[11px] font-extrabold text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
                           👍 {reactionCount}
                         </span>
                       )}
@@ -410,13 +400,13 @@ export default function DiscussionPage() {
                   )}
 
                   {/* Hover Actions Bar */}
-                  <div className={`absolute ${isSelf ? '-left-12' : '-right-12'} top-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-xl p-1 shadow-md backdrop-blur-xs`}>
+                  <div className={`absolute ${isSelf ? '-left-12' : '-right-12'} top-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-[#F6EFE9] shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)] rounded-2xl p-1`}>
                     <button
                       onClick={() => toggleResolve(c.id)}
-                      className={`p-1.5 rounded-lg text-[11px] font-bold transition-all ${
+                      className={`p-1.5 rounded-xl text-[11px] font-bold transition-all ${
                         isResolved
-                          ? 'bg-emerald-500/20 text-emerald-300'
-                          : 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10'
+                          ? 'text-[#16A34A]'
+                          : 'text-[#8C7769] hover:text-[#16A34A]'
                       }`}
                       title={isResolved ? 'Mark Unresolved' : 'Mark Resolved'}
                     >
@@ -425,7 +415,7 @@ export default function DiscussionPage() {
 
                     <button
                       onClick={() => handleAddReaction(c.id)}
-                      className="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-all"
+                      className="p-1.5 text-[#8C7769] hover:text-[#EA580C] rounded-xl transition-all"
                       title="React 👍"
                     >
                       <Smile className="h-3.5 w-3.5" />
@@ -433,7 +423,7 @@ export default function DiscussionPage() {
 
                     <button
                       onClick={() => insertChip(`Replying to @${c.author?.name}: `)}
-                      className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-all"
+                      className="p-1.5 text-[#8C7769] hover:text-[#EA580C] rounded-xl transition-all"
                       title="Reply"
                     >
                       <CornerDownRight className="h-3.5 w-3.5" />
@@ -442,7 +432,7 @@ export default function DiscussionPage() {
                     {user?.role === 'ADMIN' && (
                       <button
                         onClick={() => handleDeleteComment(c.id)}
-                        className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
+                        className="p-1.5 text-[#8C7769] hover:text-[#EF4444] rounded-xl transition-all"
                         title="Delete note"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -458,59 +448,59 @@ export default function DiscussionPage() {
       </div>
 
       {/* Floating Sticky Composer Bar */}
-      <div className="sticky bottom-0 z-20 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/60 pt-3 pb-4 space-y-2">
-        {/* Suggestion Chips Directly Above Input */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar text-[12px]">
-          <span className="text-slate-500 font-bold uppercase text-[10px] tracking-wider shrink-0 mr-1">Quick Tools:</span>
+      <div className="sticky bottom-0 z-20 bg-[#F6EFE9]/95 backdrop-blur-xl border-t border-[rgba(206,187,172,0.4)] pt-3.5 pb-4 space-y-3">
+        {/* Item 3: Quick Tools Shortcuts Pills with Timestamp Chip Styling & Icons */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 custom-scrollbar text-[12px]">
+          <span className="text-[#8C7769] font-extrabold uppercase text-[10px] tracking-wider shrink-0 mr-1">Quick Tools:</span>
           <button
             type="button"
             onClick={() => insertChip(':07 ')}
-            className="px-2.5 py-1 rounded-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-bold transition-all cursor-pointer shrink-0 flex items-center gap-1"
+            className="px-3 py-1.5 rounded-2xl bg-[#F6EFE9] text-[#EA580C] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(206,187,172,0.6)] hover:shadow-[-3px_-3px_6px_rgba(255,255,255,0.95),3px_3px_6px_rgba(201,180,163,0.7)] active:shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6)] font-extrabold transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
           >
-            <Clock className="h-3 w-3 text-amber-400" /> :07
+            <Clock className="h-3.5 w-3.5 text-[#EA580C]" /> :07
           </button>
           <button
             type="button"
             onClick={() => insertChip(':20-:31 ')}
-            className="px-2.5 py-1 rounded-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-bold transition-all cursor-pointer shrink-0 flex items-center gap-1"
+            className="px-3 py-1.5 rounded-2xl bg-[#F6EFE9] text-[#EA580C] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(206,187,172,0.6)] hover:shadow-[-3px_-3px_6px_rgba(255,255,255,0.95),3px_3px_6px_rgba(201,180,163,0.7)] active:shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6)] font-extrabold transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
           >
-            <Clock className="h-3 w-3 text-amber-400" /> :20-:31
+            <Clock className="h-3.5 w-3.5 text-[#EA580C]" /> :20-:31
           </button>
           <button
             type="button"
             onClick={() => insertChip('[Tighten Cut] ')}
-            className="px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-850 text-slate-300 border border-slate-800 font-medium transition-all cursor-pointer shrink-0"
+            className="px-3 py-1.5 rounded-2xl bg-[#F6EFE9] text-[#EA580C] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(206,187,172,0.6)] hover:shadow-[-3px_-3px_6px_rgba(255,255,255,0.95),3px_3px_6px_rgba(201,180,163,0.7)] active:shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6)] font-extrabold transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
           >
-            [Tighten Cut]
+            <Scissors className="h-3.5 w-3.5 text-[#EA580C]" /> [Tighten Cut]
           </button>
           <button
             type="button"
             onClick={() => insertChip('[Color Grade] ')}
-            className="px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-850 text-slate-300 border border-slate-800 font-medium transition-all cursor-pointer shrink-0"
+            className="px-3 py-1.5 rounded-2xl bg-[#F6EFE9] text-[#EA580C] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(206,187,172,0.6)] hover:shadow-[-3px_-3px_6px_rgba(255,255,255,0.95),3px_3px_6px_rgba(201,180,163,0.7)] active:shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6)] font-extrabold transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
           >
-            [Color Grade]
+            <Sparkles className="h-3.5 w-3.5 text-[#EA580C]" /> [Color Grade]
           </button>
           <button
             type="button"
             onClick={() => insertChip('[Audio Level] ')}
-            className="px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-850 text-slate-300 border border-slate-800 font-medium transition-all cursor-pointer shrink-0"
+            className="px-3 py-1.5 rounded-2xl bg-[#F6EFE9] text-[#EA580C] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(206,187,172,0.6)] hover:shadow-[-3px_-3px_6px_rgba(255,255,255,0.95),3px_3px_6px_rgba(201,180,163,0.7)] active:shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6)] font-extrabold transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
           >
-            [Audio Level]
+            <Volume2 className="h-3.5 w-3.5 text-[#EA580C]" /> [Audio Level]
           </button>
         </div>
 
-        {/* Minimal Floating Composer Bar */}
+        {/* Floating Composer Bar */}
         <form
           onSubmit={handlePostComment}
-          className={`flex items-center gap-2.5 bg-slate-900/90 border border-slate-800/80 rounded-2xl px-3.5 py-2 focus-within:ring-2 ${colors.ring} focus-within:border-slate-700 transition-all shadow-lg`}
+          className="flex items-center gap-3 bg-[#F6EFE9] rounded-2xl px-4 py-2.5 shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] transition-all"
         >
           <button
             type="button"
             onClick={() => alert('Attachment upload ready.')}
-            className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer shrink-0"
+            className="p-1.5 text-[#7C6A5A] hover:text-[#EA580C] transition-colors cursor-pointer shrink-0"
             title="Attach reference"
           >
-            <Paperclip className="h-4 w-4" />
+            <Paperclip className="h-4.5 w-4.5" />
           </button>
 
           <textarea
@@ -520,8 +510,8 @@ export default function DiscussionPage() {
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             className="flex-1 text-[14.5px] py-1 bg-transparent outline-none border-none resize-none
-              text-slate-100 placeholder:text-slate-500
-              max-h-24 overflow-y-auto leading-relaxed font-medium"
+              text-[#3D2E24] placeholder:text-[#8C7769]
+              max-h-24 overflow-y-auto leading-relaxed font-semibold"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -530,13 +520,18 @@ export default function DiscussionPage() {
             }}
           />
 
+          {/* Item 5: Clarified Enabled & Disabled Visual States for Send Button */}
           <button
             type="submit"
             disabled={submitting || !newComment.trim()}
-            className={`h-9 shrink-0 rounded-xl px-4 ${colors.btnBg} flex items-center gap-1.5 hover:opacity-90 active:scale-95 transition-all shadow-md disabled:opacity-30 disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed cursor-pointer`}
+            className={`h-10 shrink-0 rounded-2xl px-5 font-extrabold flex items-center gap-2 transition-all shadow-md ${
+              submitting || !newComment.trim()
+                ? 'bg-[#E0D5CB] text-[#8C7769] shadow-none opacity-50 cursor-not-allowed pointer-events-none'
+                : 'bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white shadow-[-3px_-3px_6px_rgba(255,255,255,0.7),3px_3px_8px_rgba(234,88,12,0.4)] hover:scale-[1.02] active:scale-95 cursor-pointer'
+            }`}
           >
             {submitting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin text-white" />
             ) : (
               <>
                 <span className="text-[13px]">Send</span>
@@ -546,13 +541,18 @@ export default function DiscussionPage() {
           </button>
         </form>
 
-        <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium px-1">
+        {/* Item 6: Status Indicator for "Synced with Video Player" */}
+        <div className="flex items-center justify-between text-[11px] text-[#8C7769] font-semibold px-1">
           <span>
-            <kbd className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 font-mono">Enter</kbd> to send ·{' '}
-            <kbd className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 font-mono">Shift+Enter</kbd> for newline
+            <kbd className="px-2 py-0.5 rounded-lg text-[10px] bg-[#F6EFE9] text-[#3D2E24] font-extrabold font-mono shadow-[inset_1px_1px_3px_rgba(206,187,172,0.5)]">Enter</kbd> to send ·{' '}
+            <kbd className="px-2 py-0.5 rounded-lg text-[10px] bg-[#F6EFE9] text-[#3D2E24] font-extrabold font-mono shadow-[inset_1px_1px_3px_rgba(206,187,172,0.5)]">Shift+Enter</kbd> for newline
           </span>
-          <span className="text-slate-500 flex items-center gap-1">
-            <Eye className="h-3 w-3 text-slate-500" /> Synced with Video Player
+          <span className="text-[#3D2E24] font-extrabold flex items-center gap-2 bg-[#F6EFE9] px-3 py-1 rounded-full shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span>Synced with Video Player</span>
           </span>
         </div>
       </div>
