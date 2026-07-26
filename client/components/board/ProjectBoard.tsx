@@ -1510,13 +1510,13 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             )}
 
             {/* 2. Grouped Card: Resources & Deliverables */}
-            <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
-              <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Resources & Workspace</h3>
+            <div className="bg-[#F6EFE9] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4">
+              <h3 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Resources &amp; Workspace</h3>
 
               {/* Raw Materials Folder */}
               {(role === 'ADMIN' || selectedProject.rawMaterialsFolder || selectedProject.driveFolder) && (
                 <div className="space-y-2">
-                  <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block">Raw Materials Link</span>
+                  <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Raw Materials Link</span>
                   {isEditingRawMaterials ? (
                     <div className="flex gap-2">
                       <input
@@ -1524,7 +1524,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                         placeholder="https://drive.google.com/drive/..."
                         value={rawMaterialsUrlInput}
                         onChange={(e) => setRawMaterialsUrlInput(e.target.value)}
-                        className="flex-1 text-[14px] p-2.5 rounded-xl border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 focus:outline-none text-slate-850 dark:text-slate-150 placeholder:text-slate-450"
+                        className="flex-1 text-[14px] p-3 rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none placeholder:text-[#8C7769]"
                       />
                       <Button
                         size="sm"
@@ -1532,23 +1532,23 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                           handleUpdateField('rawMaterialsFolder', rawMaterialsUrlInput);
                           setIsEditingRawMaterials(false);
                         }}
-                        className="rounded-xl px-4"
+                        className="rounded-2xl px-5 bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white font-extrabold"
                       >
                         Save
                       </Button>
-                      <Button size="sm" variant="secondary" onClick={() => setIsEditingRawMaterials(false)} className="rounded-xl px-4">
+                      <Button size="sm" variant="secondary" onClick={() => setIsEditingRawMaterials(false)} className="rounded-2xl px-4 bg-[#F6EFE9] text-[#3D2E24] font-extrabold shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)]">
                         Cancel
                       </Button>
                     </div>
                   ) : (selectedProject.rawMaterialsFolder || selectedProject.driveFolder) ? (
-                    <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-800/60 bg-slate-900/40 dark:bg-slate-900/50">
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
                       <a
                         href={selectedProject.rawMaterialsFolder || selectedProject.driveFolder || undefined}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex items-center gap-2 text-accent hover:text-accent/80 transition-colors font-bold text-[15px] group"
+                        className="flex items-center gap-2 text-[#EA580C] hover:text-[#EA580C]/80 transition-colors font-extrabold text-[15px] group"
                       >
-                        <span className="underline underline-offset-2 decoration-accent/40 group-hover:decoration-accent transition-all">Google Drive Folder</span>
+                        <span className="underline underline-offset-2 decoration-[#EA580C]/40 group-hover:decoration-[#EA580C] transition-all">Google Drive Folder</span>
                         <ExternalLink className="h-4 w-4 shrink-0" />
                       </a>
                       {role === 'ADMIN' && (
@@ -1557,7 +1557,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                             setRawMaterialsUrlInput(selectedProject.rawMaterialsFolder || selectedProject.driveFolder || '');
                             setIsEditingRawMaterials(true);
                           }}
-                          className="px-3.5 py-1.5 rounded-lg bg-accent text-white text-[13px] font-bold hover:bg-accent/85 active:scale-95 transition-all cursor-pointer shadow-sm"
+                          className="px-4 py-2 rounded-xl bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white text-[13px] font-extrabold shadow-[-3px_-3px_6px_rgba(255,255,255,0.7),3px_3px_8px_rgba(234,88,12,0.4)] transition-all cursor-pointer"
                         >
                           Edit Link
                         </button>
@@ -1568,7 +1568,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       <Button size="sm" onClick={() => {
                         setRawMaterialsUrlInput('');
                         setIsEditingRawMaterials(true);
-                      }} className="rounded-xl w-full py-2.5">
+                      }} className="rounded-2xl w-full py-3 bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white font-extrabold shadow-[-3px_-3px_6px_rgba(255,255,255,0.7),3px_3px_8px_rgba(234,88,12,0.4)]">
                         Add Google Drive Folder Link
                       </Button>
                     )
@@ -1591,20 +1591,20 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
                 return (
                   <div className="space-y-2 pt-2">
-                    <span className="text-slate-500 dark:text-slate-400 text-[14px] font-bold uppercase tracking-wider block">
+                    <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">
                       {role === 'CLIENT' ? 'Deliverable Output' : 'Working Files & Drafts'}
                     </span>
                     <div className="space-y-2.5">
                       {loadingDetails ? (
-                        <div className="h-12 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+                        <div className="h-12 bg-[#F6EFE9] rounded-2xl shadow-[inset_2px_2px_5px_rgba(206,187,172,0.5)] animate-pulse" />
                       ) : (
                         filteredFiles.map((file: any) => (
-                          <div key={file.id} className="flex items-center justify-between p-3.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 shadow-sm hover:border-slate-450 dark:hover:border-slate-700 transition-colors">
+                          <div key={file.id} className="flex items-center justify-between p-4 bg-[#F6EFE9] shadow-[-3px_-3px_8px_rgba(255,255,255,0.9),3px_3px_8px_rgba(206,187,172,0.6)] rounded-2xl transition-all">
                             <div className="flex items-center gap-3 min-w-0">
-                              <FileText className="h-5 w-5 text-accent shrink-0" />
+                              <FileText className="h-5 w-5 text-[#EA580C] shrink-0" />
                               <div className="min-w-0">
-                                <p className="font-bold text-[14px] truncate text-slate-900 dark:text-white leading-normal">{file.originalName}</p>
-                                <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">Version {file.version} · {formatDate(file.createdAt)}</p>
+                                <p className="font-extrabold text-[14px] truncate text-[#3D2E24] leading-normal">{file.originalName}</p>
+                                <p className="text-[12px] text-[#8C7769] mt-0.5">Version {file.version} · {formatDate(file.createdAt)}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -1612,7 +1612,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                 href={file.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900"
+                                className="p-2 text-[#7C6A5A] hover:text-[#EA580C] transition-colors rounded-xl bg-[#F6EFE9] shadow-[-2px_-2px_5px_rgba(255,255,255,0.8),2px_2px_5px_rgba(206,187,172,0.5)]"
                               >
                                 <ExternalLink className="h-4.5 w-4.5" />
                               </a>
@@ -1628,7 +1628,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                       }
                                     }
                                   }}
-                                  className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-lg cursor-pointer"
+                                  className="p-2 text-[#EF4444] hover:bg-[rgba(239,68,68,0.1)] transition-all rounded-xl cursor-pointer"
                                   title="Delete File"
                                 >
                                   <Trash className="h-4.5 w-4.5" />
@@ -1645,26 +1645,26 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
               {/* 4. Grouped Card: Editor Discussions (ADMIN and EDITOR only) */}
               {role !== 'CLIENT' && (
-                <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
-                  <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Editor Discussions</h3>
+                <div className="bg-[#F6EFE9] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4">
+                  <h3 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Editor Discussions</h3>
 
                   <div className="space-y-3">
                     {/* General Discussion */}
                     <Link
                       href={`/projects/${selectedProject.standardSlug}/discussions/general`}
-                      className="group flex items-center justify-between p-4 bg-slate-800/50 dark:bg-slate-800/40 border border-slate-700/60 dark:border-slate-700/50 rounded-2xl hover:bg-slate-800/80 hover:border-accent/50 hover:shadow-md transition-all duration-200"
+                      className="group flex items-center justify-between p-4 bg-[#F6EFE9] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] rounded-2xl hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(201,180,163,0.7)] transition-all duration-200"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-xl bg-accent/15 flex items-center justify-center shrink-0 group-hover:bg-accent/25 transition-colors">
-                          <MessageSquare className="h-4 w-4 text-accent" />
+                        <div className="h-9 w-9 rounded-xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
+                          <MessageSquare className="h-4.5 w-4.5 text-[#EA580C]" />
                         </div>
-                        <span className="font-bold text-[15px] text-slate-100 dark:text-slate-100 group-hover:text-white transition-colors">General Discussion</span>
+                        <span className="font-extrabold text-[15px] text-[#3D2E24] group-hover:text-[#EA580C] transition-colors">General Discussion</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[12px] font-extrabold px-2.5 py-1 rounded-lg bg-accent/20 text-accent border border-accent/30">
+                        <span className="text-[12px] font-extrabold px-3 py-1 rounded-xl bg-[#F6EFE9] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
                           {getCommentCount('GENERAL', comments)} comments
                         </span>
-                        <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-accent group-hover:translate-x-0.5 transition-all duration-200" />
+                        <ChevronRight className="h-4 w-4 text-[#8C7769] group-hover:text-[#EA580C] group-hover:translate-x-0.5 transition-all duration-200" />
                       </div>
                     </Link>
 
@@ -1675,19 +1675,19 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       return (
                         <Link
                           href={`/projects/${selectedProject.standardSlug}/discussions/revision-1`}
-                          className="group flex items-center justify-between p-4 bg-slate-800/50 dark:bg-slate-800/40 border border-slate-700/60 dark:border-slate-700/50 rounded-2xl hover:bg-slate-800/80 hover:border-accent/50 hover:shadow-md transition-all duration-200"
+                          className="group flex items-center justify-between p-4 bg-[#F6EFE9] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] rounded-2xl hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(201,180,163,0.7)] transition-all duration-200"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-xl bg-amber-500/15 flex items-center justify-center shrink-0 group-hover:bg-amber-500/25 transition-colors">
-                              <MessageSquare className="h-4 w-4 text-amber-400" />
+                            <div className="h-9 w-9 rounded-xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
+                              <MessageSquare className="h-4.5 w-4.5 text-[#F59E0B]" />
                             </div>
-                            <span className="font-bold text-[15px] text-slate-100 dark:text-slate-100 group-hover:text-white transition-colors">Revision 1 Discussion</span>
+                            <span className="font-extrabold text-[15px] text-[#3D2E24] group-hover:text-[#F59E0B] transition-colors">Revision 1 Discussion</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[12px] font-extrabold px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                            <span className="text-[12px] font-extrabold px-3 py-1 rounded-xl bg-[#F6EFE9] text-[#F59E0B] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
                               {getCommentCount('REVISION_1', comments)} comments
                             </span>
-                            <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all duration-200" />
+                            <ChevronRight className="h-4 w-4 text-[#8C7769] group-hover:text-[#F59E0B] group-hover:translate-x-0.5 transition-all duration-200" />
                           </div>
                         </Link>
                       );
@@ -1700,19 +1700,19 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       return (
                         <Link
                           href={`/projects/${selectedProject.standardSlug}/discussions/revision-2`}
-                          className="group flex items-center justify-between p-4 bg-slate-800/50 dark:bg-slate-800/40 border border-slate-700/60 dark:border-slate-700/50 rounded-2xl hover:bg-slate-800/80 hover:border-accent/50 hover:shadow-md transition-all duration-200"
+                          className="group flex items-center justify-between p-4 bg-[#F6EFE9] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] rounded-2xl hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(201,180,163,0.7)] transition-all duration-200"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-xl bg-rose-500/15 flex items-center justify-center shrink-0 group-hover:bg-rose-500/25 transition-colors">
-                              <MessageSquare className="h-4 w-4 text-rose-400" />
+                            <div className="h-9 w-9 rounded-xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
+                              <MessageSquare className="h-4.5 w-4.5 text-[#EF4444]" />
                             </div>
-                            <span className="font-bold text-[15px] text-slate-100 dark:text-slate-100 group-hover:text-white transition-colors">Revision 2 Discussion</span>
+                            <span className="font-extrabold text-[15px] text-[#3D2E24] group-hover:text-[#EF4444] transition-colors">Revision 2 Discussion</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[12px] font-extrabold px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                            <span className="text-[12px] font-extrabold px-3 py-1 rounded-xl bg-[#F6EFE9] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
                               {getCommentCount('REVISION_2', comments)} comments
                             </span>
-                            <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all duration-200" />
+                            <ChevronRight className="h-4 w-4 text-[#8C7769] group-hover:text-[#EF4444] group-hover:translate-x-0.5 transition-all duration-200" />
                           </div>
                         </Link>
                       );
@@ -1724,22 +1724,22 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
             {/* 3. Grouped Card: Financial Summary (ADMIN only) */}
              {role === 'ADMIN' && (
-               <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
-                 <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Financial breakdown</h3>
+               <div className="bg-[#F6EFE9] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4">
+                 <h3 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Financial breakdown</h3>
                  
                  {/* 2-column input fields */}
-                 <div className="grid grid-cols-2 gap-4 bg-white dark:bg-slate-950 p-4 border border-slate-200 dark:border-slate-850 rounded-xl shadow-inner">
+                 <div className="grid grid-cols-2 gap-4 bg-[#F6EFE9] p-4 rounded-2xl shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
                    {(() => {
                       const clientCurr = (selectedProject.client?.currency || 'USD').toUpperCase();
                       const clientCurrSym = getCurrencySymbol(clientCurr);
                       return (
                         <>
                           <div>
-                            <span className="text-[12px] text-slate-500 dark:text-slate-400 block font-bold uppercase tracking-wider">
-                              Client budget <span className="text-indigo-400 font-extrabold">{clientCurr}</span>
+                            <span className="text-[12px] text-[#8C7769] block font-extrabold uppercase tracking-wider">
+                              Client budget <span className="text-[#EA580C] font-extrabold">{clientCurr}</span>
                             </span>
                             <div className="relative mt-1.5">
-                              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] font-extrabold text-slate-400 dark:text-slate-500 pointer-events-none">{clientCurrSym}</span>
+                              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] font-extrabold text-[#8C7769] pointer-events-none">{clientCurrSym}</span>
                               <input
                                 type="number"
                                 disabled={isSavingField === 'clientPrice'}
@@ -1755,17 +1755,17 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                 onBlur={(e) => {
                                   handleUpdateField('clientPrice', e.target.value === '' ? null : Number(e.target.value));
                                 }}
-                                className="w-full text-[14px] pl-[30px] pr-3 py-2.5 rounded-xl border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-accent font-extrabold"
+                                className="w-full text-[14px] pl-[30px] pr-3 py-2.5 rounded-xl border-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none font-extrabold"
                                 placeholder="0.00"
                               />
                             </div>
                           </div>
                           <div>
-                            <span className="text-[12px] text-slate-500 dark:text-slate-400 block font-bold uppercase tracking-wider">
-                              Editor amount <span className="text-amber-500 font-extrabold">INR</span>
+                            <span className="text-[12px] text-[#8C7769] block font-extrabold uppercase tracking-wider">
+                              Editor amount <span className="text-[#EA580C] font-extrabold">INR</span>
                             </span>
                             <div className="relative mt-1.5">
-                              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] font-extrabold text-slate-400 dark:text-slate-500 pointer-events-none">₹</span>
+                              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] font-extrabold text-[#8C7769] pointer-events-none">₹</span>
                               <input
                                 type="number"
                                 disabled={isSavingField === 'editorPrice'}
@@ -1781,7 +1781,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                 onBlur={(e) => {
                                   handleUpdateField('editorPrice', e.target.value === '' ? null : Number(e.target.value));
                                 }}
-                                className="w-full text-[14px] pl-[30px] pr-3 py-2.5 rounded-xl border border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-accent font-extrabold"
+                                className="w-full text-[14px] pl-[30px] pr-3 py-2.5 rounded-xl border-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none font-extrabold"
                                 placeholder="0"
                               />
                             </div>
@@ -1792,8 +1792,8 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                  </div>
 
                  {/* Net Margin block */}
-                 <div className="pt-4 border-t border-slate-200 dark:border-slate-800/60 mt-4">
-                   <span className="text-[12px] text-slate-500 dark:text-slate-400 block font-bold uppercase tracking-wider">
+                 <div className="pt-4 border-t border-[#E0D5CB] mt-4">
+                   <span className="text-[12px] text-[#8C7769] block font-extrabold uppercase tracking-wider">
                      Company profit (net margin)
                    </span>
                    {(() => {
@@ -1833,15 +1833,15 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
                      return (
                        <div className="space-y-1 mt-1.5">
-                         <span className="font-black text-[32px] text-emerald-500 dark:text-emerald-400 block leading-tight">
+                         <span className="font-black text-[32px] text-[#16A34A] block leading-tight">
                            ≈ {primaryMarginStr}
                          </span>
                          {breakdownStr && (
-                           <span className="text-[14px] text-slate-700 dark:text-slate-200 block font-bold leading-tight mt-1.5">
+                           <span className="text-[14px] text-[#3D2E24] block font-bold leading-tight mt-1.5">
                              {breakdownStr}
                            </span>
                          )}
-                         <div className="flex items-center justify-between mt-4 text-[12px] text-slate-450 dark:text-slate-500 font-medium">
+                         <div className="flex items-center justify-between mt-4 text-[12px] text-[#8C7769] font-medium">
                            <span>
                              {fxRateStr}
                            </span>
@@ -1855,7 +1855,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                  await queryClient.invalidateQueries({ queryKey: ['exchange-rate'] });
                                }
                              }}
-                             className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-350 dark:border-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors text-[11px] font-bold text-slate-750 dark:text-slate-300 cursor-pointer"
+                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F6EFE9] shadow-[-2px_-2px_5px_rgba(255,255,255,0.8),2px_2px_5px_rgba(206,187,172,0.5)] hover:shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)] transition-all text-[11px] font-bold text-[#7C6A5A] cursor-pointer"
                            >
                              <RefreshCw className="h-3.5 w-3.5" />
                              Refresh
@@ -1868,20 +1868,20 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
                     {/* Associated invoices inside financial card */}
                     {selectedProject.invoices && selectedProject.invoices.length > 0 && (
-                      <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-                        <span className="text-slate-500 dark:text-slate-400 text-[13px] font-bold uppercase tracking-wider block">Associated invoices</span>
+                      <div className="space-y-2 pt-2 border-t border-[#E0D5CB]">
+                        <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Associated invoices</span>
                         <div className="space-y-2">
                           {selectedProject.invoices.map((inv: any) => (
-                            <div key={inv.id} className="flex items-center justify-between p-3.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 shadow-sm">
+                            <div key={inv.id} className="flex items-center justify-between p-4 bg-[#F6EFE9] shadow-[-3px_-3px_8px_rgba(255,255,255,0.9),3px_3px_8px_rgba(206,187,172,0.6)] rounded-2xl">
                               <div className="flex items-center gap-2">
-                                <DollarSign className="h-5 w-5 text-accent" />
+                                <DollarSign className="h-5 w-5 text-[#EA580C]" />
                                 <div>
-                                  <p className="font-bold text-[14px] text-slate-900 dark:text-white">{inv.number}</p>
-                                  <p className="text-[12px] text-slate-450 dark:text-slate-400">Due {formatDate(inv.dueDate)}</p>
+                                  <p className="font-extrabold text-[14px] text-[#3D2E24]">{inv.number}</p>
+                                  <p className="text-[12px] text-[#8C7769]">Due {formatDate(inv.dueDate)}</p>
                                 </div>
                               </div>
                               <div className="text-right">
-                                <p className="font-extrabold text-[14px] text-slate-900 dark:text-white">{formatCurrency(inv.total)}</p>
+                                <p className="font-extrabold text-[14px] text-[#3D2E24]">{formatCurrency(inv.total)}</p>
                                 <Badge className="text-[10px] py-0.5 px-2 font-bold capitalize mt-1" variant={inv.status === 'PAID' ? 'success' : 'secondary'}>
                                   {inv.status.toLowerCase()}
                                 </Badge>
@@ -1896,13 +1896,13 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
              {/* Financial Summary (EDITOR only) */}
              {role === 'EDITOR' && selectedProject.editorPrice != null && (
-               <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
-                 <h3 className="text-[18px] font-extrabold text-slate-900 dark:text-white tracking-tight">Payment Details</h3>
-                 <div className="bg-white dark:bg-slate-950 p-4 border border-slate-200 dark:border-slate-850 rounded-xl shadow-inner">
-                   <span className="text-[12px] text-slate-500 dark:text-slate-400 block font-bold uppercase tracking-wider">
-                     Editor Payout <span className="text-amber-500 font-extrabold">INR</span>
+               <div className="bg-[#F6EFE9] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4">
+                 <h3 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Payment Details</h3>
+                 <div className="bg-[#F6EFE9] p-4 rounded-2xl shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+                   <span className="text-[12px] text-[#8C7769] block font-extrabold uppercase tracking-wider">
+                     Editor Payout <span className="text-[#EA580C] font-extrabold">INR</span>
                    </span>
-                   <p className="font-extrabold text-[24px] text-slate-900 dark:text-white mt-1.5 leading-none">
+                   <p className="font-extrabold text-[24px] text-[#3D2E24] mt-1.5 leading-none">
                      {formatEditorCurrency(selectedProject.editorPrice)}
                    </p>
                  </div>

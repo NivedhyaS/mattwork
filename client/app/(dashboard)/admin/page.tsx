@@ -175,11 +175,8 @@ export default function AdminDashboard() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total projects */}
         <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Total Projects</span>
-            <div className="h-10 w-10 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
-              <Layers className="h-5 w-5 text-[#8C7769]" />
-            </div>
           </div>
           <div>
             <div className="kpi-figure text-[38px] font-extrabold text-[#3D2E24]">{metrics.totalProjects}</div>
@@ -189,11 +186,8 @@ export default function AdminDashboard() {
 
         {/* Active projects */}
         <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Active Projects</span>
-            <div className="h-10 w-10 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
-              <Timer className="h-5 w-5 text-[#EA580C]" />
-            </div>
           </div>
           <div>
             <div className="kpi-figure text-[38px] font-extrabold text-[#EA580C]">{metrics.activeProjects}</div>
@@ -203,11 +197,8 @@ export default function AdminDashboard() {
 
         {/* Completed projects */}
         <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Completed</span>
-            <div className="h-10 w-10 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
-              <CircleCheck className="h-5 w-5 text-[#10B981]" />
-            </div>
           </div>
           <div>
             <div className="kpi-figure text-[38px] font-extrabold text-[#10B981]">{metrics.completedProjects}</div>
@@ -217,11 +208,8 @@ export default function AdminDashboard() {
 
         {/* Upcoming deadlines */}
         <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Deadlines</span>
-            <div className="h-10 w-10 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
-              <CalendarClock className="h-5 w-5 text-[#EF4444]" />
-            </div>
           </div>
           <div>
             <div className="kpi-figure text-[38px] font-extrabold text-[#EF4444]">{metrics.upcomingDeadlines}</div>
@@ -235,11 +223,8 @@ export default function AdminDashboard() {
         {/* Net Margin */}
         <Link href="/admin/financials" className="block transition-transform hover:-translate-y-1">
           <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
-            <div className="flex items-center justify-between">
+            <div>
               <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Net Profit</span>
-              <div className="h-10 w-10 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
-                <TrendingUp className="h-5 w-5 text-[#10B981]" />
-              </div>
             </div>
             <div>
               <div className="kpi-figure text-[38px] font-extrabold text-[#10B981]">{profitFormatted}</div>
@@ -250,11 +235,8 @@ export default function AdminDashboard() {
 
         {/* Pending payments */}
         <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Pending Payments</span>
-            <div className="h-10 w-10 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
-              <Hourglass className="h-5 w-5 text-[#F59E0B]" />
-            </div>
           </div>
           <div>
             <div className="kpi-figure text-[38px] font-extrabold text-[#F59E0B]">
@@ -271,8 +253,7 @@ export default function AdminDashboard() {
         <div className="lg:col-span-2 p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] flex flex-col space-y-4">
           <div className="flex items-center justify-between border-b border-transparent pb-3">
             <div>
-              <h3 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight flex items-center gap-2">
-                <FileEdit className="h-5 w-5 text-[#EF4444]" />
+              <h3 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">
                 Pending Revision Approvals
               </h3>
               <p className="text-[13px] text-[#7C6A5A] mt-1">
@@ -341,11 +322,8 @@ export default function AdminDashboard() {
 
         {/* Other / Unassigned projects */}
         <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all space-y-4">
-          <div className="flex items-center justify-between">
+          <div>
             <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Other / Unassigned</span>
-            <div className="h-10 w-10 rounded-full flex items-center justify-center bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
-              <AlertCircle className="h-5 w-5 text-[#8C7769]" />
-            </div>
           </div>
           <div>
             <div className="kpi-figure text-[38px] font-extrabold text-[#3D2E24]">{metrics.otherProjects}</div>
