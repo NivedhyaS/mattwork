@@ -17,8 +17,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         )}
         <select
           className={cn(
-            'flex h-11 w-full rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] font-semibold px-4 py-2 text-sm focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer',
-            'shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:shadow-[inset_5px_5px_10px_rgba(206,187,172,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9),0_0_0_2px_rgba(249,115,22,0.4)]',
+            'flex h-11 w-full rounded-2xl border-0 bg-[#D8CFC2] text-[#1F1610] font-semibold px-4 py-2 text-sm focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer',
+            'shadow-[inset_4px_4px_8px_rgba(135,120,108,0.7),inset_-4px_-4px_8px_rgba(255,255,255,0.72)] focus:shadow-[inset_5px_5px_10px_rgba(135,120,108,0.8),inset_-5px_-5px_10px_rgba(255,255,255,0.85),0_0_0_2px_rgba(249,115,22,0.4)]',
             error && 'shadow-[inset_4px_4px_8px_rgba(239,68,68,0.4)] text-[#EF4444]',
             className
           )}

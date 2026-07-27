@@ -49,7 +49,7 @@ export default function Modal({
       {/* Modal Dialog */}
       <div
         className={cn(
-          'relative z-10 w-full rounded-3xl bg-[#F6EFE9] text-[#3D2E24] border-0 p-6 shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] transition-all duration-300 scale-95 opacity-100 flex flex-col max-h-[90vh]',
+          'relative z-10 w-full rounded-3xl bg-[#D8CFC2] text-[#1F1610] border-0 p-6 shadow-[-10px_-10px_20px_rgba(255,255,255,0.85),10px_10px_20px_rgba(125,110,98,0.85)] transition-all duration-300 scale-95 opacity-100 flex flex-col max-h-[90vh]',
           size === 'sm' && 'max-w-md',
           size === 'md' && 'max-w-lg',
           size === 'lg' && 'max-w-2xl',

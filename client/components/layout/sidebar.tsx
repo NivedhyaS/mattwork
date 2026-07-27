@@ -83,8 +83,8 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        'hidden md:flex flex-col bg-[#F6EFE9] text-[#3D2E24] transition-all duration-300 relative h-screen sticky top-0 border-r-0',
-        'shadow-[4px_0_12px_rgba(206,187,172,0.4)]',
+        'hidden md:flex flex-col bg-[#D8CFC2] text-[#1F1610] transition-all duration-300 relative h-screen sticky top-0 border-r-0',
+        'shadow-[4px_0_12px_rgba(135,120,108,0.5)]',
         isCollapsed ? 'w-20' : 'w-64'
       )}
     >
@@ -94,18 +94,18 @@ export default function Sidebar() {
         isCollapsed ? "justify-center px-4" : "justify-between px-6"
       )}>
         <div className="flex items-center gap-3 flex-shrink-0">
-          <div className="h-10 w-10 flex items-center justify-center rounded-full bg-[#F6EFE9] text-[#EA580C] font-extrabold flex-shrink-0 shadow-[inset_3px_3px_6px_rgba(206,187,172,0.65),inset_-3px_-3px_6px_rgba(255,255,255,0.9)]">
+          <div className="h-10 w-10 flex items-center justify-center rounded-full bg-[#D8CFC2] text-[#EA580C] font-extrabold flex-shrink-0 shadow-[inset_3px_3px_6px_rgba(135,120,108,0.7),inset_-3px_-3px_6px_rgba(255,255,255,0.75)]">
             mw
           </div>
           {!isCollapsed && (
-            <span className="font-extrabold text-xl tracking-tight text-[#3D2E24] select-none">
+            <span className="font-extrabold text-xl tracking-tight text-[#1F1610] select-none">
               mattwork
             </span>
           )}
         </div>
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-7 h-7 w-7 rounded-full bg-[#F6EFE9] flex items-center justify-center text-[#7C6A5A] hover:text-[#EA580C] focus:outline-none cursor-pointer z-10 shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)]"
+          className="absolute -right-3 top-7 h-7 w-7 rounded-full bg-[#D8CFC2] flex items-center justify-center text-[#4A3E34] hover:text-[#EA580C] focus:outline-none cursor-pointer z-10 shadow-[-3px_-3px_6px_rgba(255,255,255,0.75),3px_3px_6px_rgba(135,120,108,0.7)]"
         >
           {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
@@ -113,7 +113,7 @@ export default function Sidebar() {
 
       {/* Navigation links */}
       <nav className="flex-1 space-y-2.5 px-4 py-6 overflow-y-auto">
-        <div className={cn("text-[10px] font-extrabold tracking-wider text-[#8C7769] uppercase px-3 mb-3", isCollapsed && "sr-only")}>
+        <div className={cn("text-[10px] font-extrabold tracking-wider text-[#4A3E34] uppercase px-3 mb-3", isCollapsed && "sr-only")}>
           {getRoleLabel()}
         </div>
         {links.map((link) => {
@@ -126,14 +126,14 @@ export default function Sidebar() {
               className={cn(
                 'flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[15px] font-bold transition-all group relative',
                 isActive
-                  ? 'bg-[#F6EFE9] text-[#EA580C] shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]'
-                  : 'text-[#7C6A5A] hover:text-[#3D2E24] hover:shadow-[-4px_-4px_8px_rgba(255,255,255,0.9),4px_4px_8px_rgba(206,187,172,0.5)]'
+                  ? 'bg-[#D8CFC2] text-[#EA580C] shadow-[inset_4px_4px_8px_rgba(135,120,108,0.7),inset_-4px_-4px_8px_rgba(255,255,255,0.72)]'
+                  : 'text-[#4A3E34] hover:text-[#1F1610] hover:shadow-[-4px_-4px_8px_rgba(255,255,255,0.75),4px_4px_8px_rgba(135,120,108,0.65)]'
               )}
             >
-              <Icon className={cn("h-5 w-5 flex-shrink-0 transition-colors", isActive ? "text-[#EA580C]" : "text-[#8C7769] group-hover:text-[#EA580C]")} />
+              <Icon className={cn("h-5 w-5 flex-shrink-0 transition-colors", isActive ? "text-[#EA580C]" : "text-[#4A3E34] group-hover:text-[#EA580C]")} />
               {!isCollapsed && <span className="capitalize">{link.name}</span>}
               {isCollapsed && (
-                <div className="absolute left-full rounded-xl px-3 py-1.5 ml-4 bg-[#3D2E24] text-white text-[12px] font-bold invisible opacity-0 -translate-x-2 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-50 shadow-lg">
+                <div className="absolute left-full rounded-xl px-3 py-1.5 ml-4 bg-[#1F1610] text-white text-[12px] font-bold invisible opacity-0 -translate-x-2 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-50 shadow-lg">
                   {link.name}
                 </div>
               )}
@@ -147,7 +147,7 @@ export default function Sidebar() {
         <button
           onClick={logout}
           className={cn(
-            'flex w-full items-center gap-3 px-4 py-3 rounded-2xl text-[15px] font-bold text-[#EF4444] transition-all cursor-pointer bg-[#F6EFE9] shadow-[-4px_-4px_8px_rgba(255,255,255,0.9),4px_4px_8px_rgba(206,187,172,0.5)] hover:shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]',
+            'flex w-full items-center gap-3 px-4 py-3 rounded-2xl text-[15px] font-bold text-[#EF4444] transition-all cursor-pointer bg-[#D8CFC2] shadow-[-4px_-4px_8px_rgba(255,255,255,0.75),4px_4px_8px_rgba(135,120,108,0.65)] hover:shadow-[inset_3px_3px_6px_rgba(135,120,108,0.7),inset_-3px_-3px_6px_rgba(255,255,255,0.72)]',
             isCollapsed && 'justify-center'
           )}
         >

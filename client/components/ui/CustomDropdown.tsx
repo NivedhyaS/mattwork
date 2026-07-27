@@ -56,11 +56,11 @@ export default function CustomDropdown({
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
         className={`
-          flex items-center justify-between gap-2.5 px-4 py-2.5 h-11 rounded-2xl text-[13.5px] font-extrabold text-[#3D2E24]
-          bg-[#F2ECE6] border-0 outline-none transition-all duration-200 cursor-pointer
-          shadow-[-3px_-3px_6px_rgba(255,255,255,0.95),3px_3px_6px_rgba(182,168,156,0.65)]
-          hover:shadow-[-4px_-4px_8px_rgba(255,255,255,0.98),4px_4px_8px_rgba(175,160,148,0.75)]
-          active:shadow-[inset_2px_2px_4px_rgba(182,168,156,0.62)]
+          flex items-center justify-between gap-2.5 px-4 py-2.5 h-11 rounded-2xl text-[13.5px] font-extrabold text-[#1F1610]
+          bg-[#D8CFC2] border-0 outline-none transition-all duration-200 cursor-pointer
+          shadow-[-3px_-3px_6px_rgba(255,255,255,0.75),3px_3px_6px_rgba(135,120,108,0.7)]
+          hover:shadow-[-4px_-4px_8px_rgba(255,255,255,0.85),4px_4px_8px_rgba(125,110,98,0.8)]
+          active:shadow-[inset_2px_2px_4px_rgba(135,120,108,0.7)]
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
           ${triggerClassName}
         `}
@@ -70,7 +70,7 @@ export default function CustomDropdown({
           {selected?.icon && <span className="shrink-0">{selected.icon}</span>}
           <span className="truncate">{selected ? selected.label : placeholder}</span>
         </div>
-        <ChevronDown className={`h-4 w-4 shrink-0 text-[#8C7769] transition-transform duration-200 ${open ? 'rotate-180 text-[#EA580C]' : ''}`} />
+        <ChevronDown className={`h-4 w-4 shrink-0 text-[#4A3E34] transition-transform duration-200 ${open ? 'rotate-180 text-[#EA580C]' : ''}`} />
       </button>
 
       {/* Floating Neumorphic Popover Menu */}
@@ -78,8 +78,8 @@ export default function CustomDropdown({
         <div
           className={`
             absolute z-[80] mt-2 min-w-[210px] w-full max-h-[280px] overflow-y-auto custom-scrollbar
-            rounded-3xl bg-[#F2ECE6] text-[#3D2E24] border-0 p-2 space-y-1
-            shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)]
+            rounded-3xl bg-[#D8CFC2] text-[#1F1610] border-0 p-2 space-y-1
+            shadow-[-10px_-10px_20px_rgba(255,255,255,0.85),10px_10px_20px_rgba(125,110,98,0.85)]
             ${align === 'right' ? 'right-0' : 'left-0'}
           `}
         >

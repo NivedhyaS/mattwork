@@ -50,7 +50,7 @@ export default function Drawer({
       <div className="fixed inset-y-0 right-0 flex max-w-full pl-10 pointer-events-none">
         <div
           className={cn(
-            'pointer-events-auto relative w-screen bg-[#F6EFE9] text-[#3D2E24] shadow-[-12px_0_24px_rgba(206,187,172,0.6)] border-0 flex flex-col h-full transform transition-transform duration-300 ease-in-out translate-x-0',
+            'pointer-events-auto relative w-screen bg-[#D8CFC2] text-[#1F1610] shadow-[-12px_0_24px_rgba(135,120,108,0.7)] border-0 flex flex-col h-full transform transition-transform duration-300 ease-in-out translate-x-0',
             size === 'sm' && 'max-w-md',
             size === 'md' && 'max-w-lg',
             size === 'lg' && 'max-w-2xl',
@@ -59,14 +59,14 @@ export default function Drawer({
           )}
         >
           {/* Header */}
-          <div className="flex items-start justify-between p-6 border-b border-[#E0D5CB]">
+          <div className="flex items-start justify-between p-6 border-b border-[#CBBFA8]">
             <div>
-              {title && <h3 className="text-lg font-bold text-[#3D2E24]">{title}</h3>}
-              {description && <p className="text-sm text-[#8C7769] mt-1">{description}</p>}
+              {title && <h3 className="text-lg font-bold text-[#1F1610]">{title}</h3>}
+              {description && <p className="text-sm text-[#4A3E34] mt-1">{description}</p>}
             </div>
             <button
               onClick={onClose}
-              className="rounded-xl p-2 text-[#7C6A5A] bg-[#F6EFE9] shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)] hover:shadow-[-4px_-4px_8px_rgba(255,255,255,0.95),4px_4px_8px_rgba(206,187,172,0.7)] hover:text-[#3D2E24] transition-all focus:outline-none"
+              className="rounded-xl p-2 text-[#4A3E34] bg-[#D8CFC2] shadow-[-3px_-3px_6px_rgba(255,255,255,0.75),3px_3px_6px_rgba(135,120,108,0.72)] hover:shadow-[-4px_-4px_8px_rgba(255,255,255,0.85),4px_4px_8px_rgba(125,110,98,0.8)] hover:text-[#1F1610] transition-all focus:outline-none"
             >
               <X className="h-5 w-5" />
             </button>

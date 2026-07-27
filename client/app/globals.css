@@ -3,9 +3,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #E8E2DA;
-  --foreground: #2A1F18;
-  --card: #E8E2DA;
+  --background: #D8CFC2;
+  --foreground: #1F1610;
+  --card: #D8CFC2;
   --border: transparent;
   /* Primary Accent: Warm Mid-Tone Orange */
   --accent: #F97316;
@@ -15,15 +15,15 @@
   --completed: #10B981;
   --at-risk: #F59E0B;
   --overdue: #EF4444;
-  --inactive: #5E5045;
+  --inactive: #4A3E34;
 
-  /* Neumorphic Shadow Tokens (blended neutral grey for enhanced depth & low glare) */
-  --neu-light-shadow: -8px -8px 16px rgba(255, 255, 255, 0.85);
-  --neu-dark-shadow: 8px 8px 16px rgba(158, 142, 130, 0.68);
-  --neu-outer: -8px -8px 16px rgba(255, 255, 255, 0.85), 8px 8px 16px rgba(158, 142, 130, 0.68);
-  --neu-outer-hover: -10px -10px 20px rgba(255, 255, 255, 0.9), 10px 10px 20px rgba(150, 134, 122, 0.78);
-  --neu-inset: inset 4px 4px 8px rgba(158, 142, 130, 0.65), inset -4px -4px 8px rgba(255, 255, 255, 0.82);
-  --neu-carved: inset 3px 3px 6px rgba(158, 142, 130, 0.6), inset -3px -3px 6px rgba(255, 255, 255, 0.82);
+  /* Neumorphic Shadow Tokens (blended neutral grey for crisp depth & zero glare) */
+  --neu-light-shadow: -8px -8px 16px rgba(255, 255, 255, 0.75);
+  --neu-dark-shadow: 8px 8px 16px rgba(135, 120, 108, 0.75);
+  --neu-outer: -8px -8px 16px rgba(255, 255, 255, 0.75), 8px 8px 16px rgba(135, 120, 108, 0.75);
+  --neu-outer-hover: -10px -10px 20px rgba(255, 255, 255, 0.85), 10px 10px 20px rgba(125, 110, 98, 0.85);
+  --neu-inset: inset 4px 4px 8px rgba(135, 120, 108, 0.7), inset -4px -4px 8px rgba(255, 255, 255, 0.72);
+  --neu-carved: inset 3px 3px 6px rgba(135, 120, 108, 0.65), inset -3px -3px 6px rgba(255, 255, 255, 0.72);
 
   /* Typography Scale */
   --fs-9:  11px;
@@ -42,9 +42,9 @@
 }
 
 html.dark {
-  --background: #E8E2DA;
-  --foreground: #2A1F18;
-  --card: #E8E2DA;
+  --background: #D8CFC2;
+  --foreground: #1F1610;
+  --card: #D8CFC2;
   --border: transparent;
   --accent: #F97316;
   --accent-light: rgba(249, 115, 22, 0.15);
@@ -82,8 +82,8 @@ html.dark {
 }
 
 body {
-  background-color: #E8E2DA !important;
-  color: #2A1F18 !important;
+  background-color: #D8CFC2 !important;
+  color: #1F1610 !important;
   font-family: var(--font-sans);
   font-weight: 400;
   font-size: 16px;
@@ -96,48 +96,48 @@ body {
 
 /* Raised Outer Neumorphic Card */
 .flat-card, .neu-card {
-  background-color: #E8E2DA !important;
+  background-color: #D8CFC2 !important;
   border: none !important;
   border-radius: 20px !important;
-  box-shadow: -8px -8px 16px rgba(255, 255, 255, 0.85), 8px 8px 16px rgba(158, 142, 130, 0.68) !important;
+  box-shadow: -8px -8px 16px rgba(255, 255, 255, 0.75), 8px 8px 16px rgba(135, 120, 108, 0.75) !important;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .flat-card:hover, .neu-card:hover {
-  box-shadow: -10px -10px 20px rgba(255, 255, 255, 0.9), 10px 10px 20px rgba(150, 134, 122, 0.78) !important;
+  box-shadow: -10px -10px 20px rgba(255, 255, 255, 0.85), 10px 10px 20px rgba(125, 110, 98, 0.85) !important;
 }
 
 /* Inset / Carved Neumorphic Element (Selected, Active, Input, Carved Container) */
 .neu-inset {
-  background-color: #E8E2DA !important;
+  background-color: #D8CFC2 !important;
   border: none !important;
   border-radius: 16px !important;
-  box-shadow: inset 4px 4px 8px rgba(158, 142, 130, 0.65), inset -4px -4px 8px rgba(255, 255, 255, 0.82) !important;
+  box-shadow: inset 4px 4px 8px rgba(135, 120, 108, 0.7), inset -4px -4px 8px rgba(255, 255, 255, 0.72) !important;
 }
 
 /* Carved Circular Icon Badge */
 .neu-badge {
-  background-color: #E8E2DA !important;
+  background-color: #D8CFC2 !important;
   border-radius: 9999px !important;
-  box-shadow: inset 3px 3px 6px rgba(158, 142, 130, 0.6), inset -3px -3px 6px rgba(255, 255, 255, 0.82) !important;
+  box-shadow: inset 3px 3px 6px rgba(135, 120, 108, 0.65), inset -3px -3px 6px rgba(255, 255, 255, 0.72) !important;
 }
 
 /* Raised Neumorphic Pill Button */
 .neu-btn {
-  background-color: #E8E2DA !important;
-  color: #2A1F18 !important;
+  background-color: #D8CFC2 !important;
+  color: #1F1610 !important;
   border: none !important;
   border-radius: 14px !important;
-  box-shadow: -4px -4px 10px rgba(255, 255, 255, 0.85), 4px 4px 10px rgba(158, 142, 130, 0.65) !important;
+  box-shadow: -4px -4px 10px rgba(255, 255, 255, 0.75), 4px 4px 10px rgba(135, 120, 108, 0.72) !important;
   transition: all 0.15s ease-in-out !important;
 }
 
 .neu-btn:hover {
-  box-shadow: -6px -6px 12px rgba(255, 255, 255, 0.9), 6px 6px 12px rgba(150, 134, 122, 0.75) !important;
+  box-shadow: -6px -6px 12px rgba(255, 255, 255, 0.85), 6px 6px 12px rgba(125, 110, 98, 0.8) !important;
 }
 
 .neu-btn:active {
-  box-shadow: inset 3px 3px 6px rgba(158, 142, 130, 0.65), inset -3px -3px 6px rgba(255, 255, 255, 0.82) !important;
+  box-shadow: inset 3px 3px 6px rgba(135, 120, 108, 0.7), inset -3px -3px 6px rgba(255, 255, 255, 0.72) !important;
 }
 
 /* Primary Orange Accent Button */
@@ -146,21 +146,21 @@ body {
   color: #FFFFFF !important;
   border: none !important;
   border-radius: 14px !important;
-  box-shadow: -4px -4px 10px rgba(255, 255, 255, 0.65), 4px 4px 12px rgba(234, 88, 12, 0.45) !important;
+  box-shadow: -4px -4px 10px rgba(255, 255, 255, 0.6), 4px 4px 12px rgba(234, 88, 12, 0.5) !important;
   transition: all 0.15s ease-in-out !important;
 }
 
 .neu-btn-primary:hover {
-  box-shadow: -6px -6px 14px rgba(255, 255, 255, 0.75), 6px 6px 16px rgba(234, 88, 12, 0.55) !important;
+  box-shadow: -6px -6px 14px rgba(255, 255, 255, 0.7), 6px 6px 16px rgba(234, 88, 12, 0.6) !important;
 }
 
 /* Form Controls with Inset Soft Shadow */
 .flat-control {
-  background-color: #E8E2DA !important;
-  color: #2A1F18 !important;
+  background-color: #D8CFC2 !important;
+  color: #1F1610 !important;
   border: none !important;
   border-radius: 14px !important;
-  box-shadow: inset 4px 4px 8px rgba(158, 142, 130, 0.65), inset -4px -4px 8px rgba(255, 255, 255, 0.82) !important;
+  box-shadow: inset 4px 4px 8px rgba(135, 120, 108, 0.7), inset -4px -4px 8px rgba(255, 255, 255, 0.72) !important;
   padding: 0.625rem 0.875rem;
   font-size: 16px;
   transition: box-shadow 0.15s ease-in-out !important;
@@ -168,7 +168,7 @@ body {
 
 .flat-control:focus {
   outline: none !important;
-  box-shadow: inset 4px 4px 8px rgba(158, 142, 130, 0.75), inset -4px -4px 8px rgba(255, 255, 255, 0.9), 0 0 0 2px rgba(249, 115, 22, 0.4) !important;
+  box-shadow: inset 4px 4px 8px rgba(135, 120, 108, 0.8), inset -4px -4px 8px rgba(255, 255, 255, 0.85), 0 0 0 2px rgba(249, 115, 22, 0.4) !important;
 }
 
 /* KPI Numbers */
@@ -177,7 +177,7 @@ body {
   font-feature-settings: "tnum" 1, "kern" 1;
   letter-spacing: -0.03em;
   line-height: 1.1;
-  color: #2A1F18 !important;
+  color: #1F1610 !important;
 }
 
 /* ── Universal Global Component Overrides for Neumorphism Light Orange ──────── */
@@ -185,12 +185,12 @@ body {
 /* 1. Global Headings & Primary Text */
 h1, h2, h3, h4, h5, h6,
 .text-slate-900, .text-slate-950, .text-slate-800, .text-slate-700 {
-  color: #2A1F18 !important;
+  color: #1F1610 !important;
 }
 
 /* 2. Global Secondary / Muted Text (Deep Warm Grey-Brown for higher contrast) */
 .text-slate-500, .text-slate-400, .text-slate-450, .text-slate-600 {
-  color: #5E5045 !important;
+  color: #4A3E34 !important;
 }
 
 /* 3. Universal Search Bars, Inputs, Selects & Textareas (Pressed / Inset Neumorphism) */
@@ -198,12 +198,12 @@ input:not([type="checkbox"]):not([type="radio"]),
 select,
 textarea,
 .flat-control {
-  background-color: #E8E2DA !important;
-  color: #2A1F18 !important;
+  background-color: #D8CFC2 !important;
+  color: #1F1610 !important;
   border-color: transparent !important;
   border-radius: 16px !important;
   border: none !important;
-  box-shadow: inset 4px 4px 8px rgba(158, 142, 130, 0.65), inset -4px -4px 8px rgba(255, 255, 255, 0.82) !important;
+  box-shadow: inset 4px 4px 8px rgba(135, 120, 108, 0.7), inset -4px -4px 8px rgba(255, 255, 255, 0.72) !important;
   transition: box-shadow 0.15s ease-in-out !important;
 }
 
@@ -211,14 +211,14 @@ input:not([type="checkbox"]):not([type="radio"]):focus,
 select:focus,
 textarea:focus {
   outline: none !important;
-  box-shadow: inset 5px 5px 10px rgba(158, 142, 130, 0.75), inset -5px -5px 10px rgba(255, 255, 255, 0.9), 0 0 0 2px rgba(249, 115, 22, 0.4) !important;
+  box-shadow: inset 5px 5px 10px rgba(135, 120, 108, 0.8), inset -5px -5px 10px rgba(255, 255, 255, 0.85), 0 0 0 2px rgba(249, 115, 22, 0.4) !important;
 }
 
 /* 4. Universal Card Surfaces, Modals, Drawers & Theme Overrides */
 .bg-card, .bg-white,
 .bg-slate-900, .bg-slate-950, .bg-slate-800, .bg-slate-850, .bg-slate-955, .bg-black {
-  background-color: #E8E2DA !important;
-  color: #2A1F18 !important;
+  background-color: #D8CFC2 !important;
+  color: #1F1610 !important;
   border-color: transparent !important;
 }
 
@@ -233,28 +233,28 @@ a.bg-accent {
 
 /* 5. Universal Empty State Containers (Carved Inset Neumorphism) */
 .border-dashed {
-  background-color: #E8E2DA !important;
+  background-color: #D8CFC2 !important;
   border: none !important;
   border-radius: 24px !important;
-  box-shadow: inset 4px 4px 8px rgba(158, 142, 130, 0.6), inset -4px -4px 8px rgba(255, 255, 255, 0.82) !important;
-  color: #2A1F18 !important;
+  box-shadow: inset 4px 4px 8px rgba(135, 120, 108, 0.65), inset -4px -4px 8px rgba(255, 255, 255, 0.72) !important;
+  color: #1F1610 !important;
 }
 
 /* 6. Universal Table Styling */
 table {
-  background-color: #E8E2DA !important;
+  background-color: #D8CFC2 !important;
 }
 
 th {
-  background-color: #E8E2DA !important;
-  color: #5E5045 !important;
+  background-color: #D8CFC2 !important;
+  color: #4A3E34 !important;
   font-weight: 800 !important;
-  border-bottom: 1px solid rgba(158, 142, 130, 0.35) !important;
+  border-bottom: 1px solid rgba(135, 120, 108, 0.4) !important;
 }
 
 td {
-  color: #2A1F18 !important;
-  border-bottom: 1px solid rgba(158, 142, 130, 0.25) !important;
+  color: #1F1610 !important;
+  border-bottom: 1px solid rgba(135, 120, 108, 0.3) !important;
 }
 
 tr:hover {

@@ -61,79 +61,79 @@ export default function EditorDashboardPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8 p-1 max-w-7xl mx-auto w-full bg-[#E8E2DA] text-[#2A1F18]">
+    <div className="flex flex-col gap-8 p-1 max-w-7xl mx-auto w-full bg-[#D8CFC2] text-[#1F1610]">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-[36px] font-extrabold tracking-tight text-[#2A1F18]">Editor Dashboard</h1>
-          <p className="text-[16px] text-[#5E5045] mt-1">Overview of your workload and earnings.</p>
+          <h1 className="text-[36px] font-extrabold tracking-tight text-[#1F1610]">Editor Dashboard</h1>
+          <p className="text-[16px] text-[#4A3E34] mt-1">Overview of your workload and earnings.</p>
         </div>
       </div>
 
       {/* KPI Cards Grid */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Pending Works */}
-        <div className="p-6 bg-[#E8E2DA] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.85),8px_8px_16px_rgba(158,142,130,0.68)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.9),10px_10px_20px_rgba(150,134,122,0.78)] transition-all space-y-4">
+        <div className="p-6 bg-[#D8CFC2] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.75),8px_8px_16px_rgba(135,120,108,0.75)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.85),10px_10px_20px_rgba(125,110,98,0.85)] transition-all space-y-4">
           <div>
-            <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#5E5045]">Pending Works</span>
+            <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#4A3E34]">Pending Works</span>
           </div>
           <div>
-            <div className="kpi-figure text-[38px] font-extrabold text-[#2A1F18]">{pendingWorksCount}</div>
-            <p className="text-[12px] text-[#5E5045] mt-1">Active assigned projects</p>
+            <div className="kpi-figure text-[38px] font-extrabold text-[#1F1610]">{pendingWorksCount}</div>
+            <p className="text-[12px] text-[#4A3E34] mt-1">Active assigned projects</p>
           </div>
         </div>
 
         {/* Deadline Close */}
-        <div className="p-6 bg-[#E8E2DA] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.85),8px_8px_16px_rgba(158,142,130,0.68)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.9),10px_10px_20px_rgba(150,134,122,0.78)] transition-all space-y-4">
+        <div className="p-6 bg-[#D8CFC2] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.75),8px_8px_16px_rgba(135,120,108,0.75)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.85),10px_10px_20px_rgba(125,110,98,0.85)] transition-all space-y-4">
           <div>
-            <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#5E5045]">Deadline Close</span>
+            <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#4A3E34]">Deadline Close</span>
           </div>
           <div>
             <div className="kpi-figure text-[38px] font-extrabold text-[#EA580C]">{deadlineCloseCount}</div>
-            <p className="text-[12px] text-[#5E5045] mt-1">Due in {threshold} days or less</p>
+            <p className="text-[12px] text-[#4A3E34] mt-1">Due in {threshold} days or less</p>
           </div>
         </div>
 
         {/* Works Done */}
-        <div className="p-6 bg-[#E8E2DA] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.85),8px_8px_16px_rgba(158,142,130,0.68)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.9),10px_10px_20px_rgba(150,134,122,0.78)] transition-all space-y-4">
+        <div className="p-6 bg-[#D8CFC2] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.75),8px_8px_16px_rgba(135,120,108,0.75)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.85),10px_10px_20px_rgba(125,110,98,0.85)] transition-all space-y-4">
           <div>
-            <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#5E5045]">Works Done</span>
+            <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#4A3E34]">Works Done</span>
           </div>
           <div>
-            <div className="kpi-figure text-[38px] font-extrabold text-[#2A1F18]">{totalWorksDone}</div>
-            <p className="text-[12px] text-[#5E5045] mt-1">Completed projects</p>
+            <div className="kpi-figure text-[38px] font-extrabold text-[#1F1610]">{totalWorksDone}</div>
+            <p className="text-[12px] text-[#4A3E34] mt-1">Completed projects</p>
           </div>
         </div>
 
         {/* Money Earned */}
-        <div className="p-6 bg-[#E8E2DA] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.85),8px_8px_16px_rgba(158,142,130,0.68)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.9),10px_10px_20px_rgba(150,134,122,0.78)] transition-all space-y-4">
+        <div className="p-6 bg-[#D8CFC2] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.75),8px_8px_16px_rgba(135,120,108,0.75)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.85),10px_10px_20px_rgba(125,110,98,0.85)] transition-all space-y-4">
           <div>
-            <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#5E5045]">Money Earned</span>
+            <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#4A3E34]">Money Earned</span>
           </div>
           <div>
             <div className="kpi-figure text-[38px] font-extrabold text-[#EA580C]">{formatEditorCurrency(totalMoneyEarned)}</div>
-            <p className="text-[12px] text-[#5E5045] mt-1">From completed works</p>
+            <p className="text-[12px] text-[#4A3E34] mt-1">From completed works</p>
           </div>
         </div>
       </div>
 
       {/* Upcoming Deadlines Section */}
       <div className="space-y-4">
-        <h2 className="text-[20px] font-extrabold text-[#2A1F18]">Upcoming Deadlines</h2>
+        <h2 className="text-[20px] font-extrabold text-[#1F1610]">Upcoming Deadlines</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {deadlineCloseProjects.length > 0 ? (
             deadlineCloseProjects.map((p) => (
               <Link key={p.id} href={`/editor/projects?open=${p.id}`}>
-                <div className="p-6 bg-[#E8E2DA] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.85),8px_8px_16px_rgba(158,142,130,0.68)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.9),10px_10px_20px_rgba(150,134,122,0.78)] transition-all cursor-pointer space-y-3">
+                <div className="p-6 bg-[#D8CFC2] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.75),8px_8px_16px_rgba(135,120,108,0.75)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.85),10px_10px_20px_rgba(125,110,98,0.85)] transition-all cursor-pointer space-y-3">
                   <div>
-                    <h3 className="font-extrabold text-[16px] text-[#2A1F18]">{p.title}</h3>
-                    <p className="text-[13px] text-[#5E5045] line-clamp-1 mt-0.5">{p.client?.user?.name || p.client?.company || 'Client'}</p>
+                    <h3 className="font-extrabold text-[16px] text-[#1F1610]">{p.title}</h3>
+                    <p className="text-[13px] text-[#4A3E34] line-clamp-1 mt-0.5">{p.client?.user?.name || p.client?.company || 'Client'}</p>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t border-transparent">
                     <span className="text-[13px] font-extrabold text-[#EA580C]">
                       Due: {new Date(p.dueDate).toLocaleDateString()}
                     </span>
-                    <span className="px-3 py-1 bg-[#E8E2DA] text-[#2A1F18] text-[12px] font-extrabold rounded-xl shadow-[inset_2px_2px_4px_rgba(158,142,130,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+                    <span className="px-3 py-1 bg-[#D8CFC2] text-[#1F1610] text-[12px] font-extrabold rounded-xl shadow-[inset_2px_2px_4px_rgba(135,120,108,0.6),inset_-2px_-2px_4px_rgba(255,255,255,0.72)]">
                       {p.status.replace(/_/g, ' ')}
                     </span>
                   </div>
@@ -141,9 +141,9 @@ export default function EditorDashboardPage() {
               </Link>
             ))
           ) : (
-            <div className="col-span-full p-10 text-center bg-[#E8E2DA] rounded-3xl shadow-[inset_4px_4px_8px_rgba(158,142,130,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.82)] space-y-2">
-              <p className="font-extrabold text-[16px] text-[#2A1F18]">No upcoming deadlines</p>
-              <p className="text-[13px] text-[#5E5045]">You have no active projects due in the next {threshold} days.</p>
+            <div className="col-span-full p-10 text-center bg-[#D8CFC2] rounded-3xl shadow-[inset_4px_4px_8px_rgba(135,120,108,0.7),inset_-4px_-4px_8px_rgba(255,255,255,0.72)] space-y-2">
+              <p className="font-extrabold text-[16px] text-[#1F1610]">No upcoming deadlines</p>
+              <p className="text-[13px] text-[#4A3E34]">You have no active projects due in the next {threshold} days.</p>
             </div>
           )}
         </div>

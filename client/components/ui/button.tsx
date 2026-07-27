@@ -16,11 +16,11 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           'inline-flex items-center justify-center font-bold rounded-2xl transition-all focus:outline-none disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]',
           // Variants
-          variant === 'primary' && 'bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white shadow-[-4px_-4px_10px_rgba(255,255,255,0.7),4px_4px_12px_rgba(234,88,12,0.4)] hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.8),6px_6px_16px_rgba(234,88,12,0.5)] active:shadow-[inset_2px_2px_4px_rgba(0,0,0,0.2)]',
-          variant === 'secondary' && 'bg-[#F6EFE9] text-[#3D2E24] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(201,180,163,0.7)] active:shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]',
-          variant === 'outline' && 'bg-[#F6EFE9] text-[#3D2E24] border-0 shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] hover:text-[#EA580C] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(201,180,163,0.7)] active:shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]',
-          variant === 'danger' && 'bg-[#EF4444] text-white shadow-[-4px_-4px_10px_rgba(255,255,255,0.7),4px_4px_12px_rgba(239,68,68,0.4)] hover:bg-[#DC2626]',
-          variant === 'ghost' && 'bg-[#F6EFE9] text-[#7C6A5A] hover:text-[#EA580C] hover:shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.5)]',
+          variant === 'primary' && 'bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white shadow-[-4px_-4px_10px_rgba(255,255,255,0.6),4px_4px_12px_rgba(234,88,12,0.5)] hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.7),6px_6px_16px_rgba(234,88,12,0.6)] active:shadow-[inset_2px_2px_4px_rgba(0,0,0,0.2)]',
+          variant === 'secondary' && 'bg-[#D8CFC2] text-[#1F1610] shadow-[-4px_-4px_10px_rgba(255,255,255,0.75),4px_4px_10px_rgba(135,120,108,0.72)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.85),6px_6px_12px_rgba(125,110,98,0.8)] active:shadow-[inset_3px_3px_6px_rgba(135,120,108,0.7),inset_-3px_-3px_6px_rgba(255,255,255,0.72)]',
+          variant === 'outline' && 'bg-[#D8CFC2] text-[#1F1610] border-0 shadow-[-4px_-4px_10px_rgba(255,255,255,0.75),4px_4px_10px_rgba(135,120,108,0.72)] hover:text-[#EA580C] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.85),6px_6px_12px_rgba(125,110,98,0.8)] active:shadow-[inset_3px_3px_6px_rgba(135,120,108,0.7),inset_-3px_-3px_6px_rgba(255,255,255,0.72)]',
+          variant === 'danger' && 'bg-[#EF4444] text-white shadow-[-4px_-4px_10px_rgba(255,255,255,0.6),4px_4px_12px_rgba(239,68,68,0.4)] hover:bg-[#DC2626]',
+          variant === 'ghost' && 'bg-[#D8CFC2] text-[#4A3E34] hover:text-[#EA580C] hover:shadow-[-3px_-3px_6px_rgba(255,255,255,0.75),3px_3px_6px_rgba(135,120,108,0.65)]',
           variant === 'link' && 'bg-transparent text-[#EA580C] underline-offset-4 hover:underline focus:ring-0 active:scale-100',
           // Sizes
           size === 'sm' && 'h-9 px-3 text-xs',
