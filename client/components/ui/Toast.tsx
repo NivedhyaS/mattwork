@@ -26,7 +26,7 @@ export default function Toast({
   const isSuccess = type === 'success';
 
   return (
-    <div className="fixed bottom-6 right-6 z-[120] flex items-center gap-3 px-5 py-3.5 bg-[#F6EFE9] text-[#3D2E24] text-[13.5px] font-extrabold rounded-2xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(206,187,172,0.7)] border border-[rgba(206,187,172,0.4)] animate-in slide-in-from-bottom-4">
+    <div className="fixed bottom-6 right-6 z-[120] flex items-center gap-3 px-5 py-3.5 bg-[#F2ECE6] text-[#3D2E24] text-[13.5px] font-extrabold rounded-2xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.98),6px_6px_14px_rgba(182,168,156,0.7)] border border-[rgba(182,168,156,0.35)] animate-in slide-in-from-bottom-4">
       {isSuccess && <CheckCircle2 className="h-5 w-5 text-[#10B981] shrink-0" />}
       {isError && <AlertTriangle className="h-5 w-5 text-[#EF4444] shrink-0" />}
       {!isSuccess && !isError && <Info className="h-5 w-5 text-[#EA580C] shrink-0" />}

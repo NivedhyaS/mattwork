@@ -44,14 +44,14 @@ export default function PromptModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="" size="md">
-      <form onSubmit={handleSubmit} className="p-6 bg-[#F6EFE9] space-y-5">
+      <form onSubmit={handleSubmit} className="p-6 bg-[#F2ECE6] space-y-5">
         <div className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-2xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
+          <div className="h-11 w-11 rounded-2xl bg-[#F2ECE6] shadow-[inset_2px_2px_4px_rgba(182,168,156,0.55),inset_-2px_-2px_4px_rgba(255,255,255,0.85)] flex items-center justify-center shrink-0">
             <MessageSquare className="h-5 w-5 text-[#EA580C]" />
           </div>
           <div>
             <h3 className="text-[19px] font-extrabold text-[#3D2E24] tracking-tight">{title}</h3>
-            {description && <p className="text-[13px] font-semibold text-[#8C7769]">{description}</p>}
+            {description && <p className="text-[13px] font-semibold text-[#736357]">{description}</p>}
           </div>
         </div>
 
@@ -62,7 +62,7 @@ export default function PromptModal({
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={placeholder}
-            className="w-full text-[14px] p-3.5 rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none placeholder:text-[#8C7769] font-medium leading-relaxed"
+            className="w-full text-[14px] p-3.5 rounded-2xl border-0 bg-[#F2ECE6] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(182,168,156,0.62),inset_-3px_-3px_6px_rgba(255,255,255,0.9)] focus:outline-none placeholder:text-[#736357] font-medium leading-relaxed"
           />
         </div>
 
@@ -71,7 +71,7 @@ export default function PromptModal({
             type="button"
             disabled={isLoading}
             onClick={onClose}
-            className="py-2.5 px-5 rounded-2xl bg-[#F6EFE9] text-[#3D2E24] font-extrabold text-[13.5px] shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)] hover:shadow-[-4px_-4px_8px_rgba(255,255,255,0.95),4px_4px_8px_rgba(201,180,163,0.7)] transition-all cursor-pointer disabled:opacity-50"
+            className="py-2.5 px-5 rounded-2xl bg-[#F2ECE6] text-[#3D2E24] font-extrabold text-[13.5px] shadow-[-3px_-3px_6px_rgba(255,255,255,0.95),3px_3px_6px_rgba(182,168,156,0.65)] hover:shadow-[-4px_-4px_8px_rgba(255,255,255,0.98),4px_4px_8px_rgba(175,160,148,0.75)] transition-all cursor-pointer disabled:opacity-50"
           >
             {cancelText}
           </button>

@@ -91,8 +91,8 @@ export default function PriorityCombobox({
         onKeyDown={handleKeyDown}
         className={`
           flex items-center justify-between w-full px-3.5 py-2.5 h-11 rounded-2xl text-left transition-all
-          bg-[#F6EFE9] border-0
-          shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]
+          bg-[#F2ECE6] border-0
+          shadow-[inset_4px_4px_8px_rgba(182,168,156,0.62),inset_-4px_-4px_8px_rgba(255,255,255,0.9)]
           focus:outline-none
           ${(disabled || isLoading) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}
         `}
@@ -104,7 +104,7 @@ export default function PriorityCombobox({
 
           <div className="min-w-0 flex-1">
             {isLoading ? (
-              <span className="text-[#8C7769] font-semibold text-[13px]">Saving…</span>
+              <span className="text-[#736357] font-semibold text-[13px]">Saving…</span>
             ) : (
               <span className={`font-extrabold truncate block text-[13px] ${selected.triggerColor}`}>
                 {selected.label}
@@ -114,13 +114,13 @@ export default function PriorityCombobox({
         </div>
 
         <div className="flex items-center gap-1 shrink-0 ml-1">
-          <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-200 text-[#8C7769] ${open ? 'rotate-180 text-[#EA580C]' : ''}`} />
+          <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-200 text-[#736357] ${open ? 'rotate-180 text-[#EA580C]' : ''}`} />
         </div>
       </button>
 
       {/* Floating Neumorphic Dropdown Menu */}
       {open && (
-        <div className="absolute z-[100] mt-2 w-full min-w-[210px] rounded-3xl bg-[#F6EFE9] text-[#3D2E24] shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.8)] border border-[rgba(206,187,172,0.4)] p-2 space-y-1">
+        <div className="absolute z-[100] mt-2 w-full min-w-[210px] rounded-3xl bg-[#F2ECE6] text-[#3D2E24] shadow-[-10px_-10px_20px_rgba(255,255,255,0.98),10px_10px_20px_rgba(175,160,148,0.78)] border border-[rgba(182,168,156,0.35)] p-2 space-y-1">
           <ul
             ref={listRef}
             role="listbox"

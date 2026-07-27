@@ -115,8 +115,8 @@ export default function ClientCombobox({
         onClick={() => setOpen((o) => !o)}
         className={`
           w-full h-11 flex items-center justify-between gap-3 px-4 py-2 rounded-2xl text-left text-[14px]
-          transition-all duration-200 outline-none border-0 bg-[#F6EFE9] text-[#3D2E24]
-          shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]
+          transition-all duration-200 outline-none border-0 bg-[#F2ECE6] text-[#3D2E24]
+          shadow-[inset_4px_4px_8px_rgba(182,168,156,0.62),inset_-4px_-4px_8px_rgba(255,255,255,0.9)]
           ${(disabled || isLoading) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         `}
       >
@@ -124,7 +124,7 @@ export default function ClientCombobox({
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin text-[#EA580C] shrink-0" />
           ) : selected ? (
-            <div className="h-7 w-7 rounded-full bg-[#F6EFE9] text-[#EA580C] font-extrabold flex items-center justify-center text-[11px] shrink-0 overflow-hidden shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6),inset_-2px_-2px_4px_rgba(255,255,255,0.85)]">
+            <div className="h-7 w-7 rounded-full bg-[#F2ECE6] text-[#EA580C] font-extrabold flex items-center justify-center text-[11px] shrink-0 overflow-hidden shadow-[inset_2px_2px_4px_rgba(182,168,156,0.6),inset_-2px_-2px_4px_rgba(255,255,255,0.85)]">
               {selected.user.avatar ? (
                 <img src={selected.user.avatar} alt="" className="h-full w-full object-cover" />
               ) : (
@@ -132,36 +132,36 @@ export default function ClientCombobox({
               )}
             </div>
           ) : (
-            <div className="h-7 w-7 rounded-full bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6),inset_-2px_-2px_4px_rgba(255,255,255,0.85)] flex items-center justify-center shrink-0">
+            <div className="h-7 w-7 rounded-full bg-[#F2ECE6] shadow-[inset_2px_2px_4px_rgba(182,168,156,0.6),inset_-2px_-2px_4px_rgba(255,255,255,0.85)] flex items-center justify-center shrink-0">
               <User className="h-3.5 w-3.5 text-[#EA580C]" />
             </div>
           )}
 
           <div className="min-w-0 flex-1">
             {isLoading ? (
-              <span className="text-[#8C7769] font-medium">Saving…</span>
+              <span className="text-[#736357] font-medium">Saving…</span>
             ) : selected ? (
               <span className="font-extrabold text-[#3D2E24] truncate block">
                 {selected.user.name} {selected.company ? `(${selected.company})` : ''}
               </span>
             ) : (
-              <span className="text-[#8C7769] font-semibold truncate block">Select client...</span>
+              <span className="text-[#736357] font-semibold truncate block">Select client...</span>
             )}
           </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-200 text-[#8C7769] ${open ? 'rotate-180 text-[#EA580C]' : ''}`} />
+          <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-200 text-[#736357] ${open ? 'rotate-180 text-[#EA580C]' : ''}`} />
         </div>
       </button>
 
       {/* Dropdown Menu */}
       {open && (
-        <div className="absolute z-[60] mt-2 w-full min-w-[260px] rounded-3xl border-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] p-3 space-y-2">
+        <div className="absolute z-[60] mt-2 w-full min-w-[260px] rounded-3xl border-0 bg-[#F2ECE6] text-[#3D2E24] shadow-[-10px_-10px_20px_rgba(255,255,255,0.98),10px_10px_20px_rgba(175,160,148,0.78)] p-3 space-y-2">
           {/* Search input if multiple clients */}
           {clients.length > 4 && (
             <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8C7769]" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#736357]" />
               <input
                 ref={inputRef}
                 type="text"
@@ -169,7 +169,7 @@ export default function ClientCombobox({
                 value={query}
                 onChange={(e) => { setQuery(e.target.value); setActiveIndex(-1); }}
                 onKeyDown={handleKeyDown}
-                className="w-full pl-10 pr-3.5 py-2.5 text-[13px] bg-[#F6EFE9] text-[#3D2E24] rounded-2xl border-0 font-semibold shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] placeholder:text-[#8C7769] focus:outline-none"
+                className="w-full pl-10 pr-3.5 py-2.5 text-[13px] bg-[#F2ECE6] text-[#3D2E24] rounded-2xl border-0 font-semibold shadow-[inset_3px_3px_6px_rgba(182,168,156,0.62),inset_-3px_-3px_6px_rgba(255,255,255,0.9)] placeholder:text-[#736357] focus:outline-none"
               />
             </div>
           )}

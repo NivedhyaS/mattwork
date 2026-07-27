@@ -125,8 +125,8 @@ export default function EditorCombobox({
         onClick={() => setOpen((o) => !o)}
         className={`
           w-full h-11 flex items-center justify-between gap-2 px-3 py-2 rounded-2xl text-left text-[13px]
-          transition-all duration-200 outline-none border-0 bg-[#F6EFE9] text-[#3D2E24]
-          shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]
+          transition-all duration-200 outline-none border-0 bg-[#F2ECE6] text-[#3D2E24]
+          shadow-[inset_4px_4px_8px_rgba(182,168,156,0.62),inset_-4px_-4px_8px_rgba(255,255,255,0.9)]
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         `}
       >
@@ -134,7 +134,7 @@ export default function EditorCombobox({
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin text-[#EA580C] shrink-0" />
           ) : selected ? (
-            <div className="h-6.5 w-6.5 rounded-full bg-[#F6EFE9] text-[#EA580C] font-extrabold flex items-center justify-center text-[10.5px] shrink-0 overflow-hidden shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6),inset_-2px_-2px_4px_rgba(255,255,255,0.85)]">
+            <div className="h-6.5 w-6.5 rounded-full bg-[#F2ECE6] text-[#EA580C] font-extrabold flex items-center justify-center text-[10.5px] shrink-0 overflow-hidden shadow-[inset_2px_2px_4px_rgba(182,168,156,0.6),inset_-2px_-2px_4px_rgba(255,255,255,0.85)]">
               {selected.user.avatar ? (
                 <img src={selected.user.avatar} alt="" className="h-full w-full object-cover" />
               ) : (
@@ -142,7 +142,7 @@ export default function EditorCombobox({
               )}
             </div>
           ) : (
-            <div className="h-6.5 w-6.5 rounded-full bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6),inset_-2px_-2px_4px_rgba(255,255,255,0.85)] flex items-center justify-center shrink-0">
+            <div className="h-6.5 w-6.5 rounded-full bg-[#F2ECE6] shadow-[inset_2px_2px_4px_rgba(182,168,156,0.6),inset_-2px_-2px_4px_rgba(255,255,255,0.85)] flex items-center justify-center shrink-0">
               <UserX className="h-3.5 w-3.5 text-[#EA580C]" />
             </div>
           )}
@@ -162,7 +162,7 @@ export default function EditorCombobox({
 
         <div className="flex items-center gap-1.5 shrink-0 ml-1">
           {!isLoading && selected && (
-            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_1.5px_1.5px_3px_rgba(206,187,172,0.5),inset_-1.5px_-1.5px_3px_rgba(255,255,255,0.8)]">
+            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 bg-[#F2ECE6] text-[#3D2E24] shadow-[inset_1.5px_1.5px_3px_rgba(182,168,156,0.5),inset_-1.5px_-1.5px_3px_rgba(255,255,255,0.8)]">
               {selected.activeProjects} active
             </span>
           )}
@@ -172,10 +172,10 @@ export default function EditorCombobox({
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute z-50 mt-2 w-full min-w-[280px] sm:min-w-[320px] rounded-3xl border-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] p-3 space-y-2">
+        <div className="absolute z-50 mt-2 w-full min-w-[280px] sm:min-w-[320px] rounded-3xl border-0 bg-[#F2ECE6] text-[#3D2E24] shadow-[-10px_-10px_20px_rgba(255,255,255,0.98),10px_10px_20px_rgba(175,160,148,0.78)] p-3 space-y-2">
           {/* Search input */}
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8C7769]" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#736357]" />
             <input
               ref={inputRef}
               type="text"

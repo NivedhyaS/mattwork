@@ -57,10 +57,10 @@ export default function CustomDropdown({
         onClick={() => setOpen((o) => !o)}
         className={`
           flex items-center justify-between gap-2.5 px-4 py-2.5 h-11 rounded-2xl text-[13.5px] font-extrabold text-[#3D2E24]
-          bg-[#F6EFE9] border-0 outline-none transition-all duration-200 cursor-pointer
-          shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)]
-          hover:shadow-[-4px_-4px_8px_rgba(255,255,255,0.95),4px_4px_8px_rgba(201,180,163,0.7)]
-          active:shadow-[inset_2px_2px_4px_rgba(206,187,172,0.6)]
+          bg-[#F2ECE6] border-0 outline-none transition-all duration-200 cursor-pointer
+          shadow-[-3px_-3px_6px_rgba(255,255,255,0.95),3px_3px_6px_rgba(182,168,156,0.65)]
+          hover:shadow-[-4px_-4px_8px_rgba(255,255,255,0.98),4px_4px_8px_rgba(175,160,148,0.75)]
+          active:shadow-[inset_2px_2px_4px_rgba(182,168,156,0.62)]
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
           ${triggerClassName}
         `}
@@ -78,7 +78,7 @@ export default function CustomDropdown({
         <div
           className={`
             absolute z-[80] mt-2 min-w-[210px] w-full max-h-[280px] overflow-y-auto custom-scrollbar
-            rounded-3xl bg-[#F6EFE9] text-[#3D2E24] border-0 p-2 space-y-1
+            rounded-3xl bg-[#F2ECE6] text-[#3D2E24] border-0 p-2 space-y-1
             shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)]
             ${align === 'right' ? 'right-0' : 'left-0'}
           `}
