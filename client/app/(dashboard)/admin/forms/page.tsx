@@ -85,7 +85,7 @@ function SyncStatusBadge({ status, watchExpiry }: { status: FormSyncStatus; watc
 
   if (status === 'ACTIVE' && (!watchExpiry || !isExpiringSoon)) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#D8CFC2] text-[#10B981] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11.5px] font-extrabold bg-[rgba(16,185,129,0.14)] text-[#10B981] border border-[rgba(16,185,129,0.4)] shadow-[inset_1.5px_1.5px_3px_rgba(16,185,129,0.25)]">
         <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] shrink-0 animate-pulse" />
         Active (Live)
       </span>
@@ -94,8 +94,8 @@ function SyncStatusBadge({ status, watchExpiry }: { status: FormSyncStatus; watc
 
   if (status === 'WATCH_EXPIRING' || (status === 'ACTIVE' && isExpiringSoon)) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#D8CFC2] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
-        <Clock className="h-3 w-3 text-[#EA580C]" />
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11.5px] font-extrabold bg-[rgba(245,158,11,0.14)] text-[#F59E0B] border border-[rgba(245,158,11,0.4)] shadow-[inset_1.5px_1.5px_3px_rgba(245,158,11,0.25)]">
+        <Clock className="h-3.5 w-3.5 text-[#F59E0B]" />
         Expiring Soon
       </span>
     );
@@ -103,16 +103,16 @@ function SyncStatusBadge({ status, watchExpiry }: { status: FormSyncStatus; watc
 
   if (status === 'WATCH_EXPIRED') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#D8CFC2] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
-        <XCircle className="h-3 w-3 text-[#EF4444]" />
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11.5px] font-extrabold bg-[rgba(239,68,68,0.14)] text-[#EF4444] border border-[rgba(239,68,68,0.4)] shadow-[inset_1.5px_1.5px_3px_rgba(239,68,68,0.25)]">
+        <XCircle className="h-3.5 w-3.5 text-[#EF4444]" />
         Watch Expired
       </span>
     );
   }
 
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#D8CFC2] text-[#4A3E34] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
-      <AlertTriangle className="h-3 w-3 text-[#4A3E34]" />
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11.5px] font-extrabold bg-[#D8CFC2] text-[#4A3E34] border border-[rgba(135,120,108,0.35)] shadow-[inset_1.5px_1.5px_3px_rgba(135,120,108,0.25)]">
+      <AlertTriangle className="h-3.5 w-3.5 text-[#4A3E34]" />
       Never Connected
     </span>
   );
@@ -703,28 +703,44 @@ function FormTableRow({
         )}
       </td>
 
-      {/* 6. Simplified Connected By Column */}
+      {/* 6. Simplified Connected By Column (De-emphasized) */}
       <td className="px-4 py-3">
-        <div className="flex items-center gap-2">
-          <div className="h-6 w-6 rounded-full bg-[#D8CFC2] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4)] flex items-center justify-center font-extrabold text-[10px] text-[#EA580C]">
+        <div className="flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
+          <div className="h-5 w-5 rounded-full bg-[#D8CFC2] shadow-[inset_1px_1px_3px_rgba(135,120,108,0.4)] flex items-center justify-center font-bold text-[9.5px] text-[#4A3E34]">
             {form.connectedByAdmin.name.charAt(0).toUpperCase()}
           </div>
-          <span className="text-[12px] font-extrabold text-[#1F1610]">{form.connectedByAdmin.name}</span>
+          <span className="text-[11.5px] font-medium text-[#4A3E34]">{form.connectedByAdmin.name}</span>
         </div>
       </td>
 
       {/* 7. Simplified Actions Column */}
       <td className="px-4 py-3 text-right">
         <div className="flex items-center justify-end gap-1.5 relative">
-          <a
-            href={`https://docs.google.com/forms/d/${form.googleFormId}/edit`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3 py-1 rounded-xl bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white font-extrabold text-[12px] shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_6px_rgba(234,88,12,0.3)] transition-all cursor-pointer inline-flex items-center gap-1"
-          >
-            <ExternalLink className="h-3 w-3" />
-            View
-          </a>
+          {form.syncStatus === 'WATCH_EXPIRED' ? (
+            <button
+              onClick={() => onRenewWatch(form.id)}
+              disabled={renewingFormId === form.id}
+              className="px-3 py-1 rounded-xl bg-[rgba(239,68,68,0.14)] text-[#EF4444] border border-[rgba(239,68,68,0.4)] font-extrabold text-[12px] shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_5px_rgba(135,120,108,0.4)] hover:bg-[#EF4444] hover:text-white transition-all cursor-pointer inline-flex items-center gap-1.5 disabled:opacity-50"
+              title="Renew Expired Webhook Watch"
+            >
+              {renewingFormId === form.id ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RefreshCw className="h-3.5 w-3.5" />
+              )}
+              Renew Watch
+            </button>
+          ) : (
+            <a
+              href={`https://docs.google.com/forms/d/${form.googleFormId}/edit`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1 rounded-xl bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white font-extrabold text-[12px] shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_6px_rgba(234,88,12,0.3)] transition-all cursor-pointer inline-flex items-center gap-1"
+            >
+              <ExternalLink className="h-3 w-3" />
+              View
+            </a>
+          )}
 
           <button
             onClick={() => onSyncNow(form.id)}
@@ -768,13 +784,6 @@ function FormTableRow({
                   >
                     <SlidersHorizontal className="h-3.5 w-3.5 text-[#4A3E34]" />
                     Remap Fields
-                  </button>
-                  <button
-                    onClick={() => { alert('Form disconnection feature configured via Admin dashboard settings.'); setIsMenuOpen(false); }}
-                    className="w-full text-left px-3 py-2 text-[12px] font-extrabold text-[#EF4444] rounded-xl hover:bg-[rgba(239,68,68,0.08)] flex items-center gap-2 transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="h-3.5 w-3.5 text-[#EF4444]" />
-                    Disconnect Form
                   </button>
                 </div>
               </>
@@ -1107,33 +1116,35 @@ export default function FormsManagerPage() {
             </table>
           </div>
 
-          {/* ── Pagination Footer ── */}
-          <div className="px-5 py-3 border-t border-[rgba(135,120,108,0.3)] bg-[#D8CFC2] flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-[12px] text-[#4A3E34] font-extrabold">
-              Showing <span className="text-[#1F1610]">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="text-[#1F1610]">{Math.min(currentPage * itemsPerPage, filteredForms.length)}</span> of <span className="text-[#1F1610]">{filteredForms.length}</span> connected forms
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="p-1.5 rounded-xl bg-[#D8CFC2] text-[#1F1610] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(135,120,108,0.5)] disabled:opacity-40 cursor-pointer"
-                title="Previous Page"
-              >
-                <ChevronLeft className="h-3.5 w-3.5" />
-              </button>
-              <span className="text-[12px] font-extrabold text-[#1F1610] px-3 py-0.5 rounded-xl bg-[#D8CFC2] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="p-1.5 rounded-xl bg-[#D8CFC2] text-[#1F1610] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(135,120,108,0.5)] disabled:opacity-40 cursor-pointer"
-                title="Next Page"
-              >
-                <ChevronRight className="h-3.5 w-3.5" />
-              </button>
+          {/* ── Pagination Footer (Hidden when 1 page or fewer) ── */}
+          {totalPages > 1 && (
+            <div className="px-5 py-3 border-t border-[rgba(135,120,108,0.3)] bg-[#D8CFC2] flex flex-col sm:flex-row items-center justify-between gap-3">
+              <p className="text-[12px] text-[#4A3E34] font-extrabold">
+                Showing <span className="text-[#1F1610]">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="text-[#1F1610]">{Math.min(currentPage * itemsPerPage, filteredForms.length)}</span> of <span className="text-[#1F1610]">{filteredForms.length}</span> connected forms
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="p-1.5 rounded-xl bg-[#D8CFC2] text-[#1F1610] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(135,120,108,0.5)] disabled:opacity-40 cursor-pointer"
+                  title="Previous Page"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </button>
+                <span className="text-[12px] font-extrabold text-[#1F1610] px-3 py-0.5 rounded-xl bg-[#D8CFC2] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 rounded-xl bg-[#D8CFC2] text-[#1F1610] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(135,120,108,0.5)] disabled:opacity-40 cursor-pointer"
+                  title="Next Page"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
