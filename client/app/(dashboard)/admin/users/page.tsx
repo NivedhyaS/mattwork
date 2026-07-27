@@ -26,10 +26,10 @@ interface User {
   avatar?: string | null;
 }
 
-const ROLE_COLORS: Record<string, string> = {
-  ADMIN: 'bg-[#D8CFC2] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
-  EDITOR: 'bg-[#D8CFC2] text-[#1F1610] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
-  CLIENT: 'bg-[#D8CFC2] text-[#10B981] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
+const ROLE_BADGES: Record<string, string> = {
+  ADMIN: 'bg-[#E2DACC] text-[#EA580C] border border-[rgba(234,88,12,0.4)] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.7)] font-extrabold text-[11px] uppercase tracking-wider px-3 py-1 rounded-xl inline-flex items-center gap-1.5',
+  EDITOR: 'bg-[#E2DACC] text-[#1F1610] border border-[rgba(135,120,108,0.4)] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.7)] font-extrabold text-[11px] uppercase tracking-wider px-3 py-1 rounded-xl inline-flex items-center gap-1.5',
+  CLIENT: 'bg-[#E2DACC] text-[#4A3E34] border border-[rgba(135,120,108,0.35)] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.35),inset_-2px_-2px_4px_rgba(255,255,255,0.7)] font-extrabold text-[11px] uppercase tracking-wider px-3 py-1 rounded-xl inline-flex items-center gap-1.5',
 };
 
 const createUserSchema = z.object({
@@ -268,22 +268,22 @@ export default function UsersPage() {
                   <th className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[rgba(135,120,108,0.2)]">
+              <tbody className="divide-y divide-[rgba(135,120,108,0.25)]">
                 {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-[rgba(234,88,12,0.04)] transition-colors">
+                  <tr key={user.id} className="hover:bg-[rgba(255,255,255,0.35)] transition-all duration-150 group cursor-pointer">
                     <td className="py-3.5 px-5">
                       <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-600 dark:text-white shrink-0">
+                        <div className="h-9 w-9 rounded-full bg-[#E2DACC] text-[#1F1610] font-extrabold shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.7)] flex items-center justify-center shrink-0">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-900 dark:text-white">{user.name}</p>
-                          <p className="text-xs text-slate-400">{user.email}</p>
+                          <p className="font-extrabold text-[14px] text-[#1F1610] group-hover:text-[#EA580C] transition-colors">{user.name}</p>
+                          <p className="text-[12px] text-[#4A3E34] font-semibold">{user.email}</p>
                         </div>
                       </div>
                     </td>
                     <td className="py-3.5 px-5">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${ROLE_COLORS[user.role] || 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                      <span className={ROLE_BADGES[user.role] || 'bg-[#E2DACC] text-[#4A3E34] border border-[rgba(135,120,108,0.35)] font-bold text-[11px] px-2.5 py-1 rounded-xl'}>
                         {user.role}
                       </span>
                     </td>
@@ -291,32 +291,36 @@ export default function UsersPage() {
                       <button
                         onClick={() => toggleMutation.mutate(user.id)}
                         disabled={toggleMutation.isPending}
-                        className={`px-2.5 py-1 rounded-full text-xs font-semibold border cursor-pointer hover:opacity-80 transition-opacity disabled:opacity-50 ${user.isActive
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900'
-                          : 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-900 dark:border-slate-800'
-                          }`}
-                        title="Click to toggle status"
+                        className={`px-3 py-1 rounded-xl text-[12px] font-extrabold border cursor-pointer hover:opacity-85 active:scale-95 transition-all disabled:opacity-50 inline-flex items-center gap-1.5 ${
+                          user.isActive
+                            ? 'bg-[rgba(16,185,129,0.14)] text-[#10B981] border-[rgba(16,185,129,0.4)] shadow-[inset_1.5px_1.5px_3px_rgba(16,185,129,0.25)]'
+                            : 'bg-[rgba(239,68,68,0.14)] text-[#EF4444] border-[rgba(239,68,68,0.4)] shadow-[inset_1.5px_1.5px_3px_rgba(239,68,68,0.25)]'
+                        }`}
+                        title="Click to toggle active status"
                       >
-                        {user.isActive ? 'Active' : 'Inactive'}
+                        <span className={`h-1.5 w-1.5 rounded-full ${user.isActive ? 'bg-[#10B981] animate-pulse' : 'bg-[#EF4444]'}`} />
+                        {user.isActive ? 'Active' : 'Inactive / Suspended'}
                       </button>
                     </td>
-                    <td className="py-3.5 px-5 text-slate-500">
+                    <td className="py-3.5 px-5 text-[#4A3E34] font-bold text-[13px]">
                       {new Date(user.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>
                     <td className="py-3.5 px-5">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => openEditModal(user)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition-colors cursor-pointer"
+                          className="p-2 rounded-xl text-[#4A3E34] hover:text-[#EA580C] bg-[#D8CFC2] hover:bg-[#E2DACC] shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_5px_rgba(135,120,108,0.5)] transition-all cursor-pointer"
+                          title="Edit User"
                         >
-                          <Edit2 className="h-4 w-4" />
+                          <Edit2 className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => setDeleteUserTarget(user)}
                           disabled={deleteMutation.isPending}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer disabled:opacity-50"
+                          className="p-2 rounded-xl text-[#EF4444] hover:text-white bg-[#D8CFC2] hover:bg-[#EF4444] shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_5px_rgba(135,120,108,0.5)] transition-all cursor-pointer disabled:opacity-50"
+                          title="Delete User"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     </td>
