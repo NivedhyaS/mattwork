@@ -155,14 +155,14 @@ export default function PaymentsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[36px] font-bold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-[36px] font-extrabold tracking-tight text-[#1F1610]">
             Payments
           </h1>
-          <p className="text-[15px] text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-[15px] text-[#4A3E34] mt-1 font-extrabold">
             Track all incoming and outgoing payments
           </p>
         </div>
-        <Button size="sm" onClick={() => setIsRecordModalOpen(true)} className="self-start sm:self-auto cursor-pointer">
+        <Button size="sm" onClick={() => setIsRecordModalOpen(true)} className="self-start sm:self-auto cursor-pointer rounded-2xl font-extrabold">
           <Plus className="h-4 w-4 mr-2" />
           Record Payment
         </Button>
@@ -170,82 +170,89 @@ export default function PaymentsPage() {
 
       {/* Search */}
       <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A3E34]" />
         <input
           type="text"
           placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-[15px] focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
+          className="w-full pl-11 pr-4 py-3 rounded-2xl border-0 bg-[#D8CFC2] text-[#1F1610] font-semibold shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(135,120,108,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9)] transition-all text-[15px]"
         />
       </div>
 
       {/* Data Table */}
-      <div className="bg-white dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-900 shadow-sm overflow-hidden flex flex-col">
+      <div className="bg-[#D8CFC2] rounded-3xl border-0 shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] overflow-hidden p-2 flex flex-col">
         {isLoading ? (
           <div className="flex items-center justify-center py-24">
             <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-slate-300" />
-              <p className="text-sm text-slate-500 font-medium">Loading payments...</p>
+              <Loader2 className="h-8 w-8 animate-spin text-[#EA580C]" />
+              <p className="text-sm text-[#4A3E34] font-extrabold">Loading payments...</p>
             </div>
           </div>
         ) : error ? (
           <div className="text-center py-20 flex flex-col items-center gap-4">
-            <div className="h-14 w-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center">
-              <AlertTriangle className="h-7 w-7 text-rose-500" />
+            <div className="h-14 w-14 rounded-full bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)] flex items-center justify-center">
+              <AlertTriangle className="h-7 w-7 text-[#EF4444]" />
             </div>
             <div>
-              <p className="font-bold text-[16px] text-rose-600 dark:text-rose-400">Failed to load payments</p>
-              <p className="text-[14px] text-slate-400 mt-1">
+              <p className="font-extrabold text-[16px] text-[#EF4444]">Failed to load payments</p>
+              <p className="text-[14px] text-[#4A3E34] mt-1">
                 {(error as any)?.response?.data?.message || (error as any)?.message || 'Could not reach the server.'}
               </p>
             </div>
-            <button onClick={() => refetch()} className="flex items-center gap-2 text-[14px] font-semibold border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer">
-              <RefreshCw className="h-4 w-4" />
+            <button onClick={() => refetch()} className="flex items-center gap-2 text-[14px] font-extrabold border-0 px-4 py-2 rounded-2xl bg-[#D8CFC2] text-[#1F1610] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)] cursor-pointer">
+              <RefreshCw className="h-4 w-4 text-[#EA580C]" />
               Retry
             </button>
           </div>
         ) : payments.length === 0 ? (
-          <div className="text-center py-24 flex flex-col items-center">
-            <div className="h-16 w-16 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4">
-              <CreditCard className="h-8 w-8 text-slate-300 dark:text-slate-700" />
+          <div className="text-center py-16 px-6 bg-[#D8CFC2] rounded-3xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] max-w-xl mx-auto my-6 flex flex-col items-center">
+            <div className="h-16 w-16 rounded-full bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] flex items-center justify-center mb-4">
+              <CreditCard className="h-8 w-8 text-[#EA580C]" />
             </div>
-            <p className="font-bold text-[15px] text-slate-700 dark:text-slate-300">No payments found</p>
-            <p className="text-[14px] text-slate-400 mt-1">Record a payment to get started</p>
+            <h3 className="text-[18px] font-extrabold text-[#1F1610] mb-1">No payments found</h3>
+            <p className="text-[14px] text-[#4A3E34] mb-6 font-extrabold">Record a payment to get started</p>
+            <Button
+              onClick={() => setIsRecordModalOpen(true)}
+              className="bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white font-extrabold text-[14px] px-6 py-2.5 rounded-2xl shadow-[-3px_-3px_8px_rgba(255,255,255,0.7),3px_3px_10px_rgba(234,88,12,0.35)] hover:shadow-[-5px_-5px_12px_rgba(255,255,255,0.8),5px_5px_14px_rgba(234,88,12,0.45)] transition-all cursor-pointer border-none"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Record Payment
+            </Button>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-900 text-[12px] font-bold uppercase tracking-wider text-slate-400">
-                  <th className="py-4 px-5">Invoice #</th>
-                  <th className="py-4 px-5">Amount</th>
-                  <th className="py-4 px-5">Method</th>
-                  <th className="py-4 px-5">Status</th>
-                  <th className="py-4 px-5">Date</th>
-                  <th className="py-4 px-5 text-right">Actions</th>
+                <tr className="bg-[#D8CFC2] border-b border-[rgba(135,120,108,0.3)] text-xs font-extrabold uppercase tracking-wider text-[#4A3E34]">
+                  <th className="py-3.5 px-5">Invoice #</th>
+                  <th className="py-3.5 px-5">Amount</th>
+                  <th className="py-3.5 px-5">Method</th>
+                  <th className="py-3.5 px-5">Status</th>
+                  <th className="py-3.5 px-5">Date</th>
+                  <th className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-900">
+              <tbody className="divide-y divide-[rgba(135,120,108,0.25)]">
                 {payments.map((payment: any) => (
                   <tr 
                     key={payment.id} 
                     onClick={() => router.push(`/admin/payments/${payment.id}`)}
-                    className="hover:bg-indigo-500/5 dark:hover:bg-indigo-500/10 hover:shadow-[inset_4px_0_0_0_#4f46e5] cursor-pointer transition-all border-b border-slate-100 dark:border-slate-900 group"
+                    className="hover:bg-[rgba(255,255,255,0.35)] transition-all duration-150 group cursor-pointer"
                   >
-                    <td className="py-4 px-5 font-semibold text-slate-900 dark:text-white">
+                    <td className="py-3.5 px-5 font-extrabold text-[14px] text-[#1F1610] group-hover:text-[#EA580C] transition-colors">
                       {payment.invoice?.number || 'N/A'}
                     </td>
-                    <td className="py-4 px-5">
-                      <p className="font-bold text-slate-900 dark:text-white">
+                    <td className="py-3.5 px-5">
+                      <p className="font-extrabold text-[14px] text-[#1F1610]">
                         {formatCurrency(Number(payment.amount), payment.invoice?.client?.currency || 'USD')}
                       </p>
                     </td>
-                    <td className="py-4 px-5 text-slate-600 dark:text-slate-300 font-medium">
+                    <td className="py-3.5 px-5 text-[#4A3E34] font-bold text-[13px]">
                       {METHOD_LABELS[payment.method] || payment.method}
                     </td>
-                    <td className="py-4 px-5">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${STATUS_COLORS[payment.status] || STATUS_COLORS.PENDING}`}>
+                    <td className="py-3.5 px-5">
+                      <span className={STATUS_COLORS[payment.status] || STATUS_COLORS.PENDING}>
                         {payment.status}
                       </span>
                     </td>
