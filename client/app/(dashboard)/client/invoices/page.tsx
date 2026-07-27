@@ -82,60 +82,62 @@ export default function ClientInvoicesPage() {
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       <div>
-        <h1 className="text-[36px] font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <FileText className="h-7 w-7 text-accent" />
+        <h1 className="text-[36px] font-extrabold text-[#1F1610] flex items-center gap-3">
+          <FileText className="h-8 w-8 text-[#EA580C]" />
           Invoice Statements & Receipts
         </h1>
-        <p className="text-[15px] text-slate-500 mt-2">
+        <p className="text-[15px] text-[#4A3E34] mt-2 font-extrabold">
           Review your project statements, invoice logs, and download official receipts.
         </p>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16 flat-card bg-card border border-border">
-          <Loader2 className="h-6 w-6 animate-spin text-slate-350" />
+        <div className="flex items-center justify-center py-16 bg-[#D8CFC2] rounded-3xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+          <Loader2 className="h-6 w-6 animate-spin text-[#EA580C]" />
         </div>
       ) : invoices.length === 0 ? (
-        <div className="text-center py-16 flat-card bg-card border border-border text-slate-450">
-          <AlertCircle className="h-8 w-8 mx-auto mb-2 text-slate-300" />
-          <p className="font-semibold text-[15px]">No invoices found</p>
-          <p className="text-[13px] text-slate-400 mt-0.5">Invoices will appear here once generated for your projects.</p>
+        <div className="text-center py-16 px-6 bg-[#D8CFC2] rounded-3xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] max-w-xl mx-auto my-6 flex flex-col items-center">
+          <div className="h-16 w-16 rounded-full bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] flex items-center justify-center mb-4">
+            <AlertCircle className="h-8 w-8 text-[#EA580C]" />
+          </div>
+          <h3 className="text-[18px] font-extrabold text-[#1F1610] mb-1">No invoices found</h3>
+          <p className="text-[14px] text-[#4A3E34] font-extrabold">Invoices will appear here once generated for your projects.</p>
         </div>
       ) : (
-        <div className="flat-card bg-card border border-border overflow-hidden">
+        <div className="bg-[#D8CFC2] rounded-3xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] overflow-hidden p-2">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-[14px]">
               <thead>
-                <tr className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-border text-[12px] font-bold uppercase tracking-wider text-slate-400">
-                  <th className="py-4 px-5">Invoice #</th>
-                  <th className="py-4 px-5">Associated Video</th>
-                  <th className="py-4 px-5">Amount</th>
-                  <th className="py-4 px-5">Status</th>
-                  <th className="py-4 px-5">Due Date</th>
-                  <th className="py-4 px-5 text-right">Download</th>
+                <tr className="bg-[#D8CFC2] border-b border-[rgba(135,120,108,0.3)] text-xs font-extrabold uppercase tracking-wider text-[#4A3E34]">
+                  <th className="py-3.5 px-5">Invoice #</th>
+                  <th className="py-3.5 px-5">Associated Video</th>
+                  <th className="py-3.5 px-5">Amount</th>
+                  <th className="py-3.5 px-5">Status</th>
+                  <th className="py-3.5 px-5">Due Date</th>
+                  <th className="py-3.5 px-5 text-right">Download</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-[rgba(135,120,108,0.25)]">
                 {invoices.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10 transition-colors">
-                    <td className="py-4 px-5 font-semibold text-[15px] text-slate-900 dark:text-slate-100">{inv.number}</td>
-                    <td className="py-4 px-5 font-medium text-[14px] text-slate-650 dark:text-slate-300">{inv.projectTitle}</td>
-                    <td className="py-4 px-5 font-bold text-[15px] text-slate-950 dark:text-white">{formatClientCurrency(inv.total)}</td>
-                    <td className="py-4 px-5">
-                      <span className={`px-2.5 py-1 rounded border text-[11px] font-semibold ${
+                  <tr key={inv.id} className="hover:bg-[rgba(255,255,255,0.35)] transition-all duration-150 group">
+                    <td className="py-3.5 px-5 font-extrabold text-[15px] text-[#1F1610]">{inv.number}</td>
+                    <td className="py-3.5 px-5 font-bold text-[14px] text-[#1F1610]">{inv.projectTitle}</td>
+                    <td className="py-3.5 px-5 font-extrabold text-[15px] text-[#1F1610]">{formatClientCurrency(inv.total)}</td>
+                    <td className="py-3.5 px-5">
+                      <span className={`px-3 py-1 rounded-xl text-[11px] font-extrabold uppercase border ${
                         inv.status === 'PAID' 
-                          ? 'bg-status-green/10 text-status-green border-status-green/20' 
-                          : 'bg-status-amber/10 text-status-amber border-status-amber/20'
+                          ? 'bg-[rgba(16,185,129,0.14)] text-[#10B981] border-[rgba(16,185,129,0.4)] shadow-[inset_1.5px_1.5px_3px_rgba(16,185,129,0.25)]' 
+                          : 'bg-[rgba(245,158,11,0.14)] text-[#F59E0B] border-[rgba(245,158,11,0.4)] shadow-[inset_1.5px_1.5px_3px_rgba(245,158,11,0.25)]'
                       }`}>
-                        {inv.status.toLowerCase()}
+                        {inv.status}
                       </span>
                     </td>
-                    <td className="py-4 px-5 text-[14px] text-slate-500">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('en-IN') : '—'}</td>
-                    <td className="py-4 px-5 text-right">
+                    <td className="py-3.5 px-5 text-[14px] text-[#4A3E34] font-bold">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('en-IN') : '—'}</td>
+                    <td className="py-3.5 px-5 text-right">
                       <button
                         onClick={() => handleDownloadInvoice(inv.id, inv.number)}
                         disabled={downloadingId === inv.id}
-                        className="text-accent hover:underline font-semibold inline-flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                        className="px-3 py-1.5 rounded-xl bg-[#D8CFC2] text-[#EA580C] hover:bg-[#E2DACC] font-extrabold shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_5px_rgba(135,120,108,0.5)] inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50 text-[12px] transition-all"
                       >
                         {downloadingId === inv.id ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />

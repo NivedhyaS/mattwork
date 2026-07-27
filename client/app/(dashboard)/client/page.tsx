@@ -368,23 +368,23 @@ export default function ClientDashboard() {
   ] : [];
 
   const tabToggle = (
-    <div className="flex items-center bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-850 shrink-0">
+    <div className="flex items-center bg-[#D8CFC2] p-1.5 rounded-2xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] shrink-0">
       <button
         onClick={() => setActiveTab('OVERVIEW')}
-        className={`px-3.5 py-1.5 rounded-lg text-[13px] font-bold transition-all cursor-pointer ${
+        className={`px-4 py-2 rounded-xl text-[13px] font-extrabold transition-all cursor-pointer ${
           activeTab === 'OVERVIEW'
-            ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
-            : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+            ? 'bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_6px_rgba(234,88,12,0.3)]'
+            : 'text-[#4A3E34] hover:text-[#1F1610]'
         }`}
       >
         Overview
       </button>
       <button
         onClick={() => setActiveTab('BOARD')}
-        className={`px-3.5 py-1.5 rounded-lg text-[13px] font-bold transition-all cursor-pointer ${
+        className={`px-4 py-2 rounded-xl text-[13px] font-extrabold transition-all cursor-pointer ${
           activeTab === 'BOARD'
-            ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
-            : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+            ? 'bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_6px_rgba(234,88,12,0.3)]'
+            : 'text-[#4A3E34] hover:text-[#1F1610]'
         }`}
       >
         Project Board

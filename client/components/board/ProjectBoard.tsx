@@ -908,9 +908,9 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             )}
             <button
               onClick={fetchProjects}
-              className="flex items-center gap-2 text-[13px] font-extrabold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4.5 py-2.5 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 active:scale-95 transition-all cursor-pointer shadow-sm"
+              className="flex items-center gap-2 text-[13px] font-extrabold text-[#1F1610] hover:text-[#EA580C] bg-[#D8CFC2] px-4.5 py-2.5 rounded-2xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(135,120,108,0.7)] active:scale-95 transition-all cursor-pointer border-0"
             >
-              <RefreshCw className="h-4 w-4 text-accent" />
+              <RefreshCw className="h-4 w-4 text-[#EA580C]" />
               Reload Board
             </button>
             {role === 'ADMIN' && (
