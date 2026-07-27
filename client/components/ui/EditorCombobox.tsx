@@ -183,7 +183,7 @@ export default function EditorCombobox({
               value={query}
               onChange={(e) => { setQuery(e.target.value); setActiveIndex(-1); }}
               onKeyDown={handleKeyDown}
-              className="w-full pl-10 pr-3.5 py-2.5 text-[13px] bg-[#F6EFE9] text-[#3D2E24] rounded-2xl border-0 font-semibold shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] placeholder:text-[#8C7769] focus:outline-none"
+              className="w-full pl-10 pr-3.5 py-2.5 text-[13px] bg-[#D8CFC2] text-[#1F1610] rounded-2xl border-0 font-semibold shadow-[inset_3px_3px_6px_rgba(135,120,108,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] placeholder:text-[#4A3E34] focus:outline-none"
             />
           </div>
 
@@ -203,10 +203,10 @@ export default function EditorCombobox({
                 ${activeIndex === 0 ? 'bg-[rgba(234,88,12,0.08)]' : 'hover:bg-[rgba(234,88,12,0.05)]'}
               `}
             >
-              <div className="h-8 w-8 rounded-full bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
-                <UserX className="h-4 w-4 text-[#8C7769]" />
+              <div className="h-8 w-8 rounded-full bg-[#D8CFC2] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
+                <UserX className="h-4 w-4 text-[#4A3E34]" />
               </div>
-              <span className="flex-1 font-semibold text-[#8C7769]">Unassigned</span>
+              <span className="flex-1 font-semibold text-[#4A3E34]">Unassigned</span>
               {value === null && <Check className="h-4 w-4 text-[#EA580C] shrink-0 font-bold" />}
             </li>
 
@@ -228,7 +228,7 @@ export default function EditorCombobox({
                   `}
                 >
                   {/* Avatar */}
-                  <div className="h-8 w-8 rounded-full bg-[#F6EFE9] text-[#EA580C] font-extrabold shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center text-[12px] shrink-0 overflow-hidden">
+                  <div className="h-8 w-8 rounded-full bg-[#D8CFC2] text-[#EA580C] font-extrabold shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center text-[12px] shrink-0 overflow-hidden">
                     {editor.user.avatar ? (
                       <img src={editor.user.avatar} alt="" className="h-full w-full object-cover" />
                     ) : (
@@ -238,10 +238,10 @@ export default function EditorCombobox({
 
                   {/* Name + email */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-[13.5px] text-[#3D2E24] truncate">
+                    <p className="font-bold text-[13.5px] text-[#1F1610] truncate">
                       {editor.user.name}
                     </p>
-                    <p className="text-[11px] text-[#8C7769] font-medium truncate">{editor.user.email}</p>
+                    <p className="text-[11px] text-[#4A3E34] font-medium truncate">{editor.user.email}</p>
                   </div>
 
                   {/* Active project count */}

@@ -887,14 +887,14 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
   return (
     <div className="flex flex-col h-full -m-6 md:-m-8 overflow-hidden select-none">
       {/* Board Header & Controls */}
-      <div className="flex flex-col gap-4 bg-[#F6EFE9] p-6 md:p-8 shrink-0 border-b border-[rgba(206,187,172,0.3)]">
+      <div className="flex flex-col gap-4 bg-[#D8CFC2] p-6 md:p-8 shrink-0 border-b border-[rgba(135,120,108,0.3)]">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-[36px] font-extrabold tracking-tight text-[#3D2E24] leading-tight flex items-center gap-3">
+            <h1 className="text-[36px] font-extrabold tracking-tight text-[#1F1610] leading-tight flex items-center gap-3">
               <TrendingUp className="h-8 w-8 text-[#EA580C] shrink-0" />
               {role === 'ADMIN' ? 'Production Workspace' : 'Mattwork Workspace'}
             </h1>
-            <p className="text-[14px] text-[#7C6A5A] mt-2 font-extrabold">
+            <p className="text-[14px] text-[#4A3E34] mt-2 font-extrabold">
               Showing {sortedProjects.length} projects of {projects.length} total. Role view: <span className="font-extrabold text-[#EA580C] uppercase tracking-wider">{role.toLowerCase()}</span>
             </p>
           </div>
@@ -934,7 +934,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                 setFilterDraft(activeFilters as any);
                 setIsFilterDrawerOpen(true);
               }}
-              className="flex items-center gap-2 px-4 py-3 bg-[#F6EFE9] text-[#3D2E24] rounded-2xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(201,180,163,0.7)] active:shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] transition-all font-extrabold text-[14px]"
+              className="flex items-center gap-2 px-4 py-3 bg-[#D8CFC2] text-[#1F1610] rounded-2xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(135,120,108,0.7)] active:shadow-[inset_3px_3px_6px_rgba(135,120,108,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] transition-all font-extrabold text-[14px]"
             >
               <SlidersHorizontal className="h-4.5 w-4.5 text-[#EA580C] shrink-0" />
               Filters {activeFilterCount > 0 && <span className="bg-[#EA580C] text-white px-2 py-0.5 rounded-full text-[11px] ml-1">{activeFilterCount}</span>}
@@ -943,24 +943,24 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
           {/* Search Input */}
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-3.5 h-4.5 w-4.5 text-[#8C7769]" />
+            <Search className="absolute left-4 top-3.5 h-4.5 w-4.5 text-[#4A3E34]" />
             <input
               type="text"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 text-[14px] rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] font-semibold placeholder:text-[#8C7769] shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(206,187,172,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9)] transition-all"
+              className="w-full pl-11 pr-4 py-3 text-[14px] rounded-2xl border-0 bg-[#D8CFC2] text-[#1F1610] font-semibold placeholder:text-[#4A3E34] shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(135,120,108,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9)] transition-all"
             />
           </div>
 
           {/* Priority filter (ADMIN only) */}
           {role === 'ADMIN' && (
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-[#8C7769] shrink-0" />
+              <Filter className="h-4 w-4 text-[#4A3E34] shrink-0" />
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value as any)}
-                className="text-[14px] font-extrabold border-0 rounded-2xl px-4 py-3 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none cursor-pointer"
+                className="text-[14px] font-extrabold border-0 rounded-2xl px-4 py-3 bg-[#D8CFC2] text-[#1F1610] shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none cursor-pointer"
               >
                 <option value="ALL">All Priorities</option>
                 {PRIORITY_OPTIONS.map(po => (
@@ -972,11 +972,11 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
           {/* Sort selection */}
           <div className="flex items-center gap-2">
-            <SlidersHorizontal className="h-4 w-4 text-[#8C7769] shrink-0" />
+            <SlidersHorizontal className="h-4 w-4 text-[#4A3E34] shrink-0" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="text-[14px] font-extrabold border-0 rounded-2xl px-4 py-3 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none cursor-pointer"
+              className="text-[14px] font-extrabold border-0 rounded-2xl px-4 py-3 bg-[#D8CFC2] text-[#1F1610] shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none cursor-pointer"
             >
               <option value="createdAt">Date Created</option>
               <option value="dueDate">Deadline</option>
@@ -985,7 +985,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             </select>
             <button
               onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-              className="px-4 py-3 border-0 rounded-2xl bg-[#F6EFE9] text-[#3D2E24] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(201,180,163,0.7)] active:shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] transition-all text-[13px] font-extrabold"
+              className="px-4 py-3 border-0 rounded-2xl bg-[#D8CFC2] text-[#1F1610] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(135,120,108,0.7)] active:shadow-[inset_3px_3px_6px_rgba(135,120,108,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] transition-all text-[13px] font-extrabold"
             >
               {sortOrder.toUpperCase()}
             </button>
@@ -994,30 +994,30 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
       </div>
 
       {/* Board Content */}
-      <div className="flex-1 overflow-x-auto p-6 md:p-8 bg-[#F6EFE9]">
+      <div className="flex-1 overflow-x-auto p-6 md:p-8 bg-[#D8CFC2]">
         {loading ? (
           <div className="flex gap-5 h-full min-w-max pb-2 items-stretch">
             {KANBAN_COLUMNS.map((column) => (
               <div
                 key={column.id}
-                className="w-72 flex flex-col bg-[#F6EFE9] rounded-3xl shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(206,187,172,0.6)] shrink-0 p-4 space-y-4"
+                className="w-72 flex flex-col bg-[#D8CFC2] rounded-3xl shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(135,120,108,0.6)] shrink-0 p-4 space-y-4"
               >
-                <div className="flex items-center justify-between pb-3 border-b border-[rgba(206,187,172,0.3)]">
-                  <span className="font-extrabold text-[12px] text-[#8C7769] animate-pulse uppercase tracking-wider">Loading...</span>
+                <div className="flex items-center justify-between pb-3 border-b border-[rgba(135,120,108,0.3)]">
+                  <span className="font-extrabold text-[12px] text-[#4A3E34] animate-pulse uppercase tracking-wider">Loading...</span>
                 </div>
                 <div className="space-y-3 flex-1">
                   {[1, 2].map((i) => (
-                    <div key={i} className="h-28 bg-[#F6EFE9] rounded-2xl shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] animate-pulse" />
+                    <div key={i} className="h-28 bg-[#D8CFC2] rounded-2xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] animate-pulse" />
                   ))}
                 </div>
               </div>
             ))}
           </div>
         ) : filteredProjects.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 rounded-3xl bg-[#F6EFE9] shadow-[inset_4px_4px_8px_rgba(206,187,172,0.55),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] w-full max-w-3xl mx-auto mt-10 p-8 text-center">
+            <div className="flex flex-col items-center justify-center h-64 rounded-3xl bg-[#D8CFC2] shadow-[inset_4px_4px_8px_rgba(135,120,108,0.55),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] w-full max-w-3xl mx-auto mt-10 p-8 text-center">
               <FilterX className="h-10 w-10 text-[#EA580C] mb-3" />
-              <h3 className="text-lg font-extrabold text-[#3D2E24]">No projects match these filters</h3>
-              <p className="text-sm text-[#7C6A5A] mb-6">Try adjusting your active filters or clear them to see all projects.</p>
+              <h3 className="text-lg font-extrabold text-[#1F1610]">No projects match these filters</h3>
+              <p className="text-sm text-[#4A3E34] mb-6">Try adjusting your active filters or clear them to see all projects.</p>
               <Button onClick={handleClearFilters} variant="outline" className="rounded-2xl font-extrabold">Clear Filters</Button>
             </div>
           ) : (
@@ -1039,23 +1039,23 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   ? isValidTarget
                     ? 'shadow-[inset_3px_3px_6px_rgba(234,88,12,0.3)]'
                     : 'opacity-20 cursor-not-allowed select-none pointer-events-none'
-                  : 'shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(206,187,172,0.6)]';
+                  : 'shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(135,120,108,0.6)]';
 
                 return (
                   <div
                     key={column.id}
-                    className={`w-72 flex flex-col bg-[#F6EFE9] rounded-3xl overflow-hidden border-0 shrink-0 transition-all duration-200 ${columnDragClass}`}
+                    className={`w-72 flex flex-col bg-[#D8CFC2] rounded-3xl overflow-hidden border-0 shrink-0 transition-all duration-200 ${columnDragClass}`}
                   >
                     {/* Column Header */}
-                    <div className="px-4.5 py-4 border-b border-[rgba(206,187,172,0.3)] bg-[#F6EFE9]">
+                    <div className="px-4.5 py-4 border-b border-[rgba(135,120,108,0.3)] bg-[#D8CFC2]">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
                           <span className={`h-2.5 w-2.5 rounded-full ${column.color.split(' ')[0]} shrink-0`} />
-                          <h3 className="font-extrabold text-[14px] text-[#3D2E24] uppercase tracking-wide">
+                          <h3 className="font-extrabold text-[14px] text-[#1F1610] uppercase tracking-wide">
                             {column.title}
                           </h3>
                         </div>
-                        <span className="text-[11px] font-extrabold text-[#3D2E24] bg-[#F6EFE9] px-2.5 py-0.5 rounded-full shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+                        <span className="text-[11px] font-extrabold text-[#1F1610] bg-[#D8CFC2] px-2.5 py-0.5 rounded-full shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
                           {columnProjects.length}
                         </span>
                       </div>
@@ -1067,7 +1067,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                         <div
                           ref={provided.innerRef}
                           {...provided.droppableProps}
-                          className="flex-1 p-3.5 overflow-y-auto space-y-3 min-h-[140px] bg-[#F6EFE9]"
+                          className="flex-1 p-3.5 overflow-y-auto space-y-3 min-h-[140px] bg-[#D8CFC2]"
                         >
                           {columnProjects.map((project, index) => {
                             const dueDate = formatCardDate(project.dueDate);
@@ -1094,7 +1094,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                     {...provided.draggableProps}
                                     {...provided.dragHandleProps}
                                     onClick={() => openProjectDetails(project)}
-                                    className={`group relative bg-[#F6EFE9] text-[#3D2E24] rounded-2xl border-0 overflow-hidden select-none flex flex-col transition-all duration-200 shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(201,180,163,0.75)]
+                                    className={`group relative bg-[#D8CFC2] text-[#1F1610] rounded-2xl border-0 overflow-hidden select-none flex flex-col transition-all duration-200 shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)] hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(135,120,108,0.75)]
                                       ${snapshot.isDragging ? 'rotate-1 scale-[1.02]' : ''}
                                       ${isUpdating ? 'opacity-50 pointer-events-none' : ''}`}
                                   >
@@ -1102,7 +1102,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                     <div className="p-4.5 flex flex-col gap-3">
                                       {/* Row 1: Standard Name + priority selector (ADMIN) + lock/updating indicator */}
                                       <div className="flex items-center justify-between gap-2">
-                                        <span className="text-[11px] font-extrabold text-[#8C7769] bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] px-2.5 py-1 rounded-xl block truncate flex-1" title={project.standardName}>
+                                        <span className="text-[11px] font-extrabold text-[#4A3E34] bg-[#D8CFC2] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] px-2.5 py-1 rounded-xl block truncate flex-1" title={project.standardName}>
                                           {project.standardName}
                                         </span>
                                         {role === 'ADMIN' && (
@@ -1110,7 +1110,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                             value={project.priority || 'MEDIUM'}
                                             onClick={(e) => e.stopPropagation()}
                                             onChange={(e) => handleUpdatePriority(project.id, e.target.value as any, e)}
-                                            className={`text-[10px] font-extrabold px-2 py-0.5 rounded-xl border-0 appearance-none cursor-pointer focus:outline-none shrink-0 shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] ${
+                                            className={`text-[10px] font-extrabold px-2 py-0.5 rounded-xl border-0 appearance-none cursor-pointer focus:outline-none shrink-0 shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] ${
                                               (project.priority || 'MEDIUM') === 'HIGH'
                                                 ? 'text-[#EF4444]'
                                                 : (project.priority || 'MEDIUM') === 'LOW'
@@ -1125,20 +1125,20 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                         )}
                                         <div className="flex items-center gap-1.5 shrink-0">
                                           {isUpdating && <Loader2 className="h-3.5 w-3.5 text-[#EA580C] animate-spin" />}
-                                          {frozenForEditor && <Lock className="h-3.5 w-3.5 text-[#8C7769]" />}
+                                          {frozenForEditor && <Lock className="h-3.5 w-3.5 text-[#4A3E34]" />}
                                         </div>
                                       </div>
 
                                       {/* Row 2: Title & Flags */}
                                       {project.hasPendingRevisionRequest && (
                                         <div className="mb-1.5">
-                                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-xl bg-[#F6EFE9] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(239,68,68,0.3)]">
+                                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-xl bg-[#D8CFC2] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(239,68,68,0.3)]">
                                             <AlertCircle className="h-3 w-3" />
                                             Pending Review
                                           </span>
                                         </div>
                                       )}
-                                      <p className="font-extrabold text-[15px] leading-snug text-[#3D2E24] line-clamp-2 tracking-tight group-hover:text-[#EA580C] transition-colors">
+                                      <p className="font-extrabold text-[15px] leading-snug text-[#1F1610] line-clamp-2 tracking-tight group-hover:text-[#EA580C] transition-colors">
                                         {project.title}
                                       </p>
 
@@ -1285,7 +1285,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             {/* Upper Stage Header (Sleek Page Title & Stage status) */}
             <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-[#E0D5CB]">
               <div className="space-y-1">
-                <h2 className="text-[28px] font-extrabold tracking-tight text-[#3D2E24] leading-tight">
+                <h2 className="text-[28px] font-extrabold tracking-tight text-[#1F1610] leading-tight">
                   {selectedProject.standardName}
                 </h2>
               </div>
@@ -1309,14 +1309,14 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             </div>
 
             {/* 1. Grouped Card: Project Details */}
-            <div className="bg-[#F6EFE9] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4">
-              <h3 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Project Details</h3>
+            <div className="bg-[#D8CFC2] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(135,120,108,0.65)] space-y-4">
+              <h3 className="text-[18px] font-extrabold text-[#1F1610] tracking-tight">Project Details</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Client Section */}
                 {role !== 'EDITOR' && (
                   <div className="space-y-2">
-                    <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Client (Owner)</span>
+                    <span className="text-[#4A3E34] text-[13px] font-extrabold uppercase tracking-wider block">Client (Owner)</span>
                     {role === 'ADMIN' ? (
                       <ClientCombobox
                         clients={clients}
@@ -1326,11 +1326,11 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       />
                     ) : (
                       <div className="py-1">
-                        <p className="font-bold text-[16px] text-[#3D2E24]">
+                        <p className="font-bold text-[16px] text-[#1F1610]">
                           {selectedProject.client?.user?.name}
                         </p>
                         {selectedProject.client?.company && (
-                          <p className="text-[14px] text-[#8C7769] font-bold">{selectedProject.client.company}</p>
+                          <p className="text-[14px] text-[#4A3E34] font-bold">{selectedProject.client.company}</p>
                         )}
                       </div>
                     )}
@@ -1340,7 +1340,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                 {/* Editor Section */}
                 {role !== 'CLIENT' && (
                   <div className="space-y-2">
-                    <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Assigned Editor</span>
+                    <span className="text-[#4A3E34] text-[13px] font-extrabold uppercase tracking-wider block">Assigned Editor</span>
                     {role === 'ADMIN' ? (
                       <EditorCombobox
                         editors={editors}
@@ -1350,15 +1350,15 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       />
                     ) : selectedProject.editor ? (
                       <div className="py-1">
-                        <p className="font-bold text-[16px] text-[#3D2E24]">
+                        <p className="font-bold text-[16px] text-[#1F1610]">
                           {selectedProject.editor.user.name}
                         </p>
                         {selectedProject.editor.user.email && (
-                          <p className="text-[14px] text-[#8C7769] font-normal">{selectedProject.editor.user.email}</p>
+                          <p className="text-[14px] text-[#4A3E34] font-normal">{selectedProject.editor.user.email}</p>
                         )}
                       </div>
                     ) : (
-                      <p className="text-[15px] text-[#8C7769] italic font-semibold py-1">No editor assigned</p>
+                      <p className="text-[15px] text-[#4A3E34] italic font-semibold py-1">No editor assigned</p>
                     )}
                   </div>
                 )}
@@ -1366,7 +1366,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                 {/* Priority Section (ADMIN only) */}
                 {role === 'ADMIN' && (
                   <div className="space-y-2 relative z-30">
-                    <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Priority Level</span>
+                    <span className="text-[#4A3E34] text-[13px] font-extrabold uppercase tracking-wider block">Priority Level</span>
                     <PriorityCombobox
                       value={selectedProject.priority || 'MEDIUM'}
                       disabled={isSavingField === `priority_${selectedProject.id}`}
@@ -1379,7 +1379,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
               {/* Submission Date & Deadline Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                 <div className="space-y-2">
-                  <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Submission Date</span>
+                  <span className="text-[#4A3E34] text-[13px] font-extrabold uppercase tracking-wider block">Submission Date</span>
                   {role === 'ADMIN' ? (
                     <input
                       type="date"
@@ -1392,17 +1392,17 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       onBlur={(e) => {
                         handleUpdateField('submissionDate', e.target.value);
                       }}
-                      className="w-full text-[14px] p-3 rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none font-semibold"
+                      className="w-full text-[14px] p-3 rounded-2xl border-0 bg-[#D8CFC2] text-[#1F1610] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none font-semibold"
                     />
                   ) : (
-                    <p className="font-semibold text-[#3D2E24] py-1">
+                    <p className="font-semibold text-[#1F1610] py-1">
                       {selectedProject.submissionDate ? new Date(selectedProject.submissionDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
                     </p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Final Deadline</span>
+                  <span className="text-[#4A3E34] text-[13px] font-extrabold uppercase tracking-wider block">Final Deadline</span>
                   {role === 'ADMIN' ? (
                     <input
                       type="date"
@@ -1415,10 +1415,10 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       onBlur={(e) => {
                         handleUpdateField('dueDate', e.target.value);
                       }}
-                      className="w-full text-[14px] p-3 rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none font-semibold"
+                      className="w-full text-[14px] p-3 rounded-2xl border-0 bg-[#D8CFC2] text-[#1F1610] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none font-semibold"
                     />
                   ) : (
-                    <p className="font-semibold text-[#3D2E24] py-1">
+                    <p className="font-semibold text-[#1F1610] py-1">
                       {selectedProject.dueDate ? new Date(selectedProject.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
                     </p>
                   )}
@@ -1431,7 +1431,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
             {/* Admin Revision Review Section */}
             {role === 'ADMIN' && selectedProject.revisionRequests && selectedProject.revisionRequests.some((r: any) => r.status === 'PENDING_ADMIN') && (
-              <div className="bg-[#F6EFE9] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4">
+              <div className="bg-[#D8CFC2] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(135,120,108,0.65)] space-y-4">
                 <h3 className="text-[18px] font-extrabold text-[#EA580C] tracking-tight flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-[#EA580C]" />
                   Pending Revision Review
@@ -1439,34 +1439,34 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                 {selectedProject.revisionRequests
                   .filter((r: any) => r.status === 'PENDING_ADMIN')
                   .map((req: any) => (
-                    <div key={req.id} className="bg-[#F6EFE9] p-5 rounded-2xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] space-y-4">
+                    <div key={req.id} className="bg-[#D8CFC2] p-5 rounded-2xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)] space-y-4">
                       <div>
-                        <span className="text-[#8C7769] text-[12px] font-extrabold uppercase tracking-wider block">Target Stage</span>
-                        <p className="font-extrabold text-[#3D2E24] mt-0.5">{req.stage.replace(/_/g, ' ')}</p>
+                        <span className="text-[#4A3E34] text-[12px] font-extrabold uppercase tracking-wider block">Target Stage</span>
+                        <p className="font-extrabold text-[#1F1610] mt-0.5">{req.stage.replace(/_/g, ' ')}</p>
                       </div>
                       {req.rawClientInput?.timecodes && (
                         <div>
-                          <span className="text-[#8C7769] text-[12px] font-extrabold uppercase tracking-wider block">Client Timecodes</span>
-                          <pre className="mt-1 p-3 bg-[#F6EFE9] rounded-xl text-sm text-[#3D2E24] font-mono whitespace-pre-wrap shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+                          <span className="text-[#4A3E34] text-[12px] font-extrabold uppercase tracking-wider block">Client Timecodes</span>
+                          <pre className="mt-1 p-3 bg-[#D8CFC2] rounded-xl text-sm text-[#1F1610] font-mono whitespace-pre-wrap shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
                             {req.rawClientInput.timecodes}
                           </pre>
                         </div>
                       )}
                       {req.rawClientInput?.generalComment && (
                         <div>
-                          <span className="text-[#8C7769] text-[12px] font-extrabold uppercase tracking-wider block">Client Comment</span>
-                          <p className="mt-1 p-3 bg-[#F6EFE9] rounded-xl text-sm text-[#3D2E24] font-medium shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+                          <span className="text-[#4A3E34] text-[12px] font-extrabold uppercase tracking-wider block">Client Comment</span>
+                          <p className="mt-1 p-3 bg-[#D8CFC2] rounded-xl text-sm text-[#1F1610] font-medium shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
                             {req.rawClientInput.generalComment}
                           </p>
                         </div>
                       )}
                       
-                      <div className="pt-4 border-t border-[rgba(206,187,172,0.4)] space-y-3">
+                      <div className="pt-4 border-t border-[rgba(135,120,108,0.4)] space-y-3">
                         <div className="flex flex-col gap-2">
-                           <Label className="text-[13px] font-extrabold text-[#3D2E24]">Final Instructions for Editor</Label>
+                           <Label className="text-[13px] font-extrabold text-[#1F1610]">Final Instructions for Editor</Label>
                            <textarea
                              id={`adminInstructions-${req.id}`}
-                             className="w-full p-3.5 rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] font-medium shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none min-h-[85px] placeholder:text-[#8C7769]"
+                             className="w-full p-3.5 rounded-2xl border-0 bg-[#D8CFC2] text-[#1F1610] font-medium shadow-[inset_3px_3px_6px_rgba(135,120,108,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none min-h-[85px] placeholder:text-[#4A3E34]"
                              placeholder="Translate client comments into clear instructions..."
                            ></textarea>
                         </div>
@@ -1491,7 +1491,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                            >Approve &amp; Forward to Editor</Button>
                            <Button 
                              variant="outline" 
-                             className="bg-[#F6EFE9] text-[#DC2626] font-extrabold rounded-2xl px-4 py-2.5 shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)] hover:bg-[#DC2626] hover:text-white"
+                             className="bg-[#D8CFC2] text-[#DC2626] font-extrabold rounded-2xl px-4 py-2.5 shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(135,120,108,0.6)] hover:bg-[#DC2626] hover:text-white"
                              onClick={() => setClarificationPromptReqId(req.id)}
                            >Request Clarification</Button>
                         </div>
@@ -1503,10 +1503,10 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
             {/* Approved Revision Instructions (Visible to Editor and Admin) */}
             {selectedProject.revisionRequests && selectedProject.revisionRequests.some((r: any) => r.adminInstructions) && (
-              <div className="bg-[#F6EFE9] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4">
-                <h3 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight flex items-center justify-between">
+              <div className="bg-[#D8CFC2] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(135,120,108,0.65)] space-y-4">
+                <h3 className="text-[18px] font-extrabold text-[#1F1610] tracking-tight flex items-center justify-between">
                   <span>Revision Instructions</span>
-                  <span className="text-[12px] font-extrabold px-3 py-1 rounded-full bg-[#F6EFE9] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+                  <span className="text-[12px] font-extrabold px-3 py-1 rounded-full bg-[#D8CFC2] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
                     {selectedProject.revisionRequests.filter((r: any) => r.adminInstructions).length} active
                   </span>
                 </h3>
@@ -1515,15 +1515,15 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   {selectedProject.revisionRequests
                     .filter((r: any) => r.adminInstructions)
                     .map((req: any) => (
-                      <div key={req.id} className="bg-[#F6EFE9] p-5 rounded-2xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] space-y-3">
+                      <div key={req.id} className="bg-[#D8CFC2] p-5 rounded-2xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)] space-y-3">
                         {/* Header: Stage Badge + Timestamp */}
-                        <div className="flex items-center justify-between pb-2.5 border-b border-[rgba(206,187,172,0.4)]">
+                        <div className="flex items-center justify-between pb-2.5 border-b border-[rgba(135,120,108,0.4)]">
                           <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-xl bg-[#F6EFE9] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+                            <span className="text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-xl bg-[#D8CFC2] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
                               {req.stage.replace(/_/g, ' ')}
                             </span>
                           </div>
-                          <span className="text-[12px] font-bold text-[#8C7769] flex items-center gap-1.5">
+                          <span className="text-[12px] font-bold text-[#4A3E34] flex items-center gap-1.5">
                             <Clock className="h-3.5 w-3.5 text-[#EA580C]" />
                             {req.updatedAt ? formatDate(req.updatedAt) : req.createdAt ? formatDate(req.createdAt) : 'Recently'}
                           </span>
@@ -1531,10 +1531,10 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
                         {/* Instruction Body */}
                         <div>
-                          <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#8C7769] block mb-1.5">
+                          <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#4A3E34] block mb-1.5">
                             Editor Action Plan:
                           </span>
-                          <div className="p-4 rounded-xl bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] font-mono text-[13.5px] leading-relaxed whitespace-pre-wrap">
+                          <div className="p-4 rounded-xl bg-[#D8CFC2] text-[#1F1610] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] font-mono text-[13.5px] leading-relaxed whitespace-pre-wrap">
                             {req.adminInstructions}
                           </div>
                         </div>
@@ -1545,13 +1545,13 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             )}
 
             {/* 2. Grouped Card: Resources & Deliverables */}
-            <div className="bg-[#F6EFE9] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4">
-              <h3 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Resources &amp; Workspace</h3>
+            <div className="bg-[#D8CFC2] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(135,120,108,0.65)] space-y-4">
+              <h3 className="text-[18px] font-extrabold text-[#1F1610] tracking-tight">Resources &amp; Workspace</h3>
 
               {/* Raw Materials Folder */}
               {(role === 'ADMIN' || selectedProject.rawMaterialsFolder || selectedProject.driveFolder) && (
                 <div className="space-y-2">
-                  <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Raw Materials Link</span>
+                  <span className="text-[#4A3E34] text-[13px] font-extrabold uppercase tracking-wider block">Raw Materials Link</span>
                   {isEditingRawMaterials ? (
                     <div className="flex gap-2">
                       <input
@@ -1559,7 +1559,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                         placeholder="https://drive.google.com/drive/..."
                         value={rawMaterialsUrlInput}
                         onChange={(e) => setRawMaterialsUrlInput(e.target.value)}
-                        className="flex-1 text-[14px] p-3 rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none placeholder:text-[#8C7769]"
+                        className="flex-1 text-[14px] p-3 rounded-2xl border-0 bg-[#D8CFC2] text-[#1F1610] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none placeholder:text-[#4A3E34]"
                       />
                       <Button
                         size="sm"
@@ -1571,12 +1571,12 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       >
                         Save
                       </Button>
-                      <Button size="sm" variant="secondary" onClick={() => setIsEditingRawMaterials(false)} className="rounded-2xl px-4 bg-[#F6EFE9] text-[#3D2E24] font-extrabold shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)]">
+                      <Button size="sm" variant="secondary" onClick={() => setIsEditingRawMaterials(false)} className="rounded-2xl px-4 bg-[#D8CFC2] text-[#1F1610] font-extrabold shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(135,120,108,0.6)]">
                         Cancel
                       </Button>
                     </div>
                   ) : (selectedProject.rawMaterialsFolder || selectedProject.driveFolder) ? (
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
                       <a
                         href={selectedProject.rawMaterialsFolder || selectedProject.driveFolder || undefined}
                         target="_blank"
@@ -1626,20 +1626,20 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
                 return (
                   <div className="space-y-2 pt-2">
-                    <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">
+                    <span className="text-[#4A3E34] text-[13px] font-extrabold uppercase tracking-wider block">
                       {role === 'CLIENT' ? 'Deliverable Output' : 'Working Files & Drafts'}
                     </span>
                     <div className="space-y-2.5">
                       {loadingDetails ? (
-                        <div className="h-12 bg-[#F6EFE9] rounded-2xl shadow-[inset_2px_2px_5px_rgba(206,187,172,0.5)] animate-pulse" />
+                        <div className="h-12 bg-[#D8CFC2] rounded-2xl shadow-[inset_2px_2px_5px_rgba(135,120,108,0.5)] animate-pulse" />
                       ) : (
                         filteredFiles.map((file: any) => (
-                          <div key={file.id} className="flex items-center justify-between p-4 bg-[#F6EFE9] shadow-[-3px_-3px_8px_rgba(255,255,255,0.9),3px_3px_8px_rgba(206,187,172,0.6)] rounded-2xl transition-all">
+                          <div key={file.id} className="flex items-center justify-between p-4 bg-[#D8CFC2] shadow-[-3px_-3px_8px_rgba(255,255,255,0.9),3px_3px_8px_rgba(135,120,108,0.6)] rounded-2xl transition-all">
                             <div className="flex items-center gap-3 min-w-0">
                               <FileText className="h-5 w-5 text-[#EA580C] shrink-0" />
                               <div className="min-w-0">
-                                <p className="font-extrabold text-[14px] truncate text-[#3D2E24] leading-normal">{file.originalName}</p>
-                                <p className="text-[12px] text-[#8C7769] mt-0.5">Version {file.version} · {formatDate(file.createdAt)}</p>
+                                <p className="font-extrabold text-[14px] truncate text-[#1F1610] leading-normal">{file.originalName}</p>
+                                <p className="text-[12px] text-[#4A3E34] mt-0.5">Version {file.version} · {formatDate(file.createdAt)}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -1647,7 +1647,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                 href={file.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="p-2 text-[#7C6A5A] hover:text-[#EA580C] transition-colors rounded-xl bg-[#F6EFE9] shadow-[-2px_-2px_5px_rgba(255,255,255,0.8),2px_2px_5px_rgba(206,187,172,0.5)]"
+                                className="p-2 text-[#4A3E34] hover:text-[#EA580C] transition-colors rounded-xl bg-[#D8CFC2] shadow-[-2px_-2px_5px_rgba(255,255,255,0.8),2px_2px_5px_rgba(135,120,108,0.5)]"
                               >
                                 <ExternalLink className="h-4.5 w-4.5" />
                               </a>
@@ -1671,26 +1671,26 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
               {/* 4. Grouped Card: Editor Discussions (ADMIN and EDITOR only) */}
               {role !== 'CLIENT' && (
-                <div className="bg-[#F6EFE9] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4">
-                  <h3 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Editor Discussions</h3>
+                <div className="bg-[#D8CFC2] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(135,120,108,0.65)] space-y-4">
+                  <h3 className="text-[18px] font-extrabold text-[#1F1610] tracking-tight">Editor Discussions</h3>
 
                   <div className="space-y-3">
                     {/* General Discussion */}
                     <Link
                       href={`/projects/${selectedProject.standardSlug}/discussions/general`}
-                      className="group flex items-center justify-between p-4 bg-[#F6EFE9] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] rounded-2xl hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(201,180,163,0.7)] transition-all duration-200"
+                      className="group flex items-center justify-between p-4 bg-[#D8CFC2] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)] rounded-2xl hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(135,120,108,0.7)] transition-all duration-200"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
+                        <div className="h-9 w-9 rounded-xl bg-[#D8CFC2] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
                           <MessageSquare className="h-4.5 w-4.5 text-[#EA580C]" />
                         </div>
-                        <span className="font-extrabold text-[15px] text-[#3D2E24] group-hover:text-[#EA580C] transition-colors">General Discussion</span>
+                        <span className="font-extrabold text-[15px] text-[#1F1610] group-hover:text-[#EA580C] transition-colors">General Discussion</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[12px] font-extrabold px-3 py-1 rounded-xl bg-[#F6EFE9] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+                        <span className="text-[12px] font-extrabold px-3 py-1 rounded-xl bg-[#D8CFC2] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
                           {getCommentCount('GENERAL', comments)} comments
                         </span>
-                        <ChevronRight className="h-4 w-4 text-[#8C7769] group-hover:text-[#EA580C] group-hover:translate-x-0.5 transition-all duration-200" />
+                        <ChevronRight className="h-4 w-4 text-[#4A3E34] group-hover:text-[#EA580C] group-hover:translate-x-0.5 transition-all duration-200" />
                       </div>
                     </Link>
 
@@ -1701,19 +1701,19 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       return (
                         <Link
                           href={`/projects/${selectedProject.standardSlug}/discussions/revision-1`}
-                          className="group flex items-center justify-between p-4 bg-[#F6EFE9] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] rounded-2xl hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(201,180,163,0.7)] transition-all duration-200"
+                          className="group flex items-center justify-between p-4 bg-[#D8CFC2] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)] rounded-2xl hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(135,120,108,0.7)] transition-all duration-200"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="h-9 w-9 rounded-xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
+                            <div className="h-9 w-9 rounded-xl bg-[#D8CFC2] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
                               <MessageSquare className="h-4.5 w-4.5 text-[#F59E0B]" />
                             </div>
-                            <span className="font-extrabold text-[15px] text-[#3D2E24] group-hover:text-[#F59E0B] transition-colors">Revision 1 Discussion</span>
+                            <span className="font-extrabold text-[15px] text-[#1F1610] group-hover:text-[#F59E0B] transition-colors">Revision 1 Discussion</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[12px] font-extrabold px-3 py-1 rounded-xl bg-[#F6EFE9] text-[#F59E0B] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+                            <span className="text-[12px] font-extrabold px-3 py-1 rounded-xl bg-[#D8CFC2] text-[#F59E0B] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
                               {getCommentCount('REVISION_1', comments)} comments
                             </span>
-                            <ChevronRight className="h-4 w-4 text-[#8C7769] group-hover:text-[#F59E0B] group-hover:translate-x-0.5 transition-all duration-200" />
+                            <ChevronRight className="h-4 w-4 text-[#4A3E34] group-hover:text-[#F59E0B] group-hover:translate-x-0.5 transition-all duration-200" />
                           </div>
                         </Link>
                       );
@@ -1726,19 +1726,19 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                       return (
                         <Link
                           href={`/projects/${selectedProject.standardSlug}/discussions/revision-2`}
-                          className="group flex items-center justify-between p-4 bg-[#F6EFE9] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] rounded-2xl hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(201,180,163,0.7)] transition-all duration-200"
+                          className="group flex items-center justify-between p-4 bg-[#D8CFC2] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)] rounded-2xl hover:shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(135,120,108,0.7)] transition-all duration-200"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="h-9 w-9 rounded-xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
+                            <div className="h-9 w-9 rounded-xl bg-[#D8CFC2] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
                               <MessageSquare className="h-4.5 w-4.5 text-[#EF4444]" />
                             </div>
-                            <span className="font-extrabold text-[15px] text-[#3D2E24] group-hover:text-[#EF4444] transition-colors">Revision 2 Discussion</span>
+                            <span className="font-extrabold text-[15px] text-[#1F1610] group-hover:text-[#EF4444] transition-colors">Revision 2 Discussion</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[12px] font-extrabold px-3 py-1 rounded-xl bg-[#F6EFE9] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+                            <span className="text-[12px] font-extrabold px-3 py-1 rounded-xl bg-[#D8CFC2] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
                               {getCommentCount('REVISION_2', comments)} comments
                             </span>
-                            <ChevronRight className="h-4 w-4 text-[#8C7769] group-hover:text-[#EF4444] group-hover:translate-x-0.5 transition-all duration-200" />
+                            <ChevronRight className="h-4 w-4 text-[#4A3E34] group-hover:text-[#EF4444] group-hover:translate-x-0.5 transition-all duration-200" />
                           </div>
                         </Link>
                       );
@@ -1750,22 +1750,22 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
             {/* 3. Grouped Card: Financial Summary (ADMIN only) */}
              {role === 'ADMIN' && (
-               <div className="bg-[#F6EFE9] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4">
-                 <h3 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Financial breakdown</h3>
+               <div className="bg-[#D8CFC2] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(135,120,108,0.65)] space-y-4">
+                 <h3 className="text-[18px] font-extrabold text-[#1F1610] tracking-tight">Financial breakdown</h3>
                  
                  {/* 2-column input fields */}
-                 <div className="grid grid-cols-2 gap-4 bg-[#F6EFE9] p-4 rounded-2xl shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+                 <div className="grid grid-cols-2 gap-4 bg-[#D8CFC2] p-4 rounded-2xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
                    {(() => {
                       const clientCurr = (selectedProject.client?.currency || 'USD').toUpperCase();
                       const clientCurrSym = getCurrencySymbol(clientCurr);
                       return (
                         <>
                           <div>
-                            <span className="text-[12px] text-[#8C7769] block font-extrabold uppercase tracking-wider">
+                            <span className="text-[12px] text-[#4A3E34] block font-extrabold uppercase tracking-wider">
                               Client budget <span className="text-[#EA580C] font-extrabold">{clientCurr}</span>
                             </span>
                             <div className="relative mt-1.5">
-                              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] font-extrabold text-[#8C7769] pointer-events-none">{clientCurrSym}</span>
+                              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] font-extrabold text-[#4A3E34] pointer-events-none">{clientCurrSym}</span>
                               <input
                                 type="number"
                                 disabled={isSavingField === 'clientPrice'}
@@ -1781,17 +1781,17 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                 onBlur={(e) => {
                                   handleUpdateField('clientPrice', e.target.value === '' ? null : Number(e.target.value));
                                 }}
-                                className="w-full text-[14px] pl-[30px] pr-3 py-2.5 rounded-xl border-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none font-extrabold"
+                                className="w-full text-[14px] pl-[30px] pr-3 py-2.5 rounded-xl border-0 bg-[#D8CFC2] text-[#1F1610] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none font-extrabold"
                                 placeholder="0.00"
                               />
                             </div>
                           </div>
                           <div>
-                            <span className="text-[12px] text-[#8C7769] block font-extrabold uppercase tracking-wider">
+                            <span className="text-[12px] text-[#4A3E34] block font-extrabold uppercase tracking-wider">
                               Editor amount <span className="text-[#EA580C] font-extrabold">INR</span>
                             </span>
                             <div className="relative mt-1.5">
-                              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] font-extrabold text-[#8C7769] pointer-events-none">₹</span>
+                              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] font-extrabold text-[#4A3E34] pointer-events-none">₹</span>
                               <input
                                 type="number"
                                 disabled={isSavingField === 'editorPrice'}
@@ -1807,7 +1807,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                 onBlur={(e) => {
                                   handleUpdateField('editorPrice', e.target.value === '' ? null : Number(e.target.value));
                                 }}
-                                className="w-full text-[14px] pl-[30px] pr-3 py-2.5 rounded-xl border-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none font-extrabold"
+                                className="w-full text-[14px] pl-[30px] pr-3 py-2.5 rounded-xl border-0 bg-[#D8CFC2] text-[#1F1610] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none font-extrabold"
                                 placeholder="0"
                               />
                             </div>
@@ -1819,7 +1819,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
                  {/* Net Margin block */}
                  <div className="pt-4 border-t border-[#E0D5CB] mt-4">
-                   <span className="text-[12px] text-[#8C7769] block font-extrabold uppercase tracking-wider">
+                   <span className="text-[12px] text-[#4A3E34] block font-extrabold uppercase tracking-wider">
                      Company profit (net margin)
                    </span>
                    {(() => {
@@ -1863,11 +1863,11 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                            ≈ {primaryMarginStr}
                          </span>
                          {breakdownStr && (
-                           <span className="text-[14px] text-[#3D2E24] block font-bold leading-tight mt-1.5">
+                           <span className="text-[14px] text-[#1F1610] block font-bold leading-tight mt-1.5">
                              {breakdownStr}
                            </span>
                          )}
-                         <div className="flex items-center justify-between mt-4 text-[12px] text-[#8C7769] font-medium">
+                         <div className="flex items-center justify-between mt-4 text-[12px] text-[#4A3E34] font-medium">
                            <span>
                              {fxRateStr}
                            </span>
@@ -1881,7 +1881,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                                  await queryClient.invalidateQueries({ queryKey: ['exchange-rate'] });
                                }
                              }}
-                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F6EFE9] shadow-[-2px_-2px_5px_rgba(255,255,255,0.8),2px_2px_5px_rgba(206,187,172,0.5)] hover:shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)] transition-all text-[11px] font-bold text-[#7C6A5A] cursor-pointer"
+                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#D8CFC2] shadow-[-2px_-2px_5px_rgba(255,255,255,0.8),2px_2px_5px_rgba(135,120,108,0.5)] hover:shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(135,120,108,0.6)] transition-all text-[11px] font-bold text-[#4A3E34] cursor-pointer"
                            >
                              <RefreshCw className="h-3.5 w-3.5" />
                              Refresh
@@ -1895,19 +1895,19 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                     {/* Associated invoices inside financial card */}
                     {selectedProject.invoices && selectedProject.invoices.length > 0 && (
                       <div className="space-y-2 pt-2 border-t border-[#E0D5CB]">
-                        <span className="text-[#8C7769] text-[13px] font-extrabold uppercase tracking-wider block">Associated invoices</span>
+                        <span className="text-[#4A3E34] text-[13px] font-extrabold uppercase tracking-wider block">Associated invoices</span>
                         <div className="space-y-2">
                           {selectedProject.invoices.map((inv: any) => (
-                            <div key={inv.id} className="flex items-center justify-between p-4 bg-[#F6EFE9] shadow-[-3px_-3px_8px_rgba(255,255,255,0.9),3px_3px_8px_rgba(206,187,172,0.6)] rounded-2xl">
+                            <div key={inv.id} className="flex items-center justify-between p-4 bg-[#D8CFC2] shadow-[-3px_-3px_8px_rgba(255,255,255,0.9),3px_3px_8px_rgba(135,120,108,0.6)] rounded-2xl">
                               <div className="flex items-center gap-2">
                                 <DollarSign className="h-5 w-5 text-[#EA580C]" />
                                 <div>
-                                  <p className="font-extrabold text-[14px] text-[#3D2E24]">{inv.number}</p>
-                                  <p className="text-[12px] text-[#8C7769]">Due {formatDate(inv.dueDate)}</p>
+                                  <p className="font-extrabold text-[14px] text-[#1F1610]">{inv.number}</p>
+                                  <p className="text-[12px] text-[#4A3E34]">Due {formatDate(inv.dueDate)}</p>
                                 </div>
                               </div>
                               <div className="text-right">
-                                <p className="font-extrabold text-[14px] text-[#3D2E24]">{formatCurrency(inv.total)}</p>
+                                <p className="font-extrabold text-[14px] text-[#1F1610]">{formatCurrency(inv.total)}</p>
                                 <Badge className="text-[10px] py-0.5 px-2 font-bold capitalize mt-1" variant={inv.status === 'PAID' ? 'success' : 'secondary'}>
                                   {inv.status.toLowerCase()}
                                 </Badge>
@@ -1922,13 +1922,13 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
              {/* Financial Summary (EDITOR only) */}
              {role === 'EDITOR' && selectedProject.editorPrice != null && (
-               <div className="bg-[#F6EFE9] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4">
-                 <h3 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Payment Details</h3>
-                 <div className="bg-[#F6EFE9] p-4 rounded-2xl shadow-[inset_3px_3px_6px_rgba(206,187,172,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
-                   <span className="text-[12px] text-[#8C7769] block font-extrabold uppercase tracking-wider">
+               <div className="bg-[#D8CFC2] p-6 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(135,120,108,0.65)] space-y-4">
+                 <h3 className="text-[18px] font-extrabold text-[#1F1610] tracking-tight">Payment Details</h3>
+                 <div className="bg-[#D8CFC2] p-4 rounded-2xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.55),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+                   <span className="text-[12px] text-[#4A3E34] block font-extrabold uppercase tracking-wider">
                      Editor Payout <span className="text-[#EA580C] font-extrabold">INR</span>
                    </span>
-                   <p className="font-extrabold text-[24px] text-[#3D2E24] mt-1.5 leading-none">
+                   <p className="font-extrabold text-[24px] text-[#1F1610] mt-1.5 leading-none">
                      {formatEditorCurrency(selectedProject.editorPrice)}
                    </p>
                  </div>
@@ -2005,15 +2005,15 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             {/* Danger Zone — Delete Project (ADMIN only, bottom of drawer) */}
             {role === 'ADMIN' && (
               <div className="pt-6 mt-2 border-t border-[#E0D5CB]">
-                <div className="bg-[#F6EFE9] p-4 rounded-2xl shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+                <div className="bg-[#D8CFC2] p-4 rounded-2xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[13px] font-extrabold text-[#3D2E24]">Danger Zone</p>
-                      <p className="text-[12px] text-[#8C7769] mt-0.5">Permanently delete this project and all associated data.</p>
+                      <p className="text-[13px] font-extrabold text-[#1F1610]">Danger Zone</p>
+                      <p className="text-[12px] text-[#4A3E34] mt-0.5">Permanently delete this project and all associated data.</p>
                     </div>
                     <button
                       onClick={() => handleDeleteProject(selectedProject.id)}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-extrabold text-[#DC2626] bg-[#F6EFE9] shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(206,187,172,0.6)] hover:bg-[#DC2626] hover:text-white hover:shadow-[-3px_-3px_6px_rgba(255,255,255,0.7),3px_3px_8px_rgba(220,38,38,0.4)] transition-all cursor-pointer"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-extrabold text-[#DC2626] bg-[#D8CFC2] shadow-[-3px_-3px_6px_rgba(255,255,255,0.9),3px_3px_6px_rgba(135,120,108,0.6)] hover:bg-[#DC2626] hover:text-white hover:shadow-[-3px_-3px_6px_rgba(255,255,255,0.7),3px_3px_8px_rgba(220,38,38,0.4)] transition-all cursor-pointer"
                       title="Delete Project Completely"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -2051,42 +2051,42 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             <div className="lg:col-span-2 space-y-6">
               
               {/* Card 1: Basic details */}
-              <div className="bg-[#F6EFE9] p-8 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-5 border-0">
-                <h4 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Basic Details</h4>
+              <div className="bg-[#D8CFC2] p-8 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(135,120,108,0.65)] space-y-5 border-0">
+                <h4 className="text-[18px] font-extrabold text-[#1F1610] tracking-tight">Basic Details</h4>
                 
                 <div className="space-y-3.5">
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectTitle" className="text-[13px] font-extrabold text-[#8C7769]">Project Title</Label>
+                    <Label htmlFor="projectTitle" className="text-[13px] font-extrabold text-[#4A3E34]">Project Title</Label>
                     <input
                       id="projectTitle"
                       required
                       placeholder="e.g. Autumn Collection Promo Video"
                       value={newProjectTitle}
                       onChange={(e) => setNewProjectTitle(e.target.value)}
-                      className="w-full text-[15px] px-4 py-3 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(206,187,172,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9)] transition-all"
+                      className="w-full text-[15px] px-4 py-3 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(135,120,108,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9)] transition-all"
                     />
                   </div>
 
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectDesc" className="text-[13px] font-extrabold text-[#8C7769]">Description</Label>
+                    <Label htmlFor="projectDesc" className="text-[13px] font-extrabold text-[#4A3E34]">Description</Label>
                     <textarea
                       id="projectDesc"
                       placeholder="Enter project overview, style guidelines, or specific briefs..."
                       value={newProjectDesc}
                       onChange={(e) => setNewProjectDesc(e.target.value)}
-                      className="w-full text-[15px] px-4 py-3 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(206,187,172,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9)] transition-all h-20 resize-none"
+                      className="w-full text-[15px] px-4 py-3 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(135,120,108,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9)] transition-all h-20 resize-none"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Card 2: Stakeholders & dates */}
-              <div className="bg-[#F6EFE9] py-6 px-8 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4 border-0">
-                <h4 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Stakeholders & Schedule</h4>
+              <div className="bg-[#D8CFC2] py-6 px-8 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(135,120,108,0.65)] space-y-4 border-0">
+                <h4 className="text-[18px] font-extrabold text-[#1F1610] tracking-tight">Stakeholders & Schedule</h4>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5 text-left">
-                    <Label className="text-[13px] font-extrabold text-[#8C7769]">Client Owner</Label>
+                    <Label className="text-[13px] font-extrabold text-[#4A3E34]">Client Owner</Label>
                     <ClientCombobox
                       clients={clients}
                       value={newProjectClientId}
@@ -2095,7 +2095,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   </div>
 
                   <div className="space-y-1.5 text-left">
-                    <Label className="text-[13px] font-extrabold text-[#8C7769]">Assigned Editor</Label>
+                    <Label className="text-[13px] font-extrabold text-[#4A3E34]">Assigned Editor</Label>
                     <EditorCombobox
                       editors={editors}
                       value={newProjectEditorId || null}
@@ -2106,29 +2106,29 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectSubDate" className="text-[13px] font-extrabold text-[#8C7769]">Submission Date</Label>
+                    <Label htmlFor="projectSubDate" className="text-[13px] font-extrabold text-[#4A3E34]">Submission Date</Label>
                     <div className="relative w-full">
-                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8C7769] pointer-events-none" />
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A3E34] pointer-events-none" />
                       <input
                         id="projectSubDate"
                         type="date"
                         value={newProjectSubDate}
                         onChange={(e) => setNewProjectSubDate(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none text-[15px]"
+                        className="w-full pl-10 pr-4 py-3 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none text-[15px]"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectDueDate" className="text-[13px] font-extrabold text-[#8C7769]">Final Deadline</Label>
+                    <Label htmlFor="projectDueDate" className="text-[13px] font-extrabold text-[#4A3E34]">Final Deadline</Label>
                     <div className="relative w-full">
-                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8C7769] pointer-events-none" />
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A3E34] pointer-events-none" />
                       <input
                         id="projectDueDate"
                         type="date"
                         value={newProjectDueDate}
                         onChange={(e) => setNewProjectDueDate(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none text-[15px]"
+                        className="w-full pl-10 pr-4 py-3 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none text-[15px]"
                       />
                     </div>
                   </div>
@@ -2136,18 +2136,18 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
               </div>
 
               {/* Card 3: Asset links */}
-              <div className="bg-[#F6EFE9] py-6 px-8 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-4 border-0">
-                <h4 className="text-[18px] font-extrabold text-[#3D2E24] tracking-tight">Assets & Links</h4>
+              <div className="bg-[#D8CFC2] py-6 px-8 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(135,120,108,0.65)] space-y-4 border-0">
+                <h4 className="text-[18px] font-extrabold text-[#1F1610] tracking-tight">Assets & Links</h4>
                 
                 <div className="space-y-1.5 text-left">
-                  <Label htmlFor="projectRawMaterials" className="text-[13px] font-extrabold text-[#8C7769]">Raw Materials Google Drive Link</Label>
+                  <Label htmlFor="projectRawMaterials" className="text-[13px] font-extrabold text-[#4A3E34]">Raw Materials Google Drive Link</Label>
                   <input
                     id="projectRawMaterials"
                     type="url"
                     placeholder="https://drive.google.com/drive/folders/..."
                     value={newProjectRawMaterials}
                     onChange={(e) => setNewProjectRawMaterials(e.target.value)}
-                    className="w-full text-[15px] px-4 py-3 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none"
+                    className="w-full text-[15px] px-4 py-3 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none"
                   />
                 </div>
               </div>
@@ -2155,7 +2155,7 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
             {/* Right Column: Finance & Margin Summary (1/3 width) */}
             <div className="lg:col-span-1">
-              <div className="sticky top-0 bg-[#F6EFE9] p-8 border-0 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(206,187,172,0.65)] space-y-6 relative overflow-hidden">
+              <div className="sticky top-0 bg-[#D8CFC2] p-8 border-0 rounded-3xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.9),6px_6px_14px_rgba(135,120,108,0.65)] space-y-6 relative overflow-hidden">
                 
                 <h4 className="text-[18px] font-extrabold text-[#EA580C] tracking-tight flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-[#EA580C]" /> Finance
@@ -2163,9 +2163,9 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
                 <div className="space-y-4 relative z-10">
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectClientPrice" className="text-[13px] font-extrabold text-[#8C7769]">Client Budget</Label>
+                    <Label htmlFor="projectClientPrice" className="text-[13px] font-extrabold text-[#4A3E34]">Client Budget</Label>
                     <div className="relative w-full">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8C7769] font-bold text-[15px]">$</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4A3E34] font-bold text-[15px]">$</span>
                       <input
                         id="projectClientPrice"
                         type="number"
@@ -2173,20 +2173,20 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                         placeholder="500.00"
                         value={newProjectClientPrice}
                         onChange={(e) => setNewProjectClientPrice(e.target.value)}
-                        className="w-full pl-8 pr-16 py-3 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-full pl-8 pr-16 py-3 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                         <button
                           type="button"
                           onClick={() => setNewProjectClientPrice(prev => String(Math.max(0, (Number(prev) || 0) - 10)))}
-                          className="w-6 h-6 rounded-lg bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold text-[12px] flex items-center justify-center cursor-pointer select-none"
+                          className="w-6 h-6 rounded-lg bg-[#D8CFC2] text-[#1F1610] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold text-[12px] flex items-center justify-center cursor-pointer select-none"
                         >
                           -
                         </button>
                         <button
                           type="button"
                           onClick={() => setNewProjectClientPrice(prev => String((Number(prev) || 0) + 10))}
-                          className="w-6 h-6 rounded-lg bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold text-[12px] flex items-center justify-center cursor-pointer select-none"
+                          className="w-6 h-6 rounded-lg bg-[#D8CFC2] text-[#1F1610] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold text-[12px] flex items-center justify-center cursor-pointer select-none"
                         >
                           +
                         </button>
@@ -2195,9 +2195,9 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   </div>
 
                   <div className="space-y-1.5 text-left">
-                    <Label htmlFor="projectEditorPrice" className="text-[13px] font-extrabold text-[#8C7769]">Editor Amount (INR)</Label>
+                    <Label htmlFor="projectEditorPrice" className="text-[13px] font-extrabold text-[#4A3E34]">Editor Amount (INR)</Label>
                     <div className="relative w-full">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8C7769] font-bold text-[15px]">₹</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4A3E34] font-bold text-[15px]">₹</span>
                       <input
                         id="projectEditorPrice"
                         type="number"
@@ -2205,20 +2205,20 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                         placeholder="200.00"
                         value={newProjectEditorPrice}
                         onChange={(e) => setNewProjectEditorPrice(e.target.value)}
-                        className="w-full pl-8 pr-16 py-3 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-full pl-8 pr-16 py-3 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                         <button
                           type="button"
                           onClick={() => setNewProjectEditorPrice(prev => String(Math.max(0, (Number(prev) || 0) - 10)))}
-                          className="w-6 h-6 rounded-lg bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold text-[12px] flex items-center justify-center cursor-pointer select-none"
+                          className="w-6 h-6 rounded-lg bg-[#D8CFC2] text-[#1F1610] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold text-[12px] flex items-center justify-center cursor-pointer select-none"
                         >
                           -
                         </button>
                         <button
                           type="button"
                           onClick={() => setNewProjectEditorPrice(prev => String((Number(prev) || 0) + 10))}
-                          className="w-6 h-6 rounded-lg bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold text-[12px] flex items-center justify-center cursor-pointer select-none"
+                          className="w-6 h-6 rounded-lg bg-[#D8CFC2] text-[#1F1610] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold text-[12px] flex items-center justify-center cursor-pointer select-none"
                         >
                           +
                         </button>
@@ -2227,20 +2227,20 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
                   </div>
 
                   {/* Calculations breakdown */}
-                  <div className="border-t border-[rgba(206,187,172,0.4)] pt-6 mt-6 space-y-3">
-                    <div className="flex justify-between text-sm text-[#7C6A5A] font-extrabold">
+                  <div className="border-t border-[rgba(135,120,108,0.4)] pt-6 mt-6 space-y-3">
+                    <div className="flex justify-between text-sm text-[#4A3E34] font-extrabold">
                       <span>Revenue</span>
-                      <span className="text-[#3D2E24] font-extrabold">${Number(newProjectClientPrice) || 0}</span>
+                      <span className="text-[#1F1610] font-extrabold">${Number(newProjectClientPrice) || 0}</span>
                     </div>
-                    <div className="flex justify-between text-sm text-[#7C6A5A] font-extrabold">
+                    <div className="flex justify-between text-sm text-[#4A3E34] font-extrabold">
                       <span>Editor Cost</span>
                       <span className="text-[#EF4444] font-extrabold">-${Number(newProjectEditorPrice) || 0}</span>
                     </div>
                     
-                    <div className="border-t border-[rgba(206,187,172,0.3)] pt-4 flex justify-between items-center text-[#3D2E24]">
+                    <div className="border-t border-[rgba(135,120,108,0.3)] pt-4 flex justify-between items-center text-[#1F1610]">
                       <div>
-                        <span className="text-sm font-extrabold text-[#3D2E24] leading-tight block">Company Profit (Net Margin)</span>
-                        <span className="text-[10px] text-[#8C7769] font-normal">Calculated estimate</span>
+                        <span className="text-sm font-extrabold text-[#1F1610] leading-tight block">Company Profit (Net Margin)</span>
+                        <span className="text-[10px] text-[#4A3E34] font-normal">Calculated estimate</span>
                       </div>
                       <span className="text-[28px] font-extrabold text-[#EA580C] tracking-tight leading-none">
                         ${(Number(newProjectClientPrice) || 0) - (Number(newProjectEditorPrice) || 0)}
@@ -2290,9 +2290,9 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             <div className="grid grid-cols-2 gap-4">
 
               <div className="space-y-1.5">
-                <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Client</Label>
+                <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#4A3E34]">Client</Label>
                 <select 
-                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#D8CFC2] text-[#1F1610] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
                   value={filterDraft.client || ''}
                   onChange={e => setFilterDraft(p => ({ ...p, client: e.target.value }))}
                 >
@@ -2303,9 +2303,9 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
 
               {role === 'ADMIN' && (
                 <div className="space-y-1.5">
-                  <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Assigned Editor</Label>
+                  <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#4A3E34]">Assigned Editor</Label>
                   <select 
-                    className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+                    className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#D8CFC2] text-[#1F1610] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
                     value={filterDraft.editor || ''}
                     onChange={e => setFilterDraft(p => ({ ...p, editor: e.target.value }))}
                   >
@@ -2316,9 +2316,9 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
               )}
 
               <div className="space-y-1.5">
-                <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Status</Label>
+                <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#4A3E34]">Status</Label>
                 <select 
-                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#D8CFC2] text-[#1F1610] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
                   value={filterDraft.status || ''}
                   onChange={e => setFilterDraft(p => ({ ...p, status: e.target.value }))}
                 >
@@ -2328,9 +2328,9 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Priority</Label>
+                <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#4A3E34]">Priority</Label>
                 <select 
-                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#D8CFC2] text-[#1F1610] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
                   value={filterDraft.priority || ''}
                   onChange={e => setFilterDraft(p => ({ ...p, priority: e.target.value }))}
                 >
@@ -2340,10 +2340,10 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Deadline Month</Label>
+                <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#4A3E34]">Deadline Month</Label>
                 <input 
                   type="month"
-                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#D8CFC2] text-[#1F1610] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
                   value={filterDraft.month || ''}
                   onChange={e => setFilterDraft(p => ({ ...p, month: e.target.value }))}
                 />
@@ -2351,19 +2351,19 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             </div>
 
             <div className="pt-2">
-              <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Submission Date</Label>
+              <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#4A3E34]">Submission Date</Label>
               <div className="grid grid-cols-2 gap-4 mt-1.5">
                 <input 
                   type="date"
                   title="From"
-                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#D8CFC2] text-[#1F1610] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
                   value={filterDraft.subFrom || ''}
                   onChange={e => setFilterDraft(p => ({ ...p, subFrom: e.target.value }))}
                 />
                 <input 
                   type="date"
                   title="To"
-                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#D8CFC2] text-[#1F1610] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
                   value={filterDraft.subTo || ''}
                   onChange={e => setFilterDraft(p => ({ ...p, subTo: e.target.value }))}
                 />
@@ -2371,19 +2371,19 @@ export default function ProjectBoard({ role, extraHeader }: ProjectBoardProps) {
             </div>
 
             <div className="pt-2">
-              <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">Deadline</Label>
+              <Label className="text-[12px] font-extrabold uppercase tracking-wider text-[#4A3E34]">Deadline</Label>
               <div className="grid grid-cols-2 gap-4 mt-1.5">
                 <input 
                   type="date"
                   title="From"
-                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#D8CFC2] text-[#1F1610] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
                   value={filterDraft.dueFrom || ''}
                   onChange={e => setFilterDraft(p => ({ ...p, dueFrom: e.target.value }))}
                 />
                 <input 
                   type="date"
                   title="To"
-                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#F6EFE9] text-[#3D2E24] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+                  className="w-full h-11 border-0 rounded-2xl px-4 py-2 bg-[#D8CFC2] text-[#1F1610] font-semibold text-sm outline-none shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
                   value={filterDraft.dueTo || ''}
                   onChange={e => setFilterDraft(p => ({ ...p, dueTo: e.target.value }))}
                 />

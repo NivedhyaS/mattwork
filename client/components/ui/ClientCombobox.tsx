@@ -181,7 +181,7 @@ export default function ClientCombobox({
             className="max-h-[240px] overflow-y-auto space-y-1 custom-scrollbar"
           >
             {filtered.length === 0 ? (
-              <li className="p-4 text-center text-[13px] text-[#8C7769] font-medium">
+              <li className="p-4 text-center text-[13px] text-[#4A3E34] font-medium">
                 No clients found
               </li>
             ) : (
@@ -200,7 +200,7 @@ export default function ClientCombobox({
                       ${isSelected && !isActive ? 'bg-[rgba(234,88,12,0.04)]' : ''}
                     `}
                   >
-                    <div className="h-8 w-8 rounded-full bg-[#F6EFE9] text-[#EA580C] font-extrabold shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center text-[12px] shrink-0 overflow-hidden">
+                    <div className="h-8 w-8 rounded-full bg-[#D8CFC2] text-[#EA580C] font-extrabold shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center text-[12px] shrink-0 overflow-hidden">
                       {client.user.avatar ? (
                         <img src={client.user.avatar} alt="" className="h-full w-full object-cover" />
                       ) : (
@@ -209,11 +209,11 @@ export default function ClientCombobox({
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className="font-extrabold text-[13.5px] text-[#3D2E24] truncate">
+                      <p className="font-extrabold text-[13.5px] text-[#1F1610] truncate">
                         {client.user.name}
                       </p>
                       {client.company && (
-                        <p className="text-[11.5px] text-[#8C7769] font-semibold truncate">{client.company}</p>
+                        <p className="text-[11.5px] text-[#4A3E34] font-semibold truncate">{client.company}</p>
                       )}
                     </div>
 

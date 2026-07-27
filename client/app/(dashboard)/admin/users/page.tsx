@@ -27,9 +27,9 @@ interface User {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  ADMIN: 'bg-[#F6EFE9] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
-  EDITOR: 'bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
-  CLIENT: 'bg-[#F6EFE9] text-[#10B981] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
+  ADMIN: 'bg-[#D8CFC2] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
+  EDITOR: 'bg-[#D8CFC2] text-[#1F1610] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
+  CLIENT: 'bg-[#D8CFC2] text-[#10B981] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
 };
 
 const createUserSchema = z.object({
@@ -199,10 +199,10 @@ export default function UsersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[36px] font-extrabold tracking-tight text-[#3D2E24]">
+          <h1 className="text-[36px] font-extrabold tracking-tight text-[#1F1610]">
             User Management
           </h1>
-          <p className="text-[15px] text-[#7C6A5A] mt-1 font-extrabold">
+          <p className="text-[15px] text-[#4A3E34] mt-1 font-extrabold">
             Manage all platform users — Admins, Editors, and Clients
           </p>
         </div>
@@ -214,30 +214,30 @@ export default function UsersPage() {
 
       {/* Search Bar */}
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8C7769]" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A3E34]" />
         <input
           type="text"
           placeholder="Search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-11 pr-4 py-3 rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] font-semibold shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(206,187,172,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9)] transition-all text-[15px]"
+          className="w-full pl-11 pr-4 py-3 rounded-2xl border-0 bg-[#D8CFC2] text-[#1F1610] font-semibold shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(135,120,108,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9)] transition-all text-[15px]"
         />
       </div>
 
       {/* Table Card */}
-      <div className="bg-[#F6EFE9] rounded-3xl border-0 shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] overflow-hidden p-2">
+      <div className="bg-[#D8CFC2] rounded-3xl border-0 shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] overflow-hidden p-2">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-[#EA580C]" />
           </div>
         ) : error ? (
           <div className="text-center py-20 flex flex-col items-center gap-4">
-            <div className="h-14 w-14 rounded-full bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)] flex items-center justify-center">
+            <div className="h-14 w-14 rounded-full bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)] flex items-center justify-center">
               <AlertTriangle className="h-7 w-7 text-[#EF4444]" />
             </div>
             <div>
               <p className="font-extrabold text-[16px] text-[#EF4444]">Failed to load users</p>
-              <p className="text-[14px] text-[#7C6A5A] mt-1">
+              <p className="text-[14px] text-[#4A3E34] mt-1">
                 {(error as any)?.response?.data?.message ||
                   (error as any)?.message ||
                   'Could not reach the server. Make sure the backend is running.'}
@@ -245,14 +245,14 @@ export default function UsersPage() {
             </div>
             <button
               onClick={() => refetch()}
-              className="flex items-center gap-2 text-[14px] font-extrabold px-4 py-2 rounded-2xl bg-[#F6EFE9] text-[#3D2E24] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] cursor-pointer"
+              className="flex items-center gap-2 text-[14px] font-extrabold px-4 py-2 rounded-2xl bg-[#D8CFC2] text-[#1F1610] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)] cursor-pointer"
             >
               <RefreshCw className="h-4 w-4 text-[#EA580C]" />
               Retry
             </button>
           </div>
         ) : users.length === 0 ? (
-          <div className="text-center py-16 text-[#8C7769]">
+          <div className="text-center py-16 text-[#4A3E34]">
             <Shield className="h-10 w-10 mx-auto mb-3 text-[#EA580C]" />
             <p className="font-extrabold">No users found</p>
           </div>
@@ -260,7 +260,7 @@ export default function UsersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left border-collapse">
               <thead>
-                <tr className="bg-[#F6EFE9] border-b border-[rgba(206,187,172,0.3)] text-xs font-extrabold uppercase tracking-wider text-[#8C7769]">
+                <tr className="bg-[#D8CFC2] border-b border-[rgba(135,120,108,0.3)] text-xs font-extrabold uppercase tracking-wider text-[#4A3E34]">
                   <th className="py-3.5 px-5">User</th>
                   <th className="py-3.5 px-5">Role</th>
                   <th className="py-3.5 px-5">Status</th>
@@ -268,7 +268,7 @@ export default function UsersPage() {
                   <th className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[rgba(206,187,172,0.2)]">
+              <tbody className="divide-y divide-[rgba(135,120,108,0.2)]">
                 {users.map((user) => (
                   <tr key={user.id} className="hover:bg-[rgba(234,88,12,0.04)] transition-colors">
                     <td className="py-3.5 px-5">

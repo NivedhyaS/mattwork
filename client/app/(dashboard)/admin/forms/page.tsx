@@ -85,7 +85,7 @@ function SyncStatusBadge({ status, watchExpiry }: { status: FormSyncStatus; watc
 
   if (status === 'ACTIVE' && (!watchExpiry || !isExpiringSoon)) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#F6EFE9] text-[#10B981] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#D8CFC2] text-[#10B981] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
         <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] shrink-0 animate-pulse" />
         Active (Live)
       </span>
@@ -94,7 +94,7 @@ function SyncStatusBadge({ status, watchExpiry }: { status: FormSyncStatus; watc
 
   if (status === 'WATCH_EXPIRING' || (status === 'ACTIVE' && isExpiringSoon)) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#F6EFE9] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#D8CFC2] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
         <Clock className="h-3 w-3 text-[#EA580C]" />
         Expiring Soon
       </span>
@@ -103,7 +103,7 @@ function SyncStatusBadge({ status, watchExpiry }: { status: FormSyncStatus; watc
 
   if (status === 'WATCH_EXPIRED') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#F6EFE9] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#D8CFC2] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
         <XCircle className="h-3 w-3 text-[#EF4444]" />
         Watch Expired
       </span>
@@ -111,8 +111,8 @@ function SyncStatusBadge({ status, watchExpiry }: { status: FormSyncStatus; watc
   }
 
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#F6EFE9] text-[#8C7769] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
-      <AlertTriangle className="h-3 w-3 text-[#8C7769]" />
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#D8CFC2] text-[#4A3E34] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+      <AlertTriangle className="h-3 w-3 text-[#4A3E34]" />
       Never Connected
     </span>
   );
@@ -122,12 +122,12 @@ function SyncStatusBadge({ status, watchExpiry }: { status: FormSyncStatus; watc
 
 function EmptyState({ onConnect }: { onConnect: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-6 text-center bg-[#F6EFE9] rounded-3xl shadow-[inset_3px_3px_6px_rgba(206,187,172,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] max-w-xl mx-auto my-6">
-      <div className="h-16 w-16 rounded-full bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] flex items-center justify-center mb-4">
+    <div className="flex flex-col items-center justify-center py-16 px-6 text-center bg-[#D8CFC2] rounded-3xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] max-w-xl mx-auto my-6">
+      <div className="h-16 w-16 rounded-full bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] flex items-center justify-center mb-4">
         <FileText className="h-8 w-8 text-[#EA580C]" />
       </div>
-      <h3 className="text-[20px] font-extrabold text-[#3D2E24] mb-1.5">No Google Forms connected yet</h3>
-      <p className="text-[14px] text-[#7C6A5A] mb-6 max-w-md font-medium">
+      <h3 className="text-[20px] font-extrabold text-[#1F1610] mb-1.5">No Google Forms connected yet</h3>
+      <p className="text-[14px] text-[#4A3E34] mb-6 max-w-md font-medium">
         Connect a Google Form to automatically create and log Mattwork video production projects whenever client submissions arrive.
       </p>
       <Button
@@ -159,38 +159,38 @@ function QuestionMappingRow({ question, selectedField, usedFields, onChange, err
 
   return (
     <div className={cn(
-      'p-3.5 rounded-2xl transition-all bg-[#F6EFE9]',
+      'p-3.5 rounded-2xl transition-all bg-[#D8CFC2]',
       error || isDateTypeMismatch
         ? 'shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)]'
-        : 'shadow-[-3px_-3px_8px_rgba(255,255,255,0.9),3px_3px_8px_rgba(206,187,172,0.5)]'
+        : 'shadow-[-3px_-3px_8px_rgba(255,255,255,0.9),3px_3px_8px_rgba(135,120,108,0.5)]'
     )}>
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[14px] font-extrabold text-[#3D2E24] truncate">
+            <span className="text-[14px] font-extrabold text-[#1F1610] truncate">
               {question.title}
             </span>
             {question.required && (
-              <span className="text-[10px] font-extrabold text-[#EF4444] uppercase tracking-wider shrink-0 bg-[#F6EFE9] px-2 py-0.5 rounded-md shadow-[inset_2px_2px_4px_rgba(239,68,68,0.2)]">Required</span>
+              <span className="text-[10px] font-extrabold text-[#EF4444] uppercase tracking-wider shrink-0 bg-[#D8CFC2] px-2 py-0.5 rounded-md shadow-[inset_2px_2px_4px_rgba(239,68,68,0.2)]">Required</span>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono text-[#8C7769] bg-[#F6EFE9] px-2 py-0.5 rounded-lg shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+            <span className="text-[11px] font-mono text-[#4A3E34] bg-[#D8CFC2] px-2 py-0.5 rounded-lg shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
               {question.googleQuestionType}
             </span>
-            <span className="text-[11px] text-[#8C7769] font-mono truncate">
+            <span className="text-[11px] text-[#4A3E34] font-mono truncate">
               id: {question.googleQuestionId.slice(0, 12)}…
             </span>
           </div>
         </div>
 
-        <ChevronRight className="h-4 w-4 text-[#8C7769] shrink-0 mt-1" />
+        <ChevronRight className="h-4 w-4 text-[#4A3E34] shrink-0 mt-1" />
 
         <div className="w-52 shrink-0">
           <select
             value={selectedField}
             onChange={(e) => onChange(question.googleQuestionId, e.target.value as MattworkFormField | 'IGNORE' | '')}
-            className="w-full text-[13px] font-extrabold px-3 py-2 rounded-xl border-0 bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none cursor-pointer"
+            className="w-full text-[13px] font-extrabold px-3 py-2 rounded-xl border-0 bg-[#D8CFC2] text-[#1F1610] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none cursor-pointer"
             aria-label={`Map ${question.title} to Mattwork field`}
           >
             <option value="">— Ignore —</option>
@@ -402,39 +402,39 @@ function ConnectFormDrawer({ isOpen, onClose, onSuccess }: ConnectFormDrawerProp
       }
       size="lg"
     >
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 bg-[#F6EFE9]">
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 bg-[#D8CFC2]">
         {step === 'url' && (
           <div className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="form-url" className="text-[13px] font-extrabold text-[#8C7769]">Google Form URL or Form ID</Label>
+              <Label htmlFor="form-url" className="text-[13px] font-extrabold text-[#4A3E34]">Google Form URL or Form ID</Label>
               <input
                 id="form-url"
                 placeholder="https://docs.google.com/forms/d/..."
                 value={formUrl}
                 onChange={(e) => { setFormUrl(e.target.value); setDetectError(''); }}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleDetect(true); }}
-                className="w-full text-[14px] font-mono px-4 py-3 bg-[#F6EFE9] text-[#3D2E24] border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none"
+                className="w-full text-[14px] font-mono px-4 py-3 bg-[#D8CFC2] text-[#1F1610] border-0 rounded-2xl shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none"
                 disabled={isDetecting}
               />
               {detectError && (
-                <div className="space-y-3 p-4 rounded-2xl bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)]">
+                <div className="space-y-3 p-4 rounded-2xl bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)]">
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="h-4 w-4 text-[#EF4444] shrink-0 mt-0.5" />
                     <p className="text-[13px] text-[#EF4444] font-extrabold">{detectError}</p>
                   </div>
 
                   {(detectError.includes('permission') || detectError.includes('caller')) && (
-                    <div className="pt-3 border-t border-[rgba(239,68,68,0.2)] text-[12.5px] text-[#3D2E24] space-y-2">
+                    <div className="pt-3 border-t border-[rgba(239,68,68,0.2)] text-[12.5px] text-[#1F1610] space-y-2">
                       <p className="font-extrabold text-[#EA580C] flex items-center gap-1.5">
                         <span>💡 How to fix this in 30 seconds:</span>
                       </p>
-                      <ol className="list-decimal list-inside space-y-1.5 font-semibold text-[#7C6A5A] leading-relaxed">
+                      <ol className="list-decimal list-inside space-y-1.5 font-semibold text-[#4A3E34] leading-relaxed">
                         <li>Open your Google Form in your browser.</li>
-                        <li>Click <strong className="text-[#3D2E24]">⋮ (Add collaborators)</strong> in the top right.</li>
-                        <li>Add the app&apos;s Service Account Email below as an <strong className="text-[#3D2E24]">Editor</strong>:</li>
+                        <li>Click <strong className="text-[#1F1610]">⋮ (Add collaborators)</strong> in the top right.</li>
+                        <li>Add the app&apos;s Service Account Email below as an <strong className="text-[#1F1610]">Editor</strong>:</li>
                       </ol>
-                      <div className="flex items-center gap-2 mt-2 p-2.5 rounded-xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
-                        <code className="text-[11.5px] font-mono text-[#3D2E24] font-extrabold truncate flex-1 select-all">
+                      <div className="flex items-center gap-2 mt-2 p-2.5 rounded-xl bg-[#D8CFC2] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+                        <code className="text-[11.5px] font-mono text-[#1F1610] font-extrabold truncate flex-1 select-all">
                           mattwork-service@mattwork-501419.iam.gserviceaccount.com
                         </code>
                         <button
@@ -454,7 +454,7 @@ function ConnectFormDrawer({ isOpen, onClose, onSuccess }: ConnectFormDrawerProp
               )}
             </div>
 
-            <p className="text-[13px] text-[#7C6A5A] font-extrabold">
+            <p className="text-[13px] text-[#4A3E34] font-extrabold">
               Supported formats: Full edit/view URL, or raw Form ID string.
             </p>
 
@@ -480,19 +480,19 @@ function ConnectFormDrawer({ isOpen, onClose, onSuccess }: ConnectFormDrawerProp
 
         {step === 'mapping' && formDetails && (
           <div className="space-y-6">
-            <div className="p-5 rounded-3xl bg-[#F6EFE9] shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(206,187,172,0.6)]">
+            <div className="p-5 rounded-3xl bg-[#D8CFC2] shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(135,120,108,0.6)]">
               <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
+                <div className="h-10 w-10 rounded-2xl bg-[#D8CFC2] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
                   <FileText className="h-5 w-5 text-[#EA580C]" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-extrabold text-[16px] text-[#3D2E24] truncate">
+                  <p className="font-extrabold text-[16px] text-[#1F1610] truncate">
                     {formDetails.formTitle}
                   </p>
-                  <p className="text-[12px] text-[#8C7769] font-mono mt-0.5">{formDetails.googleFormId}</p>
+                  <p className="text-[12px] text-[#4A3E34] font-mono mt-0.5">{formDetails.googleFormId}</p>
                 </div>
               </div>
-              <div className="mt-3 pt-3 border-t border-[rgba(206,187,172,0.3)] flex items-center gap-4 text-[12px] text-[#7C6A5A] font-extrabold">
+              <div className="mt-3 pt-3 border-t border-[rgba(135,120,108,0.3)] flex items-center gap-4 text-[12px] text-[#4A3E34] font-extrabold">
                 <span>{formDetails.questions.length} questions detected</span>
                 <button
                   onClick={() => setStep('url')}
@@ -510,9 +510,9 @@ function ConnectFormDrawer({ isOpen, onClose, onSuccess }: ConnectFormDrawerProp
                   <span
                     key={f.value}
                     className={cn(
-                      'inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-extrabold bg-[#F6EFE9]',
+                      'inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-extrabold bg-[#D8CFC2]',
                       isMapped
-                        ? 'text-[#10B981] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]'
+                        ? 'text-[#10B981] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]'
                         : 'text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(239,68,68,0.25)]'
                     )}
                   >
@@ -524,7 +524,7 @@ function ConnectFormDrawer({ isOpen, onClose, onSuccess }: ConnectFormDrawerProp
             </div>
 
             {globalErrors.length > 0 && (
-              <div className="p-4 rounded-2xl bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)] space-y-1">
+              <div className="p-4 rounded-2xl bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)] space-y-1">
                 {globalErrors.map((err, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <AlertTriangle className="h-3.5 w-3.5 text-[#EF4444] shrink-0" />
@@ -535,7 +535,7 @@ function ConnectFormDrawer({ isOpen, onClose, onSuccess }: ConnectFormDrawerProp
             )}
 
             <div className="space-y-3">
-              <p className="text-[12px] font-extrabold uppercase tracking-wider text-[#8C7769]">
+              <p className="text-[12px] font-extrabold uppercase tracking-wider text-[#4A3E34]">
                 Map Questions → Mattwork Fields
               </p>
               {formDetails.questions.map(q => (
@@ -551,7 +551,7 @@ function ConnectFormDrawer({ isOpen, onClose, onSuccess }: ConnectFormDrawerProp
             </div>
 
             {saveError && (
-              <div className="flex items-start gap-2 p-4 rounded-2xl bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)]">
+              <div className="flex items-start gap-2 p-4 rounded-2xl bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)]">
                 <AlertTriangle className="h-4 w-4 text-[#EF4444] shrink-0 mt-0.5" />
                 <p className="text-[13px] text-[#EF4444] font-extrabold">{saveError}</p>
               </div>
@@ -560,10 +560,10 @@ function ConnectFormDrawer({ isOpen, onClose, onSuccess }: ConnectFormDrawerProp
         )}
       </div>
 
-      <div className="px-6 py-4 border-t border-[rgba(206,187,172,0.3)] bg-[#F6EFE9] flex items-center justify-between gap-3">
+      <div className="px-6 py-4 border-t border-[rgba(135,120,108,0.3)] bg-[#D8CFC2] flex items-center justify-between gap-3">
         <button
           onClick={handleClose}
-          className="px-5 py-2.5 rounded-2xl bg-[#F6EFE9] text-[#3D2E24] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)] font-extrabold text-[14px]"
+          className="px-5 py-2.5 rounded-2xl bg-[#D8CFC2] text-[#1F1610] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)] font-extrabold text-[14px]"
         >
           Cancel
         </button>
@@ -634,14 +634,14 @@ function FormTableRow({
       {/* 1. Client Name (Primary) & Form Name (Secondary) */}
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-2xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
+          <div className="h-9 w-9 rounded-2xl bg-[#D8CFC2] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] flex items-center justify-center shrink-0">
             <User className="h-4.5 w-4.5 text-[#EA580C]" />
           </div>
           <div>
-            <h4 className="font-extrabold text-[#3D2E24] text-[15px] leading-snug group-hover:text-[#EA580C] transition-colors">
+            <h4 className="font-extrabold text-[#1F1610] text-[15px] leading-snug group-hover:text-[#EA580C] transition-colors">
               {clientName}
             </h4>
-            <p className="text-[12px] text-[#8C7769] font-medium flex items-center gap-1">
+            <p className="text-[12px] text-[#4A3E34] font-medium flex items-center gap-1">
               <FileText className="h-3 w-3 text-[#EA580C] shrink-0" />
               {form.formTitle}
             </p>
@@ -652,12 +652,12 @@ function FormTableRow({
       {/* 2. Google Form ID + Copy/Open */}
       <td className="px-4 py-3">
         <div className="flex items-center gap-1">
-          <span className="text-[11px] font-mono font-extrabold text-[#3D2E24] bg-[#F6EFE9] px-2 py-0.5 rounded-lg shadow-[inset_2px_2px_4px_rgba(206,187,172,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+          <span className="text-[11px] font-mono font-extrabold text-[#1F1610] bg-[#D8CFC2] px-2 py-0.5 rounded-lg shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
             {shortFormId}
           </span>
           <button
             onClick={handleCopyId}
-            className="p-1 rounded-md bg-[#F6EFE9] text-[#7C6A5A] hover:text-[#EA580C] shadow-[-2px_-2px_4px_rgba(255,255,255,0.8),2px_2px_4px_rgba(206,187,172,0.4)] transition-all cursor-pointer"
+            className="p-1 rounded-md bg-[#D8CFC2] text-[#4A3E34] hover:text-[#EA580C] shadow-[-2px_-2px_4px_rgba(255,255,255,0.8),2px_2px_4px_rgba(135,120,108,0.4)] transition-all cursor-pointer"
             title="Copy Form ID"
           >
             {copiedId ? <Check className="h-3 w-3 text-[#10B981]" /> : <Copy className="h-3 w-3" />}
@@ -666,7 +666,7 @@ function FormTableRow({
             href={`https://docs.google.com/forms/d/${form.googleFormId}/edit`}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1 rounded-md bg-[#F6EFE9] text-[#7C6A5A] hover:text-[#EA580C] shadow-[-2px_-2px_4px_rgba(255,255,255,0.8),2px_2px_4px_rgba(206,187,172,0.4)] transition-all cursor-pointer"
+            className="p-1 rounded-md bg-[#D8CFC2] text-[#4A3E34] hover:text-[#EA580C] shadow-[-2px_-2px_4px_rgba(255,255,255,0.8),2px_2px_4px_rgba(135,120,108,0.4)] transition-all cursor-pointer"
             title="Open in Google Forms"
           >
             <ExternalLink className="h-3 w-3" />
@@ -681,7 +681,7 @@ function FormTableRow({
 
       {/* 4. Compact Response Badge */}
       <td className="px-4 py-3">
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#F6EFE9] text-[#3D2E24] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#D8CFC2] text-[#1F1610] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
           <Database className="h-3 w-3 text-[#EA580C]" />
           {form._count.processedResponses}
         </span>
@@ -691,25 +691,25 @@ function FormTableRow({
       <td className="px-4 py-3">
         {form.lastSyncedAt ? (
           <div>
-            <p className="font-extrabold text-[13px] text-[#3D2E24]">
+            <p className="font-extrabold text-[13px] text-[#1F1610]">
               {formatRelativeTime(form.lastSyncedAt)}
             </p>
-            <p className="text-[10px] text-[#8C7769] font-medium">
+            <p className="text-[10px] text-[#4A3E34] font-medium">
               {new Date(form.lastSyncedAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
             </p>
           </div>
         ) : (
-          <span className="text-[12px] text-[#8C7769] font-medium">Never</span>
+          <span className="text-[12px] text-[#4A3E34] font-medium">Never</span>
         )}
       </td>
 
       {/* 6. Simplified Connected By Column */}
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
-          <div className="h-6 w-6 rounded-full bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.4)] flex items-center justify-center font-extrabold text-[10px] text-[#EA580C]">
+          <div className="h-6 w-6 rounded-full bg-[#D8CFC2] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4)] flex items-center justify-center font-extrabold text-[10px] text-[#EA580C]">
             {form.connectedByAdmin.name.charAt(0).toUpperCase()}
           </div>
-          <span className="text-[12px] font-extrabold text-[#3D2E24]">{form.connectedByAdmin.name}</span>
+          <span className="text-[12px] font-extrabold text-[#1F1610]">{form.connectedByAdmin.name}</span>
         </div>
       </td>
 
@@ -729,7 +729,7 @@ function FormTableRow({
           <button
             onClick={() => onSyncNow(form.id)}
             disabled={isSyncing}
-            className="p-1.5 rounded-xl bg-[#F6EFE9] text-[#3D2E24] font-extrabold text-[12px] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(206,187,172,0.5)] hover:text-[#EA580C] transition-all cursor-pointer inline-flex items-center disabled:opacity-50"
+            className="p-1.5 rounded-xl bg-[#D8CFC2] text-[#1F1610] font-extrabold text-[12px] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(135,120,108,0.5)] hover:text-[#EA580C] transition-all cursor-pointer inline-flex items-center disabled:opacity-50"
             title="Sync latest responses"
           >
             {isSyncing ? <Loader2 className="h-3.5 w-3.5 animate-spin text-[#EA580C]" /> : <RefreshCw className="h-3.5 w-3.5" />}
@@ -738,7 +738,7 @@ function FormTableRow({
           <div className="relative">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-1.5 rounded-xl bg-[#F6EFE9] text-[#3D2E24] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(206,187,172,0.5)] hover:text-[#EA580C] transition-all cursor-pointer"
+              className="p-1.5 rounded-xl bg-[#D8CFC2] text-[#1F1610] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(135,120,108,0.5)] hover:text-[#EA580C] transition-all cursor-pointer"
               title="More Options"
             >
               <MoreVertical className="h-3.5 w-3.5" />
@@ -747,26 +747,26 @@ function FormTableRow({
             {isMenuOpen && (
               <>
                 <div className="fixed inset-0 z-20" onClick={() => setIsMenuOpen(false)} />
-                <div className="absolute right-0 mt-2 w-48 bg-[#F6EFE9] rounded-2xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(201,180,163,0.75)] p-1.5 z-30 space-y-1">
+                <div className="absolute right-0 mt-2 w-48 bg-[#D8CFC2] rounded-2xl shadow-[-6px_-6px_14px_rgba(255,255,255,0.95),6px_6px_14px_rgba(135,120,108,0.75)] p-1.5 z-30 space-y-1">
                   <button
                     onClick={() => { onRenewWatch(form.id); setIsMenuOpen(false); }}
-                    className="w-full text-left px-3 py-2 text-[12px] font-extrabold text-[#3D2E24] rounded-xl hover:bg-[rgba(234,88,12,0.08)] flex items-center gap-2 transition-colors cursor-pointer"
+                    className="w-full text-left px-3 py-2 text-[12px] font-extrabold text-[#1F1610] rounded-xl hover:bg-[rgba(234,88,12,0.08)] flex items-center gap-2 transition-colors cursor-pointer"
                   >
                     <Clock className="h-3.5 w-3.5 text-[#EA580C]" />
                     Renew Watch
                   </button>
                   <button
                     onClick={(e) => { handleCopyId(e); setIsMenuOpen(false); }}
-                    className="w-full text-left px-3 py-2 text-[12px] font-extrabold text-[#3D2E24] rounded-xl hover:bg-[rgba(234,88,12,0.08)] flex items-center gap-2 transition-colors cursor-pointer"
+                    className="w-full text-left px-3 py-2 text-[12px] font-extrabold text-[#1F1610] rounded-xl hover:bg-[rgba(234,88,12,0.08)] flex items-center gap-2 transition-colors cursor-pointer"
                   >
-                    <Copy className="h-3.5 w-3.5 text-[#7C6A5A]" />
+                    <Copy className="h-3.5 w-3.5 text-[#4A3E34]" />
                     Copy Form ID
                   </button>
                   <button
                     onClick={() => { onOpenConnectModal(); setIsMenuOpen(false); }}
-                    className="w-full text-left px-3 py-2 text-[12px] font-extrabold text-[#3D2E24] rounded-xl hover:bg-[rgba(234,88,12,0.08)] flex items-center gap-2 transition-colors cursor-pointer"
+                    className="w-full text-left px-3 py-2 text-[12px] font-extrabold text-[#1F1610] rounded-xl hover:bg-[rgba(234,88,12,0.08)] flex items-center gap-2 transition-colors cursor-pointer"
                   >
-                    <SlidersHorizontal className="h-3.5 w-3.5 text-[#7C6A5A]" />
+                    <SlidersHorizontal className="h-3.5 w-3.5 text-[#4A3E34]" />
                     Remap Fields
                   </button>
                   <button
@@ -795,10 +795,10 @@ function SuccessToast({ message, onDismiss }: { message: string; onDismiss: () =
   }, [onDismiss]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[#F6EFE9] text-[#3D2E24] px-5 py-3.5 rounded-2xl shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(206,187,172,0.7)] border-0">
+    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[#D8CFC2] text-[#1F1610] px-5 py-3.5 rounded-2xl shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(135,120,108,0.7)] border-0">
       <CheckCircle2 className="h-5 w-5 text-[#10B981] shrink-0" />
       <span className="text-[14px] font-extrabold">{message}</span>
-      <button onClick={onDismiss} className="ml-2 text-[#8C7769] hover:text-[#3D2E24] transition-colors" aria-label="Dismiss toast">
+      <button onClick={onDismiss} className="ml-2 text-[#4A3E34] hover:text-[#1F1610] transition-colors" aria-label="Dismiss toast">
         <X className="h-4 w-4" />
       </button>
     </div>
@@ -946,11 +946,11 @@ export default function FormsManagerPage() {
 
   if (user?.role !== 'ADMIN') {
     return (
-      <div className="flex items-center justify-center min-h-[60vh] bg-[#F6EFE9]">
-        <div className="text-center p-8 rounded-3xl bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] max-w-md">
+      <div className="flex items-center justify-center min-h-[60vh] bg-[#D8CFC2]">
+        <div className="text-center p-8 rounded-3xl bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] max-w-md">
           <AlertTriangle className="h-12 w-12 text-[#EF4444] mx-auto mb-4" />
-          <h2 className="text-[22px] font-extrabold text-[#3D2E24] mb-2">Access Denied</h2>
-          <p className="text-[#7C6A5A] font-medium">You do not have permission to access the Forms Manager.</p>
+          <h2 className="text-[22px] font-extrabold text-[#1F1610] mb-2">Access Denied</h2>
+          <p className="text-[#4A3E34] font-medium">You do not have permission to access the Forms Manager.</p>
         </div>
       </div>
     );
@@ -961,10 +961,10 @@ export default function FormsManagerPage() {
       {/* ── 1. Header Section ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[36px] font-extrabold tracking-tight text-[#3D2E24] leading-tight">
+          <h1 className="text-[36px] font-extrabold tracking-tight text-[#1F1610] leading-tight">
             Forms Manager
           </h1>
-          <p className="text-[15px] text-[#7C6A5A] mt-1 font-extrabold">
+          <p className="text-[15px] text-[#4A3E34] mt-1 font-extrabold">
             Connect Google Forms to automatically log production video projects into Mattwork.
           </p>
         </div>
@@ -979,45 +979,45 @@ export default function FormsManagerPage() {
 
       {/* ── 2. Summary Metric Cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#F6EFE9] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)]">
-          <p className="text-[12px] font-extrabold text-[#7C6A5A] uppercase tracking-wider">Connected Forms</p>
-          <p className="text-[28px] font-black text-[#3D2E24] leading-tight mt-0.5">{summary.totalForms}</p>
-          <p className="text-[11px] text-[#8C7769] font-medium mt-0.5">Active form integrations</p>
+        <div className="bg-[#D8CFC2] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)]">
+          <p className="text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider">Connected Forms</p>
+          <p className="text-[28px] font-black text-[#1F1610] leading-tight mt-0.5">{summary.totalForms}</p>
+          <p className="text-[11px] text-[#4A3E34] font-medium mt-0.5">Active form integrations</p>
         </div>
 
-        <div className="bg-[#F6EFE9] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)]">
-          <p className="text-[12px] font-extrabold text-[#7C6A5A] uppercase tracking-wider">Active Watches</p>
-          <p className="text-[28px] font-black text-[#3D2E24] leading-tight mt-0.5">{summary.activeWatches}</p>
-          <p className="text-[11px] text-[#8C7769] font-medium mt-0.5">Google webhooks live</p>
+        <div className="bg-[#D8CFC2] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)]">
+          <p className="text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider">Active Watches</p>
+          <p className="text-[28px] font-black text-[#1F1610] leading-tight mt-0.5">{summary.activeWatches}</p>
+          <p className="text-[11px] text-[#4A3E34] font-medium mt-0.5">Google webhooks live</p>
         </div>
 
-        <div className="bg-[#F6EFE9] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)]">
-          <p className="text-[12px] font-extrabold text-[#7C6A5A] uppercase tracking-wider">Total Responses</p>
-          <p className="text-[28px] font-black text-[#3D2E24] leading-tight mt-0.5">{summary.totalResponses}</p>
-          <p className="text-[11px] text-[#8C7769] font-medium mt-0.5">Auto-generated projects</p>
+        <div className="bg-[#D8CFC2] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)]">
+          <p className="text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider">Total Responses</p>
+          <p className="text-[28px] font-black text-[#1F1610] leading-tight mt-0.5">{summary.totalResponses}</p>
+          <p className="text-[11px] text-[#4A3E34] font-medium mt-0.5">Auto-generated projects</p>
         </div>
 
-        <div className="bg-[#F6EFE9] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(206,187,172,0.6)]">
-          <p className="text-[12px] font-extrabold text-[#7C6A5A] uppercase tracking-wider">Last Sync</p>
-          <p className="text-[18px] font-black text-[#3D2E24] leading-tight mt-0.5 truncate">
+        <div className="bg-[#D8CFC2] p-5 rounded-3xl shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)]">
+          <p className="text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider">Last Sync</p>
+          <p className="text-[18px] font-black text-[#1F1610] leading-tight mt-0.5 truncate">
             {formatRelativeTime(summary.lastSyncTime)}
           </p>
-          <p className="text-[10px] text-[#8C7769] font-medium mt-0.5 truncate">
+          <p className="text-[10px] text-[#4A3E34] font-medium mt-0.5 truncate">
             {summary.lastSyncTime ? summary.lastSyncTime.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'No sync recorded'}
           </p>
         </div>
       </div>
 
       {/* ── 3. Search & Filter Bar ── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#F6EFE9] p-4 rounded-3xl shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(206,187,172,0.6)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#D8CFC2] p-4 rounded-3xl shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(135,120,108,0.6)]">
         <div className="relative flex-1 min-w-[260px]">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8C7769]" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A3E34]" />
           <input
             type="text"
             placeholder="Search client, form name, or Form ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 text-[13px] rounded-2xl border-0 bg-[#F6EFE9] text-[#3D2E24] font-semibold placeholder:text-[#8C7769] shadow-[inset_3px_3px_6px_rgba(206,187,172,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none transition-all"
+            className="w-full pl-10 pr-4 py-2.5 text-[13px] rounded-2xl border-0 bg-[#D8CFC2] text-[#1F1610] font-semibold placeholder:text-[#4A3E34] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none transition-all"
           />
         </div>
 
@@ -1026,7 +1026,7 @@ export default function FormsManagerPage() {
             options={statusOptions}
             value={statusFilter}
             onChange={(val) => setStatusFilter(val)}
-            icon={<Filter className="h-3.5 w-3.5 text-[#8C7769]" />}
+            icon={<Filter className="h-3.5 w-3.5 text-[#4A3E34]" />}
           />
 
           {connectedAdminsList.length > 0 && (
@@ -1034,7 +1034,7 @@ export default function FormsManagerPage() {
               options={adminOptions}
               value={adminFilter}
               onChange={(val) => setAdminFilter(val)}
-              icon={<SlidersHorizontal className="h-3.5 w-3.5 text-[#8C7769]" />}
+              icon={<SlidersHorizontal className="h-3.5 w-3.5 text-[#4A3E34]" />}
             />
           )}
 
@@ -1042,56 +1042,56 @@ export default function FormsManagerPage() {
             options={sortOptions}
             value={sortBy}
             onChange={(val) => setSortBy(val as any)}
-            icon={<ArrowUpDown className="h-3.5 w-3.5 text-[#8C7769]" />}
+            icon={<ArrowUpDown className="h-3.5 w-3.5 text-[#4A3E34]" />}
           />
         </div>
       </div>
 
       {/* ── 4. Main Refined Full-Width Table ── */}
       {isLoading ? (
-        <div className="bg-[#F6EFE9] rounded-3xl p-6 shadow-[inset_2px_2px_5px_rgba(206,187,172,0.4),inset_-2px_-2px_5px_rgba(255,255,255,0.85)] animate-pulse space-y-3">
+        <div className="bg-[#D8CFC2] rounded-3xl p-6 shadow-[inset_2px_2px_5px_rgba(135,120,108,0.4),inset_-2px_-2px_5px_rgba(255,255,255,0.85)] animate-pulse space-y-3">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-12 bg-[#F6EFE9] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(206,187,172,0.5)] rounded-2xl" />
+            <div key={i} className="h-12 bg-[#D8CFC2] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(135,120,108,0.5)] rounded-2xl" />
           ))}
         </div>
       ) : error ? (
-        <div className="p-6 rounded-3xl bg-[#F6EFE9] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)] text-center space-y-2">
+        <div className="p-6 rounded-3xl bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)] text-center space-y-2">
           <AlertTriangle className="h-7 w-7 text-[#EF4444] mx-auto" />
           <p className="font-extrabold text-[#EF4444] text-[15px]">Failed to load connected forms</p>
-          <p className="text-[12px] text-[#7C6A5A]">{(error as any)?.message || 'Unexpected server error.'}</p>
+          <p className="text-[12px] text-[#4A3E34]">{(error as any)?.message || 'Unexpected server error.'}</p>
         </div>
       ) : filteredForms.length === 0 ? (
         forms && forms.length === 0 ? (
           <EmptyState onConnect={() => setIsConnectOpen(true)} />
         ) : (
-          <div className="text-center py-12 px-6 bg-[#F6EFE9] rounded-3xl shadow-[inset_3px_3px_6px_rgba(206,187,172,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+          <div className="text-center py-12 px-6 bg-[#D8CFC2] rounded-3xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
             <Search className="h-8 w-8 text-[#EA580C] mx-auto mb-2" />
-            <h4 className="text-[16px] font-extrabold text-[#3D2E24]">No forms match active filters</h4>
-            <p className="text-[13px] text-[#7C6A5A] mt-1 mb-3">Try clearing search terms or adjusting filter dropdowns.</p>
+            <h4 className="text-[16px] font-extrabold text-[#1F1610]">No forms match active filters</h4>
+            <p className="text-[13px] text-[#4A3E34] mt-1 mb-3">Try clearing search terms or adjusting filter dropdowns.</p>
             <button
               onClick={() => { setSearch(''); setStatusFilter('ALL'); setAdminFilter('ALL'); }}
-              className="px-4 py-2 rounded-2xl bg-[#F6EFE9] text-[#3D2E24] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(206,187,172,0.5)] font-extrabold text-[12px] cursor-pointer"
+              className="px-4 py-2 rounded-2xl bg-[#D8CFC2] text-[#1F1610] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(135,120,108,0.5)] font-extrabold text-[12px] cursor-pointer"
             >
               Reset Filters
             </button>
           </div>
         )
       ) : (
-        <div className="bg-[#F6EFE9] rounded-3xl shadow-[inset_2px_2px_5px_rgba(206,187,172,0.4),inset_-2px_-2px_5px_rgba(255,255,255,0.85)] p-1.5 overflow-hidden w-full">
+        <div className="bg-[#D8CFC2] rounded-3xl shadow-[inset_2px_2px_5px_rgba(135,120,108,0.4),inset_-2px_-2px_5px_rgba(255,255,255,0.85)] p-1.5 overflow-hidden w-full">
           <div className="overflow-x-auto">
             <table className="w-full text-[13px] border-collapse">
               <thead>
-                <tr className="border-b border-[rgba(206,187,172,0.3)] bg-[#F6EFE9]">
-                  <th className="text-left px-4 py-3 font-extrabold text-[11px] uppercase tracking-wider text-[#8C7769]">Client & Form</th>
-                  <th className="text-left px-4 py-3 font-extrabold text-[11px] uppercase tracking-wider text-[#8C7769]">Form ID</th>
-                  <th className="text-left px-4 py-3 font-extrabold text-[11px] uppercase tracking-wider text-[#8C7769]">Status</th>
-                  <th className="text-left px-4 py-3 font-extrabold text-[11px] uppercase tracking-wider text-[#8C7769]">Responses</th>
-                  <th className="text-left px-4 py-3 font-extrabold text-[11px] uppercase tracking-wider text-[#8C7769]">Last Sync</th>
-                  <th className="text-left px-4 py-3 font-extrabold text-[11px] uppercase tracking-wider text-[#8C7769]">Connected By</th>
-                  <th className="text-right px-4 py-3 font-extrabold text-[11px] uppercase tracking-wider text-[#8C7769]">Actions</th>
+                <tr className="border-b border-[rgba(135,120,108,0.3)] bg-[#D8CFC2]">
+                  <th className="text-left px-4 py-3 font-extrabold text-[11px] uppercase tracking-wider text-[#4A3E34]">Client & Form</th>
+                  <th className="text-left px-4 py-3 font-extrabold text-[11px] uppercase tracking-wider text-[#4A3E34]">Form ID</th>
+                  <th className="text-left px-4 py-3 font-extrabold text-[11px] uppercase tracking-wider text-[#4A3E34]">Status</th>
+                  <th className="text-left px-4 py-3 font-extrabold text-[11px] uppercase tracking-wider text-[#4A3E34]">Responses</th>
+                  <th className="text-left px-4 py-3 font-extrabold text-[11px] uppercase tracking-wider text-[#4A3E34]">Last Sync</th>
+                  <th className="text-left px-4 py-3 font-extrabold text-[11px] uppercase tracking-wider text-[#4A3E34]">Connected By</th>
+                  <th className="text-right px-4 py-3 font-extrabold text-[11px] uppercase tracking-wider text-[#4A3E34]">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[rgba(206,187,172,0.2)]">
+              <tbody className="divide-y divide-[rgba(135,120,108,0.2)]">
                 {paginatedForms.map((form) => (
                   <FormTableRow
                     key={form.id}
@@ -1108,26 +1108,26 @@ export default function FormsManagerPage() {
           </div>
 
           {/* ── Pagination Footer ── */}
-          <div className="px-5 py-3 border-t border-[rgba(206,187,172,0.3)] bg-[#F6EFE9] flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-[12px] text-[#7C6A5A] font-extrabold">
-              Showing <span className="text-[#3D2E24]">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="text-[#3D2E24]">{Math.min(currentPage * itemsPerPage, filteredForms.length)}</span> of <span className="text-[#3D2E24]">{filteredForms.length}</span> connected forms
+          <div className="px-5 py-3 border-t border-[rgba(135,120,108,0.3)] bg-[#D8CFC2] flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-[12px] text-[#4A3E34] font-extrabold">
+              Showing <span className="text-[#1F1610]">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="text-[#1F1610]">{Math.min(currentPage * itemsPerPage, filteredForms.length)}</span> of <span className="text-[#1F1610]">{filteredForms.length}</span> connected forms
             </p>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="p-1.5 rounded-xl bg-[#F6EFE9] text-[#3D2E24] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(206,187,172,0.5)] disabled:opacity-40 cursor-pointer"
+                className="p-1.5 rounded-xl bg-[#D8CFC2] text-[#1F1610] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(135,120,108,0.5)] disabled:opacity-40 cursor-pointer"
                 title="Previous Page"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </button>
-              <span className="text-[12px] font-extrabold text-[#3D2E24] px-3 py-0.5 rounded-xl bg-[#F6EFE9] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+              <span className="text-[12px] font-extrabold text-[#1F1610] px-3 py-0.5 rounded-xl bg-[#D8CFC2] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
                 Page {currentPage} of {totalPages}
               </span>
               <button
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="p-1.5 rounded-xl bg-[#F6EFE9] text-[#3D2E24] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(206,187,172,0.5)] disabled:opacity-40 cursor-pointer"
+                className="p-1.5 rounded-xl bg-[#D8CFC2] text-[#1F1610] shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(135,120,108,0.5)] disabled:opacity-40 cursor-pointer"
                 title="Next Page"
               >
                 <ChevronRight className="h-3.5 w-3.5" />

@@ -99,7 +99,7 @@ export default function CustomDropdown({
                     flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-[13.5px] font-extrabold cursor-pointer transition-all
                     ${isSelected
                       ? 'bg-[rgba(234,88,12,0.09)] text-[#EA580C]'
-                      : 'hover:bg-[rgba(234,88,12,0.06)] hover:text-[#EA580C] text-[#3D2E24]'
+                      : 'hover:bg-[rgba(234,88,12,0.06)] hover:text-[#EA580C] text-[#1F1610]'
                     }
                   `}
                 >

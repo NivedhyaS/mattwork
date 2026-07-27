@@ -26,10 +26,10 @@ import { z } from 'zod';
 import { useAuthStore } from '@/store/authStore';
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING: 'bg-[#F6EFE9] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
-  COMPLETED: 'bg-[#F6EFE9] text-[#10B981] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
-  FAILED: 'bg-[#F6EFE9] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
-  REFUNDED: 'bg-[#F6EFE9] text-[#8C7769] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
+  PENDING: 'bg-[#D8CFC2] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
+  COMPLETED: 'bg-[#D8CFC2] text-[#10B981] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
+  FAILED: 'bg-[#D8CFC2] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
+  REFUNDED: 'bg-[#D8CFC2] text-[#4A3E34] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-extrabold px-3 py-1 rounded-xl',
 };
 
 const METHOD_LABELS: Record<string, string> = {

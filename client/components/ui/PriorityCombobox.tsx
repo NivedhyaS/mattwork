@@ -143,7 +143,7 @@ export default function PriorityCombobox({
                 >
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <div className={`h-3 w-3 rounded-full shrink-0 ${option.dotColor}`} />
-                    <p className={`font-extrabold text-[13px] truncate ${isSelected ? 'text-[#3D2E24]' : 'text-[#5C4A3E]'}`}>
+                    <p className={`font-extrabold text-[13px] truncate ${isSelected ? 'text-[#1F1610]' : 'text-[#4A3E34]'}`}>
                       {option.label}
                     </p>
                   </div>

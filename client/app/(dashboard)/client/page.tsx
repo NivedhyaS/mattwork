@@ -397,7 +397,7 @@ export default function ClientDashboard() {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto text-base bg-[#F6EFE9] text-[#3D2E24] p-1">
+    <div className="space-y-8 max-w-7xl mx-auto text-base bg-[#D8CFC2] text-[#1F1610] p-1">
       {/* Breakdown Modal */}
       <BreakdownModal
         isOpen={breakdownCard !== null}
@@ -414,10 +414,10 @@ export default function ClientDashboard() {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[36px] font-extrabold tracking-tight text-[#3D2E24] leading-tight">
+          <h1 className="text-[36px] font-extrabold tracking-tight text-[#1F1610] leading-tight">
             Client Dashboard
           </h1>
-          <p className="text-[16px] text-[#7C6A5A] mt-1">
+          <p className="text-[16px] text-[#4A3E34] mt-1">
             Welcome back. Track your video production progress and credit balance.
           </p>
         </div>
@@ -428,7 +428,7 @@ export default function ClientDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] animate-pulse">
+            <div key={i} className="p-6 bg-[#D8CFC2] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(135,120,108,0.65)] animate-pulse">
               <div className="h-3 w-20 bg-[#E2D6C8] rounded mb-3" />
               <div className="h-8 w-28 bg-[#E2D6C8] rounded" />
             </div>
@@ -443,22 +443,22 @@ export default function ClientDashboard() {
                 onClick: () => setBreakdownCard(stat.key as any),
               })}
               className={cn(
-                "p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(201,180,163,0.75)] text-left w-full transition-all duration-200",
+                "p-6 bg-[#D8CFC2] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(135,120,108,0.65)] hover:shadow-[-10px_-10px_20px_rgba(255,255,255,0.95),10px_10px_20px_rgba(135,120,108,0.75)] text-left w-full transition-all duration-200",
                 isClickable ? "cursor-pointer group" : ""
               )}
             >
               <div>
-                <p className="text-[12px] uppercase font-extrabold text-[#8C7769] tracking-wider">
+                <p className="text-[12px] uppercase font-extrabold text-[#4A3E34] tracking-wider">
                   {stat.label}
                 </p>
-                <h3 className="kpi-figure text-[38px] font-extrabold mt-2 text-[#3D2E24] leading-none">
+                <h3 className="kpi-figure text-[38px] font-extrabold mt-2 text-[#1F1610] leading-none">
                   {stat.value}
-                  <span className="text-[18px] font-bold text-[#8C7769] ml-1.5 normal-case">
+                  <span className="text-[18px] font-bold text-[#4A3E34] ml-1.5 normal-case">
                     {stat.description}
                   </span>
                 </h3>
                 {stat.secondary && (
-                  <p className="text-[13px] text-[#7C6A5A] mt-2 font-bold">
+                  <p className="text-[13px] text-[#4A3E34] mt-2 font-bold">
                     {stat.secondary}
                   </p>
                 )}

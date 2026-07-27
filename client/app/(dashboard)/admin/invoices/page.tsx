@@ -30,11 +30,11 @@ import { z } from 'zod';
 import { useAuthStore } from '@/store/authStore';
 
 const STATUS_COLORS: Record<string, string> = {
-  DRAFT: 'bg-[#F6EFE9] text-[#7C6A5A] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
-  SENT: 'bg-[#F6EFE9] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
-  PAID: 'bg-[#F6EFE9] text-[#10B981] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
-  OVERDUE: 'bg-[#F6EFE9] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
-  CANCELLED: 'bg-[#F6EFE9] text-[#8C7769] shadow-[inset_2px_2px_4px_rgba(206,187,172,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
+  DRAFT: 'bg-[#D8CFC2] text-[#4A3E34] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
+  SENT: 'bg-[#D8CFC2] text-[#EA580C] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
+  PAID: 'bg-[#D8CFC2] text-[#10B981] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
+  OVERDUE: 'bg-[#D8CFC2] text-[#EF4444] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
+  CANCELLED: 'bg-[#D8CFC2] text-[#4A3E34] shadow-[inset_2px_2px_4px_rgba(135,120,108,0.5),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] font-bold',
 };
 
 const invoiceItemSchema = z.object({
