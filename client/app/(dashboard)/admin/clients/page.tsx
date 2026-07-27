@@ -167,14 +167,14 @@ export default function ClientsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[36px] font-bold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-[36px] font-extrabold tracking-tight text-[#1F1610]">
             Client Management
           </h1>
-          <p className="text-[15px] text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-[15px] text-[#4A3E34] mt-1 font-extrabold">
             Manage clients, view their projects, and track balances
           </p>
         </div>
-        <Button size="sm" onClick={() => setIsCreateOpen(true)} className="self-start sm:self-auto cursor-pointer">
+        <Button size="sm" onClick={() => setIsCreateOpen(true)} className="self-start sm:self-auto cursor-pointer rounded-2xl font-extrabold">
           <UserPlus className="h-4 w-4 mr-2" />
           Add Client
         </Button>
@@ -182,111 +182,113 @@ export default function ClientsPage() {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A3E34]" />
         <input
           type="text"
           placeholder="Search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-[15px] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full pl-11 pr-4 py-3 rounded-2xl border-0 bg-[#D8CFC2] text-[#1F1610] font-semibold shadow-[inset_4px_4px_8px_rgba(135,120,108,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(135,120,108,0.7),inset_-5px_-5px_10px_rgba(255,255,255,0.9)] transition-all text-[15px]"
         />
       </div>
 
       {/* Table Card */}
-      <div className="bg-white dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-900 shadow-sm overflow-hidden">
+      <div className="bg-[#D8CFC2] rounded-3xl border-0 shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] overflow-hidden p-2">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-slate-300" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#EA580C]" />
           </div>
         ) : error ? (
           <div className="text-center py-20 flex flex-col items-center gap-4">
-            <div className="h-14 w-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center">
-              <AlertTriangle className="h-7 w-7 text-rose-500" />
+            <div className="h-14 w-14 rounded-full bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(239,68,68,0.3)] flex items-center justify-center">
+              <AlertTriangle className="h-7 w-7 text-[#EF4444]" />
             </div>
             <div>
-              <p className="font-bold text-[16px] text-rose-600 dark:text-rose-400">Failed to load clients</p>
-              <p className="text-[14px] text-slate-400 mt-1">
+              <p className="font-extrabold text-[16px] text-[#EF4444]">Failed to load clients</p>
+              <p className="text-[14px] text-[#4A3E34] mt-1">
                 {(error as any)?.response?.data?.message || (error as any)?.message || 'Could not reach the server.'}
               </p>
             </div>
-            <button onClick={() => refetch()} className="flex items-center gap-2 text-[14px] font-semibold border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer">
-              <RefreshCw className="h-4 w-4" />
+            <button onClick={() => refetch()} className="flex items-center gap-2 text-[14px] font-extrabold px-4 py-2 rounded-2xl bg-[#D8CFC2] text-[#1F1610] shadow-[-4px_-4px_10px_rgba(255,255,255,0.9),4px_4px_10px_rgba(135,120,108,0.6)] cursor-pointer">
+              <RefreshCw className="h-4 w-4 text-[#EA580C]" />
               Retry
             </button>
           </div>
         ) : clients.length === 0 ? (
-          <div className="text-center py-16 text-slate-400">
-            <Briefcase className="h-10 w-10 mx-auto mb-3 text-slate-200 dark:text-slate-800" />
-            <p className="font-semibold text-[15px]">No clients found</p>
+          <div className="text-center py-16 text-[#4A3E34]">
+            <Briefcase className="h-10 w-10 mx-auto mb-3 text-[#EA580C]" />
+            <p className="font-extrabold text-[15px]">No clients found</p>
             <p className="text-[13px] mt-1">Add a client or try a different search</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-900 text-[12px] font-bold uppercase tracking-wider text-slate-400">
-                  <th className="py-4 px-5">Client</th>
-                  <th className="py-4 px-5">Company</th>
-                  <th className="py-4 px-5">Location</th>
-                  <th className="py-4 px-5">Budget</th>
-                  <th className="py-4 px-5">Joined</th>
-                  <th className="py-4 px-5 text-right">Actions</th>
+                <tr className="bg-[#D8CFC2] border-b border-[rgba(135,120,108,0.3)] text-xs font-extrabold uppercase tracking-wider text-[#4A3E34]">
+                  <th className="py-3.5 px-5">Client</th>
+                  <th className="py-3.5 px-5">Company</th>
+                  <th className="py-3.5 px-5">Location</th>
+                  <th className="py-3.5 px-5">Budget</th>
+                  <th className="py-3.5 px-5">Joined</th>
+                  <th className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-900">
+              <tbody className="divide-y divide-[rgba(135,120,108,0.25)]">
                 {clients.map((client) => (
-                  <tr key={client.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-900/30 transition-colors group">
+                  <tr key={client.id} className="hover:bg-[rgba(255,255,255,0.35)] transition-all duration-150 group cursor-pointer">
                     <td className="py-3.5 px-5">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center font-bold text-indigo-600 text-[15px] shrink-0">
+                        <div className="h-9 w-9 rounded-full bg-[#E2DACC] text-[#1F1610] font-extrabold shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.7)] flex items-center justify-center shrink-0">
                           {client.user.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-semibold text-[15px] text-slate-900 dark:text-white">{client.user.name}</p>
-                          <p className="text-[13px] text-slate-400">{client.user.email}</p>
+                          <p className="font-extrabold text-[14px] text-[#1F1610] group-hover:text-[#EA580C] transition-colors">{client.user.name}</p>
+                          <p className="text-[12px] text-[#4A3E34] font-semibold">{client.user.email}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-5 text-[14px] text-slate-600 dark:text-slate-300 font-medium">
-                      {client.company || <span className="text-slate-300 dark:text-slate-700 italic text-[13px]">Not set</span>}
+                    <td className="py-4 px-5 text-[14px] text-[#1F1610] font-bold">
+                      {client.company || <span className="text-[#4A3E34] italic text-[13px] font-normal">Not set</span>}
                     </td>
-                    <td className="py-4 px-5 text-[14px] text-slate-500">
+                    <td className="py-4 px-5 text-[14px] text-[#4A3E34] font-bold">
                       {[client.city, client.country].filter(Boolean).join(', ') || '—'}
                     </td>
                     <td className="py-4 px-5">
                       {client.advancePaid != null && client.advancePaid > 0 ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-semibold text-[13px]">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[rgba(16,185,129,0.14)] text-[#10B981] border border-[rgba(16,185,129,0.4)] shadow-[inset_1.5px_1.5px_3px_rgba(16,185,129,0.25)] font-extrabold text-[12px]">
                           <DollarSign className="h-3 w-3" />
                           {formatCurrency(client.advancePaid, client.currency || 'USD')}
                         </span>
                       ) : (
-                        <span className="text-slate-300 dark:text-slate-700 italic text-[13px]">Not set</span>
+                        <span className="text-[#4A3E34] italic text-[13px] font-semibold">Not set</span>
                       )}
                     </td>
-                    <td className="py-4 px-5 text-[14px] text-slate-500">
+                    <td className="py-4 px-5 text-[13px] text-[#4A3E34] font-bold">
                       {new Date(client.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>
                     <td className="py-3.5 px-5">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => openEditDrawer(client)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition-colors cursor-pointer"
+                          className="p-2 rounded-xl text-[#4A3E34] hover:text-[#EA580C] bg-[#D8CFC2] hover:bg-[#E2DACC] shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_5px_rgba(135,120,108,0.5)] transition-all cursor-pointer"
+                          title="Edit Client"
                         >
-                          <Edit2 className="h-4 w-4" />
+                          <Edit2 className="h-3.5 w-3.5" />
                         </button>
                         <Link
                           href={`/admin/projects?clientId=${client.id}`}
                           title="View projects"
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition-colors"
+                          className="p-2 rounded-xl text-[#4A3E34] hover:text-[#EA580C] bg-[#D8CFC2] hover:bg-[#E2DACC] shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_5px_rgba(135,120,108,0.5)] transition-all"
                         >
-                          <ExternalLink className="h-4 w-4" />
+                          <ExternalLink className="h-3.5 w-3.5" />
                         </Link>
                         <button
                           onClick={() => setDeleteClientTarget(client)}
                           disabled={deleteMutation.isPending}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer disabled:opacity-50"
+                          className="p-2 rounded-xl text-[#EF4444] hover:text-white bg-[#D8CFC2] hover:bg-[#EF4444] shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_5px_rgba(135,120,108,0.5)] transition-all cursor-pointer disabled:opacity-50"
+                          title="Delete Client"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     </td>
@@ -297,7 +299,7 @@ export default function ClientsPage() {
           </div>
         )}
       </div>
-      <p className="text-[13px] text-slate-400 text-right">{clients.length} clients shown</p>
+      <p className="text-[13px] text-[#4A3E34] font-bold text-right">{clients.length} clients shown</p>
 
       {/* Create Client Drawer */}
       <Drawer
