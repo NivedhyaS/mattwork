@@ -5,7 +5,7 @@
 :root {
   --background: #D8CFC2;
   --foreground: #1F1610;
-  --card: #D8CFC2;
+  --card: #E2DACC;
   --border: transparent;
   /* Primary Accent: Warm Mid-Tone Orange */
   --accent: #F97316;
@@ -18,10 +18,10 @@
   --inactive: #4A3E34;
 
   /* Neumorphic Shadow Tokens (blended neutral grey for crisp depth & zero glare) */
-  --neu-light-shadow: -8px -8px 16px rgba(255, 255, 255, 0.75);
-  --neu-dark-shadow: 8px 8px 16px rgba(135, 120, 108, 0.75);
-  --neu-outer: -8px -8px 16px rgba(255, 255, 255, 0.75), 8px 8px 16px rgba(135, 120, 108, 0.75);
-  --neu-outer-hover: -10px -10px 20px rgba(255, 255, 255, 0.85), 10px 10px 20px rgba(125, 110, 98, 0.85);
+  --neu-light-shadow: -8px -8px 18px rgba(255, 255, 255, 0.85);
+  --neu-dark-shadow: 8px 8px 18px rgba(125, 110, 98, 0.75);
+  --neu-outer: -8px -8px 18px rgba(255, 255, 255, 0.85), 8px 8px 18px rgba(125, 110, 98, 0.75);
+  --neu-outer-hover: -10px -10px 22px rgba(255, 255, 255, 0.9), 10px 10px 22px rgba(115, 100, 88, 0.85);
   --neu-inset: inset 4px 4px 8px rgba(135, 120, 108, 0.7), inset -4px -4px 8px rgba(255, 255, 255, 0.72);
   --neu-carved: inset 3px 3px 6px rgba(135, 120, 108, 0.65), inset -3px -3px 6px rgba(255, 255, 255, 0.72);
 
@@ -44,7 +44,7 @@
 html.dark {
   --background: #D8CFC2;
   --foreground: #1F1610;
-  --card: #D8CFC2;
+  --card: #E2DACC;
   --border: transparent;
   --accent: #F97316;
   --accent-light: rgba(249, 115, 22, 0.15);
@@ -96,15 +96,15 @@ body {
 
 /* Raised Outer Neumorphic Card */
 .flat-card, .neu-card {
-  background-color: #D8CFC2 !important;
+  background-color: #E2DACC !important;
   border: none !important;
   border-radius: 20px !important;
-  box-shadow: -8px -8px 16px rgba(255, 255, 255, 0.75), 8px 8px 16px rgba(135, 120, 108, 0.75) !important;
+  box-shadow: -8px -8px 18px rgba(255, 255, 255, 0.85), 8px 8px 18px rgba(125, 110, 98, 0.75) !important;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .flat-card:hover, .neu-card:hover {
-  box-shadow: -10px -10px 20px rgba(255, 255, 255, 0.85), 10px 10px 20px rgba(125, 110, 98, 0.85) !important;
+  box-shadow: -10px -10px 22px rgba(255, 255, 255, 0.9), 10px 10px 22px rgba(115, 100, 88, 0.85) !important;
 }
 
 /* Inset / Carved Neumorphic Element (Selected, Active, Input, Carved Container) */

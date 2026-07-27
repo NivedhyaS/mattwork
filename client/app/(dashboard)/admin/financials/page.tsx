@@ -186,34 +186,33 @@ export default function FinancialsDashboard() {
     ? formatEditorCurrency(metrics.pendingEditorPayouts)
     : formatCurrency(metrics.pendingEditorPayouts / rate);
 
-
   return (
-    <div className="space-y-8 bg-[#F6EFE9] text-[#3D2E24] p-1">
+    <div className="space-y-8 bg-[#D8CFC2] text-[#1F1610] p-1">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[36px] font-extrabold tracking-tight text-[#3D2E24] leading-tight">
+          <h1 className="text-[36px] font-extrabold tracking-tight text-[#1F1610] leading-tight">
             Financial Analytics
           </h1>
-          <p className="text-[16px] mt-1 text-[#7C6A5A]">
+          <p className="text-[16px] mt-1 text-[#4A3E34]">
             Real-time profit tracking, client balances, and editor payout performance.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {exchangeRate && (
-            <div className="text-[12px] text-[#8C7769] font-bold px-3 py-2 rounded-xl shadow-[inset_2px_2px_5px_rgba(206,187,172,0.5),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]">
+            <div className="text-[12px] text-[#4A3E34] font-bold px-3 py-2 rounded-xl shadow-[inset_2px_2px_5px_rgba(135,120,108,0.6),inset_-2px_-2px_5px_rgba(255,255,255,0.72)]">
               1 USD = ₹{exchangeRate.usdToInr.toFixed(2)} · {formatFetchedAgo(exchangeRate.fetchedAt)}
             </div>
           )}
 
           {/* Currency Toggle */}
-          <div className="flex items-center bg-[#F6EFE9] p-1.5 rounded-2xl shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+          <div className="flex items-center bg-[#D8CFC2] p-1.5 rounded-2xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.7),inset_-3px_-3px_6px_rgba(255,255,255,0.72)]">
             <button
               onClick={() => handleCurrencyChange('USD')}
               className={`px-4 py-2 rounded-xl text-[13px] font-extrabold transition-all cursor-pointer ${
                 displayCurrency === 'USD'
-                  ? 'bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white shadow-[-3px_-3px_6px_rgba(255,255,255,0.7),3px_3px_8px_rgba(234,88,12,0.4)]'
-                  : 'text-[#7C6A5A] hover:text-[#3D2E24]'
+                  ? 'bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white shadow-[-3px_-3px_6px_rgba(255,255,255,0.6),3px_3px_8px_rgba(234,88,12,0.45)]'
+                  : 'text-[#4A3E34] hover:text-[#1F1610]'
               }`}
             >
               USD ($)
@@ -222,8 +221,8 @@ export default function FinancialsDashboard() {
               onClick={() => handleCurrencyChange('INR')}
               className={`px-4 py-2 rounded-xl text-[13px] font-extrabold transition-all cursor-pointer ${
                 displayCurrency === 'INR'
-                  ? 'bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white shadow-[-3px_-3px_6px_rgba(255,255,255,0.7),3px_3px_8px_rgba(234,88,12,0.4)]'
-                  : 'text-[#7C6A5A] hover:text-[#3D2E24]'
+                  ? 'bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white shadow-[-3px_-3px_6px_rgba(255,255,255,0.6),3px_3px_8px_rgba(234,88,12,0.45)]'
+                  : 'text-[#4A3E34] hover:text-[#1F1610]'
               }`}
             >
               INR (₹)
@@ -232,26 +231,32 @@ export default function FinancialsDashboard() {
 
           <button
             onClick={handleRefresh}
-            className="h-10 px-4 font-bold text-[14px] text-[#3D2E24] bg-[#F6EFE9] rounded-2xl flex items-center justify-center transition-all cursor-pointer shadow-[-4px_-4px_8px_rgba(255,255,255,0.9),4px_4px_8px_rgba(206,187,172,0.6)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.95),6px_6px_12px_rgba(201,180,163,0.7)] active:shadow-[inset_3px_3px_6px_rgba(206,187,172,0.6),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]"
+            className="h-10 px-4 font-bold text-[14px] text-[#1F1610] bg-[#E2DACC] rounded-2xl flex items-center justify-center transition-all cursor-pointer shadow-[-4px_-4px_8px_rgba(255,255,255,0.85),4px_4px_8px_rgba(125,110,98,0.72)] hover:shadow-[-6px_-6px_12px_rgba(255,255,255,0.9),6px_6px_12px_rgba(115,100,88,0.8)] active:shadow-[inset_3px_3px_6px_rgba(135,120,108,0.7),inset_-3px_-3px_6px_rgba(255,255,255,0.72)]"
           >
-            <RefreshCw size={16} className="mr-2 text-[#EA580C]" /> Refresh
+            <div className="h-6 w-6 rounded-lg bg-[#D8CFC2] flex items-center justify-center mr-2 shadow-[inset_1.5px_1.5px_3px_rgba(135,120,108,0.6),inset_-1.5px_-1.5px_3px_rgba(255,255,255,0.72)] text-[#EA580C]">
+              <RefreshCw size={13} />
+            </div>
+            Refresh
           </button>
         </div>
       </div>
 
       {/* ── Filter Bar ──────────────────────────────────────────────────────── */}
-      <div className="p-6 bg-[#F6EFE9] rounded-3xl shadow-[-8px_-8px_16px_rgba(255,255,255,0.9),8px_8px_16px_rgba(206,187,172,0.65)] space-y-4">
-        <div className="flex items-center gap-2 text-[16px] font-extrabold text-[#3D2E24]">
-          <Filter size={18} className="text-[#EA580C]" /> Filters
+      <div className="p-6 bg-[#D8CFC2] rounded-3xl shadow-[inset_4px_4px_10px_rgba(135,120,108,0.55),inset_-4px_-4px_10px_rgba(255,255,255,0.7)] border border-[rgba(135,120,108,0.35)] space-y-4">
+        <div className="flex items-center gap-3 text-[16px] font-extrabold text-[#1F1610]">
+          <div className="h-8 w-8 rounded-xl bg-[#D8CFC2] flex items-center justify-center shadow-[inset_2px_2px_4px_rgba(135,120,108,0.65),inset_-2px_-2px_4px_rgba(255,255,255,0.72)] text-[#EA580C]">
+            <Filter size={16} />
+          </div>
+          <span>Filters</span>
         </div>
         <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
           {/* Client Filter */}
           <div>
-            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">Client</label>
+            <label className="block text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider mb-1.5">Client</label>
             <select
               value={selectedClient}
               onChange={(e) => setSelectedClient(e.target.value)}
-              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+              className="w-full h-11 px-4 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(135,120,108,0.7),inset_-4px_-4px_8px_rgba(255,255,255,0.72)] cursor-pointer"
             >
               <option value="">All Clients</option>
               {clients.map((c: any) => (
@@ -264,11 +269,11 @@ export default function FinancialsDashboard() {
 
           {/* Editor Filter */}
           <div>
-            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">Editor</label>
+            <label className="block text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider mb-1.5">Editor</label>
             <select
               value={selectedEditor}
               onChange={(e) => setSelectedEditor(e.target.value)}
-              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+              className="w-full h-11 px-4 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(135,120,108,0.7),inset_-4px_-4px_8px_rgba(255,255,255,0.72)] cursor-pointer"
             >
               <option value="">All Editors</option>
               {editors.map((e: any) => (
@@ -281,44 +286,44 @@ export default function FinancialsDashboard() {
 
           {/* Month Filter */}
           <div>
-            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">Month</label>
+            <label className="block text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider mb-1.5">Month</label>
             <input
               type="month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+              className="w-full h-11 px-4 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(135,120,108,0.7),inset_-4px_-4px_8px_rgba(255,255,255,0.72)]"
             />
           </div>
 
           {/* Date Range Start */}
           <div>
-            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">From Date</label>
+            <label className="block text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider mb-1.5">From Date</label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+              className="w-full h-11 px-4 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(135,120,108,0.7),inset_-4px_-4px_8px_rgba(255,255,255,0.72)]"
             />
           </div>
 
           {/* Date Range End */}
           <div>
-            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">To Date</label>
+            <label className="block text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider mb-1.5">To Date</label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+              className="w-full h-11 px-4 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(135,120,108,0.7),inset_-4px_-4px_8px_rgba(255,255,255,0.72)]"
             />
           </div>
 
           {/* Status Filter */}
           <div>
-            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">Status</label>
+            <label className="block text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider mb-1.5">Status</label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)] cursor-pointer"
+              className="w-full h-11 px-4 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(135,120,108,0.7),inset_-4px_-4px_8px_rgba(255,255,255,0.72)] cursor-pointer"
             >
               <option value="">All Statuses</option>
               <option value="NEW_VIDEO">New Video</option>
@@ -332,98 +337,98 @@ export default function FinancialsDashboard() {
 
           {/* Min Value */}
           <div>
-            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">Min Project Value</label>
+            <label className="block text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider mb-1.5">Min Project Value</label>
             <input
               type="number"
               placeholder="Min $"
               value={minVal}
               onChange={(e) => setMinVal(e.target.value)}
-              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+              className="w-full h-11 px-4 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(135,120,108,0.7),inset_-4px_-4px_8px_rgba(255,255,255,0.72)]"
             />
           </div>
 
           {/* Max Value */}
           <div>
-            <label className="block text-[12px] font-extrabold text-[#8C7769] uppercase tracking-wider mb-1.5">Max Project Value</label>
+            <label className="block text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider mb-1.5">Max Project Value</label>
             <input
               type="number"
               placeholder="Max $"
               value={maxVal}
               onChange={(e) => setMaxVal(e.target.value)}
-              className="w-full h-11 px-4 bg-[#F6EFE9] text-[#3D2E24] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(206,187,172,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.85)]"
+              className="w-full h-11 px-4 bg-[#D8CFC2] text-[#1F1610] font-semibold border-0 rounded-2xl text-sm shadow-[inset_4px_4px_8px_rgba(135,120,108,0.7),inset_-4px_-4px_8px_rgba(255,255,255,0.72)]"
             />
           </div>
         </div>
 
-          <div className="flex justify-end gap-3 mt-4">
-            <button
-              onClick={handleReset}
-              className="px-5 py-2.5 text-[14px] font-bold text-[#8C7769] hover:text-[#EA580C] transition-colors cursor-pointer"
-            >
-              Reset Filters
-            </button>
-          </div>
+        <div className="flex justify-end gap-3 mt-4">
+          <button
+            onClick={handleReset}
+            className="px-5 py-2.5 text-[14px] font-bold text-[#4A3E34] hover:text-[#EA580C] transition-colors cursor-pointer"
+          >
+            Reset Filters
+          </button>
         </div>
+      </div>
 
       {/* Row 1: Total Revenue, Total Editor Cost, Total Net Margin, Margin % */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Revenue */}
-        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+        <Card className="neu-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
+            <CardTitle className="text-[12px] font-extrabold uppercase tracking-widest text-[#4A3E34]">
               Total Revenue
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
+            <div className="kpi-figure text-[38px] font-extrabold text-[#1F1610]">
               {revenueFormatted}
             </div>
-            <p className="text-[12px] mt-2 text-slate-500">Gross billed revenue (approved projects)</p>
+            <p className="text-[12px] mt-2 text-[#4A3E34]">Gross billed revenue (approved projects)</p>
           </CardContent>
         </Card>
 
         {/* Total Costs */}
-        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+        <Card className="neu-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
+            <CardTitle className="text-[12px] font-extrabold uppercase tracking-widest text-[#4A3E34]">
               Total Editor Cost
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
+            <div className="kpi-figure text-[38px] font-extrabold text-[#1F1610]">
               {costsFormatted}
             </div>
-            <p className="text-[12px] mt-2 text-slate-500">Editor service payouts</p>
+            <p className="text-[12px] mt-2 text-[#4A3E34]">Editor service payouts</p>
           </CardContent>
         </Card>
 
         {/* Total Profit */}
-        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+        <Card className="neu-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
+            <CardTitle className="text-[12px] font-extrabold uppercase tracking-widest text-[#4A3E34]">
               Total Net Margin
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
+            <div className="kpi-figure text-[38px] font-extrabold text-[#10B981]">
               {profitFormatted}
             </div>
-            <p className="text-[12px] mt-2 text-slate-500">Net operating margin</p>
+            <p className="text-[12px] mt-2 text-[#4A3E34]">Net operating margin</p>
           </CardContent>
         </Card>
 
         {/* Margin % */}
-        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+        <Card className="neu-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
+            <CardTitle className="text-[12px] font-extrabold uppercase tracking-widest text-[#4A3E34]">
               Margin %
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
+            <div className="kpi-figure text-[38px] font-extrabold text-[#EA580C]">
               {metrics.marginPct}{metrics.marginPct !== 'N/A' ? '%' : ''}
             </div>
-            <p className="text-[12px] mt-2 text-slate-500">Profit relative to revenue</p>
+            <p className="text-[12px] mt-2 text-[#4A3E34]">Profit relative to revenue</p>
           </CardContent>
         </Card>
       </div>
@@ -431,67 +436,67 @@ export default function FinancialsDashboard() {
       {/* Row 2: Client Balances, Pending Payouts */}
       <div className="grid gap-6 sm:grid-cols-2">
         {/* Outstanding Balance */}
-        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+        <Card className="neu-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
+            <CardTitle className="text-[12px] font-extrabold uppercase tracking-widest text-[#4A3E34]">
               Client Balances
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
+            <div className="kpi-figure text-[38px] font-extrabold text-[#1F1610]">
               {outstandingFormatted}
             </div>
-            <p className="text-[12px] mt-2 text-slate-500">Unpaid invoice amounts</p>
+            <p className="text-[12px] mt-2 text-[#4A3E34]">Unpaid invoice amounts</p>
           </CardContent>
         </Card>
 
         {/* Pending Editor Payments */}
-        <Card className="shadow-none border border-slate-200 dark:border-slate-850">
+        <Card className="neu-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-slate-500">
+            <CardTitle className="text-[12px] font-extrabold uppercase tracking-widest text-[#4A3E34]">
               Pending Payouts
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="kpi-figure text-[38px] font-extrabold text-slate-900 dark:text-white">
+            <div className="kpi-figure text-[38px] font-extrabold text-[#EA580C]">
               {pendingPaymentsFormatted}
             </div>
-            <p className="text-[12px] mt-2 text-slate-500">Owed to editors for finished videos</p>
+            <p className="text-[12px] mt-2 text-[#4A3E34]">Owed to editors for finished videos</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Row 3: Per-Client breakdown table */}
-      <Card className="shadow-none border border-slate-200 dark:border-slate-800">
+      <Card className="neu-card">
         <CardHeader>
-          <CardTitle>Per-Client Breakdown</CardTitle>
+          <CardTitle className="text-[20px] font-extrabold text-[#1F1610]">Per-Client Breakdown</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Client Name</th>
-                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Total Revenue</th>
-                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Advance Received</th>
-                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Remaining Credit</th>
-                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Completed Videos</th>
+              <tr className="border-b border-[#CBBFA8]">
+                <th className="py-3 px-4 font-bold text-[#4A3E34]">Client Name</th>
+                <th className="py-3 px-4 font-bold text-[#4A3E34]">Total Revenue</th>
+                <th className="py-3 px-4 font-bold text-[#4A3E34]">Advance Received</th>
+                <th className="py-3 px-4 font-bold text-[#4A3E34]">Remaining Credit</th>
+                <th className="py-3 px-4 font-bold text-[#4A3E34]">Completed Videos</th>
               </tr>
             </thead>
             <tbody>
               {metrics.clientBreakdowns.filter(b => b.completedVideos > 0 || b.advanceReceived > 0).map(client => (
-                <tr key={client.clientId} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/50">
-                  <td className="py-3 px-4 font-medium">{client.clientName}</td>
-                  <td className="py-3 px-4">{displayCurrency === 'USD' ? formatCurrency(client.totalRevenue) : formatEditorCurrency(client.totalRevenue * rate)}</td>
-                  <td className="py-3 px-4">{displayCurrency === 'USD' ? formatCurrency(client.advanceReceived) : formatEditorCurrency(client.advanceReceived * rate)}</td>
-                  <td className="py-3 px-4 text-emerald-600 dark:text-emerald-400 font-medium">
+                <tr key={client.clientId} className="border-b border-[rgba(135,120,108,0.25)] hover:bg-[rgba(255,255,255,0.2)]">
+                  <td className="py-3 px-4 font-extrabold text-[#1F1610]">{client.clientName}</td>
+                  <td className="py-3 px-4 font-bold">{displayCurrency === 'USD' ? formatCurrency(client.totalRevenue) : formatEditorCurrency(client.totalRevenue * rate)}</td>
+                  <td className="py-3 px-4 font-bold">{displayCurrency === 'USD' ? formatCurrency(client.advanceReceived) : formatEditorCurrency(client.advanceReceived * rate)}</td>
+                  <td className="py-3 px-4 text-[#10B981] font-extrabold">
                     {displayCurrency === 'USD' ? formatCurrency(client.remainingCredit) : formatEditorCurrency(client.remainingCredit * rate)}
                   </td>
-                  <td className="py-3 px-4">{client.completedVideos}</td>
+                  <td className="py-3 px-4 font-bold">{client.completedVideos}</td>
                 </tr>
               ))}
               {metrics.clientBreakdowns.filter(b => b.completedVideos > 0 || b.advanceReceived > 0).length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-500">No client data matches the current filters.</td>
+                  <td colSpan={5} className="py-8 text-center text-[#4A3E34] font-semibold">No client data matches the current filters.</td>
                 </tr>
               )}
             </tbody>
@@ -500,34 +505,34 @@ export default function FinancialsDashboard() {
       </Card>
 
       {/* Row 4: Per-Editor breakdown table */}
-      <Card className="shadow-none border border-slate-200 dark:border-slate-800">
+      <Card className="neu-card">
         <CardHeader>
-          <CardTitle>Per-Editor Breakdown</CardTitle>
+          <CardTitle className="text-[20px] font-extrabold text-[#1F1610]">Per-Editor Breakdown</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Editor Name</th>
-                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Amount Payable</th>
-                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Completed Projects</th>
-                <th className="py-3 px-4 font-semibold text-slate-600 dark:text-slate-300">Pending Payments</th>
+              <tr className="border-b border-[#CBBFA8]">
+                <th className="py-3 px-4 font-bold text-[#4A3E34]">Editor Name</th>
+                <th className="py-3 px-4 font-bold text-[#4A3E34]">Amount Payable</th>
+                <th className="py-3 px-4 font-bold text-[#4A3E34]">Completed Projects</th>
+                <th className="py-3 px-4 font-bold text-[#4A3E34]">Pending Payments</th>
               </tr>
             </thead>
             <tbody>
               {metrics.editorBreakdowns.filter(b => b.completedProjectsCount > 0).map(editor => (
-                <tr key={editor.editorId} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/50">
-                  <td className="py-3 px-4 font-medium">{editor.editorName}</td>
-                  <td className="py-3 px-4">{displayCurrency === 'INR' ? formatEditorCurrency(editor.amountPayable) : formatCurrency(editor.amountPayable / rate)}</td>
-                  <td className="py-3 px-4">{editor.completedProjectsCount}</td>
-                  <td className="py-3 px-4 text-rose-600 dark:text-rose-400 font-medium">
+                <tr key={editor.editorId} className="border-b border-[rgba(135,120,108,0.25)] hover:bg-[rgba(255,255,255,0.2)]">
+                  <td className="py-3 px-4 font-extrabold text-[#1F1610]">{editor.editorName}</td>
+                  <td className="py-3 px-4 font-bold">{displayCurrency === 'INR' ? formatEditorCurrency(editor.amountPayable) : formatCurrency(editor.amountPayable / rate)}</td>
+                  <td className="py-3 px-4 font-bold">{editor.completedProjectsCount}</td>
+                  <td className="py-3 px-4 text-[#EF4444] font-extrabold">
                     {displayCurrency === 'INR' ? formatEditorCurrency(editor.pendingPaymentsAmount) : formatCurrency(editor.pendingPaymentsAmount / rate)}
                   </td>
                 </tr>
               ))}
               {metrics.editorBreakdowns.filter(b => b.completedProjectsCount > 0).length === 0 && (
                 <tr>
-                  <td colSpan={4} className="py-8 text-center text-slate-500">No editor data matches the current filters.</td>
+                  <td colSpan={4} className="py-8 text-center text-[#4A3E34] font-semibold">No editor data matches the current filters.</td>
                 </tr>
               )}
             </tbody>
