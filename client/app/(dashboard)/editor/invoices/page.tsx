@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { formatEditorCurrency } from '@/lib/utils';
 import Button from '@/components/ui/button';
+import Toast from '@/components/ui/Toast';
 
 interface Project {
   id: string;
@@ -89,6 +90,7 @@ export default function EditorInvoicesPage() {
   const [disputeReason, setDisputeReason] = useState('');
   const [disputeSubmitting, setDisputeSubmitting] = useState(false);
   const [disputeSuccessMsg, setDisputeSuccessMsg] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type?: 'success' | 'error' | 'info' } | null>(null);
 
   // Statement History
   const [statementHistory] = useState<StatementHistoryItem[]>([]);
@@ -202,11 +204,11 @@ export default function EditorInvoicesPage() {
 
   const handleDownloadPdf = async () => {
     if (!selectedClientId) {
-      alert('Please select a client first.');
+      setToast({ message: 'Please select an assigned client first.', type: 'error' });
       return;
     }
     if (selectedProjectIds.length === 0) {
-      alert('Please select at least one completed deliverable to compile a payout statement.');
+      setToast({ message: 'Please select at least one completed deliverable to compile a payout statement.', type: 'error' });
       return;
     }
     setIsGenerating(true);
@@ -219,13 +221,13 @@ export default function EditorInvoicesPage() {
       a.click();
       URL.revokeObjectURL(url);
 
-      // Re-fetch eligible clients and clear selected client after generation
       const res = await api.get('/invoices/editor/eligible-clients');
       setEligibleClients(res.data.data || []);
       setSelectedClientId('');
+      setToast({ message: 'Payout PDF compiled and downloaded successfully!', type: 'success' });
     } catch (err) {
       console.error('PDF download failed:', err);
-      alert('Failed to generate payout PDF.');
+      setToast({ message: 'Failed to generate payout PDF.', type: 'error' });
     } finally {
       setIsGenerating(false);
     }
@@ -233,11 +235,11 @@ export default function EditorInvoicesPage() {
 
   const handlePreviewPdf = async () => {
     if (!selectedClientId) {
-      alert('Please select a client first.');
+      setToast({ message: 'Please select an assigned client first.', type: 'error' });
       return;
     }
     if (selectedProjectIds.length === 0) {
-      alert('Please select at least one completed deliverable to preview.');
+      setToast({ message: 'Please select at least one completed deliverable to preview.', type: 'error' });
       return;
     }
     setIsGenerating(true);
@@ -248,7 +250,7 @@ export default function EditorInvoicesPage() {
       setPreviewModalOpen(true);
     } catch (err) {
       console.error('Preview failed:', err);
-      alert('Failed to render PDF preview.');
+      setToast({ message: 'Failed to render PDF preview.', type: 'error' });
     } finally {
       setIsGenerating(false);
     }
@@ -264,14 +266,15 @@ export default function EditorInvoicesPage() {
         reason: disputeReason
       });
       setDisputeSuccessMsg(`Dispute registered for "${disputeModalItem.title}". Ticket opened.`);
+      setToast({ message: 'Dispute ticket submitted to Admin.', type: 'success' });
       setTimeout(() => {
         setDisputeModalItem(null);
         setDisputeReason('');
         setDisputeSuccessMsg(null);
-      }, 3000);
+      }, 2500);
     } catch (err) {
       console.error('Dispute failed:', err);
-      alert('Failed to submit dispute ticket.');
+      setToast({ message: 'Failed to submit dispute ticket.', type: 'error' });
     } finally {
       setDisputeSubmitting(false);
     }
@@ -288,76 +291,76 @@ export default function EditorInvoicesPage() {
       {/* 1. Header Section & Navigation Tabs */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[32px] font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-            <FileText className="h-8 w-8 text-accent" />
+          <h1 className="text-[36px] font-extrabold text-[#1F1610] tracking-tight flex items-center gap-3">
+            <FileText className="h-8 w-8 text-[#EA580C]" />
             Editor Payout Statements
           </h1>
-          <p className="text-[15px] text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-[15px] text-[#4A3E34] mt-1 font-extrabold">
             Compile client payout statements, customize payout accounts, and manage official PDF records.
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center bg-slate-100 dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="flex items-center bg-[#D8CFC2] p-1.5 rounded-2xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] shrink-0">
           <button
             onClick={() => setActiveTab('generator')}
-            className={`flex items-center gap-2 px-4 py-2 text-[14px] font-bold rounded-lg transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 text-[13px] font-extrabold rounded-xl transition-all cursor-pointer ${
               activeTab === 'generator'
-                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_6px_rgba(234,88,12,0.3)]'
+                : 'text-[#4A3E34] hover:text-[#1F1610]'
             }`}
           >
-            <Sparkles className="h-4 w-4 text-accent" />
+            <Sparkles className="h-4 w-4" />
             Compile Statement
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`flex items-center gap-2 px-4 py-2 text-[14px] font-bold rounded-lg transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 text-[13px] font-extrabold rounded-xl transition-all cursor-pointer ${
               activeTab === 'history'
-                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_6px_rgba(234,88,12,0.3)]'
+                : 'text-[#4A3E34] hover:text-[#1F1610]'
             }`}
           >
-            <History className="h-4 w-4 text-accent" />
+            <History className="h-4 w-4" />
             Statement History
           </button>
         </div>
       </div>
 
       {/* 2. Top Summary KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div className="flat-card bg-card p-5 border border-border space-y-2 relative overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-[#E2DACC] p-6 rounded-3xl border-0 shadow-[-8px_-8px_18px_rgba(255,255,255,0.85),8px_8px_18px_rgba(125,110,98,0.75)] space-y-2 relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider">
               {selectedClientId ? `Earnings for ${selectedClientName}` : 'Selected Client Earnings'}
             </span>
-            <DollarSign className="h-4 w-4 text-accent" />
+            <DollarSign className="h-5 w-5 text-[#EA580C]" />
           </div>
-          <p className="text-[26px] font-extrabold text-slate-900 dark:text-white">
+          <p className="text-[32px] font-black text-[#1F1610]">
             {formatEditorCurrency(subtotal)}
           </p>
-          <p className="text-[12px] text-slate-500">
+          <p className="text-[13px] font-extrabold text-[#4A3E34]">
             From {selectedProjects.length} selected deliverable(s) {selectedClientId ? `for ${selectedClientName}` : ''}
           </p>
         </div>
 
-        <div className="flat-card bg-card p-5 border border-border space-y-2 relative overflow-hidden">
+        <div className="bg-[#E2DACC] p-6 rounded-3xl border-0 shadow-[-8px_-8px_18px_rgba(255,255,255,0.85),8px_8px_18px_rgba(125,110,98,0.75)] space-y-2 relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">Lifetime Earnings</span>
-            <TrendingUp className="h-4 w-4 text-status-green" />
+            <span className="text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider">Lifetime Earnings</span>
+            <TrendingUp className="h-5 w-5 text-[#10B981]" />
           </div>
-          <p className="text-[26px] font-extrabold text-slate-900 dark:text-white">
+          <p className="text-[32px] font-black text-[#1F1610]">
             {formatEditorCurrency(lifetimeTotal)}
           </p>
-          <p className="text-[12px] text-slate-500">
+          <p className="text-[13px] font-extrabold text-[#4A3E34]">
             Across {allCompletedProjects.length} total completed video deliverables
           </p>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-24 flat-card bg-card border border-border">
-          <Loader2 className="h-8 w-8 animate-spin text-accent" />
+        <div className="flex items-center justify-center py-24 bg-[#D8CFC2] rounded-3xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+          <Loader2 className="h-8 w-8 animate-spin text-[#EA580C]" />
         </div>
       ) : activeTab === 'generator' ? (
         /* 3. Main Generator Two-Panel Layout */
@@ -365,40 +368,40 @@ export default function EditorInvoicesPage() {
           
           {/* Left Panel: Compile Statement Config Card (4 cols) */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="flat-card bg-card p-6 border border-border space-y-5 shadow-sm">
-              <div className="flex items-center justify-between border-b border-border pb-4">
-                <h3 className="font-extrabold text-[16px] text-slate-900 dark:text-white flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-accent" />
+            <div className="bg-[#E2DACC] p-6 rounded-3xl border-0 shadow-[-8px_-8px_18px_rgba(255,255,255,0.85),8px_8px_18px_rgba(125,110,98,0.75)] space-y-5">
+              <div className="flex items-center justify-between border-b border-[rgba(135,120,108,0.3)] pb-4">
+                <h3 className="font-extrabold text-[17px] text-[#1F1610] flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-[#EA580C]" />
                   Compile Statement
                 </h3>
-                <span className="text-[11px] font-bold text-accent bg-accent/10 px-2.5 py-1 rounded-full uppercase">
+                <span className="text-[11px] font-extrabold text-[#EA580C] bg-[rgba(234,88,12,0.12)] border border-[rgba(234,88,12,0.3)] px-2.5 py-1 rounded-full uppercase tracking-wider">
                   Live Sync
                 </span>
               </div>
 
               {/* Searchable Client Selector */}
               <div className="space-y-2">
-                <label className="text-[12px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block">
+                <label className="text-[12px] text-[#4A3E34] font-extrabold uppercase tracking-wider block">
                   Select Assigned Client
                 </label>
                 
                 {eligibleClients.length === 0 ? (
-                  <div className="p-3 text-[13px] text-slate-500 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
+                  <div className="p-3.5 text-[13px] text-[#4A3E34] bg-[#D8CFC2] rounded-2xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] text-center font-extrabold">
                     No eligible uninvoiced clients found.
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     <input
                       type="text"
                       placeholder="Search client by name..."
                       value={clientSearch}
                       onChange={(e) => setClientSearch(e.target.value)}
-                      className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-1 focus:ring-accent outline-none"
+                      className="w-full text-[13px] border-0 rounded-2xl p-3 bg-[#D8CFC2] text-[#1F1610] font-extrabold shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none placeholder-[#4A3E34]"
                     />
                     <select
                       value={selectedClientId}
                       onChange={(e) => setSelectedClientId(e.target.value)}
-                      className="w-full text-[14px] font-semibold border border-slate-300 dark:border-slate-700 rounded-xl p-3 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-accent focus:outline-none"
+                      className="w-full text-[14px] font-extrabold border-0 rounded-2xl p-3 bg-[#D8CFC2] text-[#1F1610] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none cursor-pointer"
                     >
                       <option value="">-- Choose a Client --</option>
                       {filteredClients.map((c) => (
@@ -412,53 +415,53 @@ export default function EditorInvoicesPage() {
               </div>
 
               {/* Editor Details (Confirmable) */}
-              <div className="space-y-4 pt-2 border-t border-border">
-                <span className="text-[12px] text-slate-400 font-bold uppercase tracking-wider block">
+              <div className="space-y-4 pt-3 border-t border-[rgba(135,120,108,0.3)]">
+                <span className="text-[12px] text-[#4A3E34] font-extrabold uppercase tracking-wider block">
                   Payee Information
                 </span>
 
                 <div className="space-y-1.5">
-                  <label className="text-[12px] text-slate-500 font-medium">From (Editor Name)</label>
+                  <label className="text-[12px] text-[#4A3E34] font-extrabold">From (Editor Name)</label>
                   <input
                     type="text"
                     value={editorName}
                     onChange={(e) => setEditorName(e.target.value)}
-                    className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold"
+                    className="w-full text-[13px] border-0 rounded-xl p-2.5 bg-[#D8CFC2] text-[#1F1610] font-extrabold shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] focus:outline-none"
                   />
                 </div>
 
                 {/* Bank Account Payment Details */}
-                <div className="space-y-3 pt-3 border-t border-border">
-                  <span className="text-[12px] text-slate-400 font-bold uppercase tracking-wider block flex items-center gap-1.5">
-                    <Building2 className="h-3.5 w-3.5 text-indigo-400" />
+                <div className="space-y-3 pt-3 border-t border-[rgba(135,120,108,0.3)]">
+                  <span className="text-[12px] text-[#4A3E34] font-extrabold uppercase tracking-wider flex items-center gap-1.5">
+                    <Building2 className="h-3.5 w-3.5 text-[#EA580C]" />
                     Bank Account Details
                   </span>
 
-                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3 shadow-xs">
+                  <div className="p-3.5 rounded-2xl bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] space-y-3">
                     {/* Account Name */}
                     <div className="space-y-1">
-                      <label className="text-[11px] text-slate-500 font-bold uppercase tracking-wide">
+                      <label className="text-[11px] text-[#4A3E34] font-extrabold uppercase tracking-wide">
                         Account Name
                       </label>
                       <input
                         type="text"
                         value={accountName}
                         onChange={(e) => setAccountName(e.target.value)}
-                        className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-semibold focus:ring-1 focus:ring-accent outline-none"
+                        className="w-full text-[13px] border-0 rounded-xl p-2.5 bg-[#E2DACC] text-[#1F1610] font-extrabold shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] focus:outline-none"
                         placeholder="e.g. Test Editor"
                       />
                     </div>
 
                     {/* Account Number */}
                     <div className="space-y-1">
-                      <label className="text-[11px] text-slate-500 font-bold uppercase tracking-wide">
+                      <label className="text-[11px] text-[#4A3E34] font-extrabold uppercase tracking-wide">
                         Account Number
                       </label>
                       <input
                         type="text"
                         value={accountNumber}
                         onChange={(e) => setAccountNumber(e.target.value)}
-                        className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-mono font-semibold focus:ring-1 focus:ring-accent outline-none"
+                        className="w-full text-[13px] border-0 rounded-xl p-2.5 bg-[#E2DACC] text-[#1F1610] font-mono font-extrabold shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] focus:outline-none"
                         placeholder="e.g. 50100987654321"
                       />
                     </div>
@@ -466,26 +469,26 @@ export default function EditorInvoicesPage() {
                     {/* 2-column: IFSC Code & Bank Name */}
                     <div className="grid grid-cols-2 gap-2.5">
                       <div className="space-y-1">
-                        <label className="text-[11px] text-slate-500 font-bold uppercase tracking-wide">
+                        <label className="text-[11px] text-[#4A3E34] font-extrabold uppercase tracking-wide">
                           IFSC Code
                         </label>
                         <input
                           type="text"
                           value={ifscCode}
                           onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
-                          className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-mono uppercase font-semibold focus:ring-1 focus:ring-accent outline-none"
+                          className="w-full text-[13px] border-0 rounded-xl p-2.5 bg-[#E2DACC] text-[#1F1610] font-mono uppercase font-extrabold shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] focus:outline-none"
                           placeholder="e.g. HDFC0001234"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[11px] text-slate-500 font-bold uppercase tracking-wide">
+                        <label className="text-[11px] text-[#4A3E34] font-extrabold uppercase tracking-wide">
                           Bank Name
                         </label>
                         <input
                           type="text"
                           value={bankName}
                           onChange={(e) => setBankName(e.target.value)}
-                          className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-semibold focus:ring-1 focus:ring-accent outline-none"
+                          className="w-full text-[13px] border-0 rounded-xl p-2.5 bg-[#E2DACC] text-[#1F1610] font-extrabold shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] focus:outline-none"
                           placeholder="e.g. HDFC Bank"
                         />
                       </div>
@@ -495,20 +498,20 @@ export default function EditorInvoicesPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-[12px] text-slate-500 font-medium">PAN / Tax ID</label>
+                    <label className="text-[12px] text-[#4A3E34] font-extrabold">PAN / Tax ID</label>
                     <input
                       type="text"
                       value={panNumber}
                       onChange={(e) => setPanNumber(e.target.value)}
-                      className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-mono uppercase"
+                      className="w-full text-[13px] border-0 rounded-xl p-2.5 bg-[#D8CFC2] text-[#1F1610] font-mono uppercase font-extrabold shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] focus:outline-none"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[12px] text-slate-500 font-medium">Currency</label>
+                    <label className="text-[12px] text-[#4A3E34] font-extrabold">Currency</label>
                     <select
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
-                      className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold"
+                      className="w-full text-[13px] border-0 rounded-xl p-2.5 bg-[#D8CFC2] text-[#1F1610] font-extrabold shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)] focus:outline-none cursor-pointer"
                     >
                       <option value="INR">INR (₹)</option>
                       <option value="USD">USD ($)</option>
@@ -519,23 +522,23 @@ export default function EditorInvoicesPage() {
               </div>
 
               {/* Live Calculation Ticker Box */}
-              <div className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-border space-y-2">
-                <div className="flex justify-between text-[13px] text-slate-500">
+              <div className="bg-[#D8CFC2] p-4 rounded-2xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] space-y-2">
+                <div className="flex justify-between text-[13px] text-[#4A3E34] font-extrabold">
                   <span>Selected Items Subtotal:</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{formatEditorCurrency(subtotal)}</span>
+                  <span className="font-black text-[#1F1610]">{formatEditorCurrency(subtotal)}</span>
                 </div>
-                <div className="border-t border-border pt-2 flex justify-between items-center">
-                  <span className="text-[14px] font-extrabold text-slate-900 dark:text-white">Net Payout:</span>
-                  <span className="text-[20px] font-extrabold text-accent">{formatEditorCurrency(netPayable)}</span>
+                <div className="border-t border-[rgba(135,120,108,0.3)] pt-2 flex justify-between items-center">
+                  <span className="text-[14px] font-extrabold text-[#1F1610]">Net Payout:</span>
+                  <span className="text-[22px] font-black text-[#EA580C]">{formatEditorCurrency(netPayable)}</span>
                 </div>
               </div>
 
               {/* Action Buttons Stack */}
-              <div className="space-y-2.5 pt-2">
+              <div className="space-y-3 pt-2">
                 <Button
                   onClick={handleDownloadPdf}
                   disabled={isGenerating}
-                  className="w-full flex items-center justify-center gap-2 bg-accent text-white font-bold py-3 cursor-pointer shadow-sm hover:opacity-90 transition-all"
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white font-extrabold py-3.5 rounded-2xl shadow-[-3px_-3px_8px_rgba(255,255,255,0.7),3px_3px_10px_rgba(234,88,12,0.35)] hover:shadow-[-5px_-5px_12px_rgba(255,255,255,0.8),5px_5px_14px_rgba(234,88,12,0.45)] transition-all cursor-pointer border-none text-[14px]"
                 >
                   {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                   Download Payout PDF
@@ -544,8 +547,7 @@ export default function EditorInvoicesPage() {
                 <Button
                   onClick={handlePreviewPdf}
                   disabled={isGenerating}
-                  variant="outline"
-                  className="w-full flex items-center justify-center gap-1.5 font-bold text-[13px]"
+                  className="w-full flex items-center justify-center gap-2 bg-[#D8CFC2] text-[#1F1610] hover:text-[#EA580C] font-extrabold text-[13px] py-3 rounded-2xl shadow-[-3px_-3px_6px_rgba(255,255,255,0.8),3px_3px_6px_rgba(135,120,108,0.5)] transition-all cursor-pointer border-0"
                 >
                   <Eye className="h-4 w-4" />
                   Preview Payout PDF
@@ -556,14 +558,14 @@ export default function EditorInvoicesPage() {
 
           {/* Right Panel: Line Items Table (8 cols) */}
           <div className="lg:col-span-8 space-y-6">
-            <div className="flat-card bg-card p-6 border border-border space-y-4 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
+            <div className="bg-[#E2DACC] p-6 rounded-3xl border-0 shadow-[-8px_-8px_18px_rgba(255,255,255,0.85),8px_8px_18px_rgba(125,110,98,0.75)] space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[rgba(135,120,108,0.3)] pb-4">
                 <div>
-                  <h3 className="font-extrabold text-[16px] text-slate-900 dark:text-white flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-status-green" />
+                  <h3 className="font-extrabold text-[17px] text-[#1F1610] flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-[#10B981]" />
                     Completed Deliverables Line Items
                   </h3>
-                  <p className="text-[13px] text-slate-500 mt-0.5">
+                  <p className="text-[13px] text-[#4A3E34] mt-0.5 font-extrabold">
                     {selectedClientId
                       ? `Uninvoiced completed deliverables for ${selectedClientName}. Check or uncheck to include.`
                       : 'Select an assigned client on the left to view eligible deliverables.'}
@@ -572,12 +574,12 @@ export default function EditorInvoicesPage() {
 
                 {completedProjects.length > 0 && (
                   <div className="flex items-center gap-3 shrink-0">
-                    <label className="flex items-center gap-2 text-[13px] font-bold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+                    <label className="flex items-center gap-2 text-[13px] font-extrabold text-[#1F1610] cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={selectedProjectIds.length === completedProjects.length && completedProjects.length > 0}
                         onChange={toggleSelectAll}
-                        className="rounded border-slate-300 text-accent focus:ring-accent h-4 w-4"
+                        className="rounded-lg text-[#EA580C] focus:ring-[#EA580C] h-4 w-4 cursor-pointer"
                       />
                       Select All ({completedProjects.length})
                     </label>
@@ -586,28 +588,28 @@ export default function EditorInvoicesPage() {
               </div>
 
               {!selectedClientId ? (
-                <div className="text-center py-16 px-4 flat-card bg-slate-50/50 dark:bg-slate-900/20 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl">
-                  <AlertCircle className="h-10 w-10 mx-auto mb-3 text-slate-400" />
-                  <h4 className="font-bold text-[16px] text-slate-800 dark:text-slate-200">
-                    No Client Selected
-                  </h4>
-                  <p className="text-[14px] text-slate-500 max-w-md mx-auto mt-1">
+                <div className="text-center py-16 px-6 bg-[#D8CFC2] rounded-3xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] max-w-xl mx-auto my-6 flex flex-col items-center">
+                  <div className="h-16 w-16 rounded-full bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] flex items-center justify-center mb-4">
+                    <AlertCircle className="h-8 w-8 text-[#EA580C]" />
+                  </div>
+                  <h4 className="font-extrabold text-[18px] text-[#1F1610] mb-1">No Client Selected</h4>
+                  <p className="text-[14px] text-[#4A3E34] max-w-md mx-auto font-extrabold">
                     Please select a client from the dropdown on the left to compile a payout statement for their completed deliverables.
                   </p>
                 </div>
               ) : loadingProjects ? (
-                <div className="flex items-center justify-center py-16 text-slate-400">
-                  <Loader2 className="h-6 w-6 animate-spin text-accent mr-2" /> Loading deliverables...
+                <div className="flex items-center justify-center py-16 text-[#4A3E34] font-extrabold">
+                  <Loader2 className="h-6 w-6 animate-spin text-[#EA580C] mr-2" /> Loading deliverables...
                 </div>
               ) : completedProjects.length === 0 ? (
                 /* Empty State */
-                <div className="text-center py-16 px-4 flat-card bg-slate-50/50 dark:bg-slate-900/20 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl">
-                  <AlertCircle className="h-10 w-10 mx-auto mb-3 text-slate-400" />
-                  <h4 className="font-bold text-[16px] text-slate-800 dark:text-slate-200">
-                    No Completed Deliverables Found
-                  </h4>
-                  <p className="text-[14px] text-slate-500 max-w-md mx-auto mt-1">
-                    There are no uninvoiced completed projects ({'UPLOADED'}) for {selectedClientName}.
+                <div className="text-center py-16 px-6 bg-[#D8CFC2] rounded-3xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] max-w-xl mx-auto my-6 flex flex-col items-center">
+                  <div className="h-16 w-16 rounded-full bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] flex items-center justify-center mb-4">
+                    <AlertCircle className="h-8 w-8 text-[#EA580C]" />
+                  </div>
+                  <h4 className="font-extrabold text-[18px] text-[#1F1610] mb-1">No Completed Deliverables Found</h4>
+                  <p className="text-[14px] text-[#4A3E34] max-w-md mx-auto font-extrabold">
+                    There are no uninvoiced completed projects (UPLOADED) for {selectedClientName}.
                   </p>
                 </div>
               ) : (
@@ -615,27 +617,25 @@ export default function EditorInvoicesPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-border text-[12px] font-bold uppercase text-slate-400 tracking-wider">
-                        <th className="py-3 px-3 w-10 text-center">Include</th>
-                        <th className="py-3 px-3">Deliverable Name</th>
-                        <th className="py-3 px-3 text-center">Completed Date</th>
-                        <th className="py-3 px-3 text-right">Rate</th>
-                        <th className="py-3 px-3 text-center">Qty</th>
-                        <th className="py-3 px-3 text-right">Amount</th>
-                        <th className="py-3 px-3 text-center">Action</th>
+                      <tr className="bg-[#E2DACC] border-b border-[rgba(135,120,108,0.3)] text-xs font-extrabold uppercase tracking-wider text-[#4A3E34]">
+                        <th className="py-3.5 px-3 w-10 text-center">Include</th>
+                        <th className="py-3.5 px-3">Deliverable Name</th>
+                        <th className="py-3.5 px-3 text-center">Completed Date</th>
+                        <th className="py-3.5 px-3 text-right">Rate</th>
+                        <th className="py-3.5 px-3 text-center">Qty</th>
+                        <th className="py-3.5 px-3 text-right">Amount</th>
+                        <th className="py-3.5 px-3 text-center">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-border text-[14px]">
+                    <tbody className="divide-y divide-[rgba(135,120,108,0.25)] text-[14px]">
                       {completedProjects.map((proj) => {
                         const isChecked = selectedProjectIds.includes(proj.id);
                         const rateVal = proj.editorPrice != null ? Number(proj.editorPrice) : ratePerVideo;
                         return (
                           <tr
                             key={proj.id}
-                            className={`transition-colors ${
-                              isChecked
-                                ? 'bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800/80'
-                                : 'bg-slate-50/40 dark:bg-slate-950/40 opacity-60'
+                            className={`hover:bg-[rgba(255,255,255,0.35)] transition-all duration-150 group ${
+                              isChecked ? '' : 'opacity-50'
                             }`}
                           >
                             <td className="py-3.5 px-3 text-center">
@@ -643,33 +643,33 @@ export default function EditorInvoicesPage() {
                                 type="checkbox"
                                 checked={isChecked}
                                 onChange={() => toggleSelectProject(proj.id)}
-                                className="rounded border-slate-300 text-accent focus:ring-accent h-4 w-4 cursor-pointer"
+                                className="rounded-lg text-[#EA580C] focus:ring-[#EA580C] h-4 w-4 cursor-pointer"
                               />
                             </td>
                             <td className="py-3.5 px-3">
-                              <p className="font-bold text-slate-900 dark:text-white line-clamp-1">
+                              <p className="font-extrabold text-[#1F1610] line-clamp-1 text-[14px]">
                                 {proj.title}
                               </p>
                             </td>
-                            <td className="py-3.5 px-3 text-center text-slate-500 font-medium whitespace-nowrap text-[13px]">
+                            <td className="py-3.5 px-3 text-center text-[#4A3E34] font-extrabold whitespace-nowrap text-[13px]">
                               {new Date(proj.updatedAt).toLocaleDateString('en-IN', {
                                 day: 'numeric',
                                 month: 'short',
                                 year: 'numeric'
                               })}
                             </td>
-                            <td className="py-3.5 px-3 text-right font-bold text-slate-800 dark:text-slate-200">
+                            <td className="py-3.5 px-3 text-right font-extrabold text-[#1F1610]">
                               {formatEditorCurrency(rateVal)}
                             </td>
-                            <td className="py-3.5 px-3 text-center font-bold text-slate-500">1</td>
-                            <td className="py-3.5 px-3 text-right font-extrabold text-slate-900 dark:text-white">
+                            <td className="py-3.5 px-3 text-center font-extrabold text-[#4A3E34]">1</td>
+                            <td className="py-3.5 px-3 text-right font-black text-[#1F1610]">
                               {formatEditorCurrency(rateVal)}
                             </td>
                             <td className="py-3.5 px-3 text-center">
                               <button
                                 onClick={() => setDisputeModalItem(proj)}
                                 title="Raise a dispute / report issue for this deliverable"
-                                className="inline-flex items-center gap-1 text-[12px] font-bold text-amber-600 dark:text-amber-400 hover:underline px-2 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20"
+                                className="px-3 py-1 rounded-xl bg-[rgba(245,158,11,0.14)] text-[#F59E0B] border border-[rgba(245,158,11,0.4)] shadow-[inset_1.5px_1.5px_3px_rgba(245,158,11,0.25)] font-extrabold text-[11.5px] cursor-pointer inline-flex items-center gap-1.5 hover:bg-[rgba(245,158,11,0.25)] transition-all"
                               >
                                 <AlertTriangle className="h-3.5 w-3.5" />
                                 Dispute
@@ -684,22 +684,22 @@ export default function EditorInvoicesPage() {
               )}
 
               {/* Table Footer Totals Summary */}
-              <div className="border-t border-border pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-900/30 p-4 rounded-xl">
-                <div className="text-[13px] text-slate-500">
-                  Showing <strong className="text-slate-800 dark:text-slate-200">{selectedProjects.length}</strong> of{' '}
-                  <strong className="text-slate-800 dark:text-slate-200">{completedProjects.length}</strong> deliverables selected
+              <div className="border-t border-[rgba(135,120,108,0.3)] pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#D8CFC2] p-4 rounded-2xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.85)]">
+                <div className="text-[13px] text-[#4A3E34] font-extrabold">
+                  Showing <strong className="text-[#1F1610] font-black">{selectedProjects.length}</strong> of{' '}
+                  <strong className="text-[#1F1610] font-black">{completedProjects.length}</strong> deliverables selected
                 </div>
 
                 <div className="flex items-center gap-6 text-right">
                   <div>
-                    <span className="text-[12px] text-slate-400 block font-bold uppercase">Subtotal</span>
-                    <span className="font-extrabold text-[16px] text-slate-900 dark:text-white">
+                    <span className="text-[12px] text-[#4A3E34] block font-extrabold uppercase">Subtotal</span>
+                    <span className="font-black text-[16px] text-[#1F1610]">
                       {formatEditorCurrency(subtotal)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[12px] text-slate-400 block font-bold uppercase">Final Payout</span>
-                    <span className="font-extrabold text-[20px] text-accent">
+                    <span className="text-[12px] text-[#4A3E34] block font-extrabold uppercase">Final Payout</span>
+                    <span className="font-black text-[22px] text-[#EA580C]">
                       {formatEditorCurrency(netPayable)}
                     </span>
                   </div>
@@ -710,115 +710,119 @@ export default function EditorInvoicesPage() {
         </div>
       ) : (
         /* 4. Statement History Tab */
-        <div className="flat-card bg-card p-6 border border-border space-y-6 shadow-sm">
-          <div className="flex items-center justify-between border-b border-border pb-4">
+        <div className="bg-[#E2DACC] p-6 rounded-3xl border-0 shadow-[-8px_-8px_18px_rgba(255,255,255,0.85),8px_8px_18px_rgba(125,110,98,0.75)] space-y-6">
+          <div className="flex items-center justify-between border-b border-[rgba(135,120,108,0.3)] pb-4">
             <div>
-              <h3 className="font-extrabold text-[18px] text-slate-900 dark:text-white flex items-center gap-2">
-                <History className="h-5 w-5 text-accent" />
+              <h3 className="font-extrabold text-[18px] text-[#1F1610] flex items-center gap-2">
+                <History className="h-5 w-5 text-[#EA580C]" />
                 Compiled Statement History
               </h3>
-              <p className="text-[13px] text-slate-500 mt-0.5">
+              <p className="text-[13px] text-[#4A3E34] mt-0.5 font-extrabold">
                 Review past monthly statements, payment statuses, and transaction details.
               </p>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border text-[12px] font-bold uppercase text-slate-400 tracking-wider">
-                  <th className="py-3 px-4">Statement No</th>
-                  <th className="py-3 px-4">Period</th>
-                  <th className="py-3 px-4">Date Compiled</th>
-                  <th className="py-3 px-4 text-center">Deliverables</th>
-                  <th className="py-3 px-4 text-right">Payout Total</th>
-                  <th className="py-3 px-4 text-center">Payment Status</th>
-                  <th className="py-3 px-4 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border text-[14px]">
-                {statementHistory.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition-colors">
-                    <td className="py-4 px-4 font-mono font-bold text-slate-900 dark:text-white">
-                      {item.statementNo}
-                    </td>
-                    <td className="py-4 px-4 font-semibold text-slate-700 dark:text-slate-300">
-                      {item.period}
-                    </td>
-                    <td className="py-4 px-4 text-slate-500 whitespace-nowrap text-[13px]">
-                      {item.dateCompiled}
-                    </td>
-                    <td className="py-4 px-4 text-center font-bold text-slate-600 dark:text-slate-400">
-                      {item.deliverablesCount} items
-                    </td>
-                    <td className="py-4 px-4 text-right font-extrabold text-slate-900 dark:text-white">
-                      {formatEditorCurrency(item.netTotal)}
-                    </td>
-                    <td className="py-4 px-4 text-center">
-                      <div className="inline-flex flex-col items-center gap-1">
-                        {item.status === 'PAID' ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                            <ShieldCheck className="h-3.5 w-3.5" /> PAID
-                          </span>
-                        ) : item.status === 'PROCESSING' ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                            <Clock className="h-3.5 w-3.5" /> PROCESSING
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                            <AlertCircle className="h-3.5 w-3.5" /> PENDING
-                          </span>
-                        )}
-                        {item.txnId && (
-                          <span className="text-[10px] font-mono text-slate-400">
-                            Txn: {item.txnId}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 text-center">
-                      <Button
-                        onClick={handleDownloadPdf}
-                        variant="outline"
-                        className="px-3 py-1.5 text-[12px] font-bold gap-1 inline-flex items-center"
-                      >
-                        <Download className="h-3.5 w-3.5" /> PDF
-                      </Button>
-                    </td>
+          {statementHistory.length === 0 ? (
+            <div className="text-center py-16 px-6 bg-[#D8CFC2] rounded-3xl shadow-[inset_3px_3px_6px_rgba(135,120,108,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] max-w-xl mx-auto my-6 flex flex-col items-center">
+              <div className="h-16 w-16 rounded-full bg-[#D8CFC2] shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] flex items-center justify-center mb-4">
+                <History className="h-8 w-8 text-[#EA580C]" />
+              </div>
+              <h4 className="font-extrabold text-[18px] text-[#1F1610] mb-1">No Past Statements Found</h4>
+              <p className="text-[14px] text-[#4A3E34] font-extrabold">Compiled payout statements will be logged here automatically.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#E2DACC] border-b border-[rgba(135,120,108,0.3)] text-xs font-extrabold uppercase tracking-wider text-[#4A3E34]">
+                    <th className="py-3.5 px-4">Statement No</th>
+                    <th className="py-3.5 px-4">Period</th>
+                    <th className="py-3.5 px-4">Date Compiled</th>
+                    <th className="py-3.5 px-4 text-center">Deliverables</th>
+                    <th className="py-3.5 px-4 text-right">Payout Total</th>
+                    <th className="py-3.5 px-4 text-center">Payment Status</th>
+                    <th className="py-3.5 px-4 text-center">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-[rgba(135,120,108,0.25)] text-[14px]">
+                  {statementHistory.map((item) => (
+                    <tr key={item.id} className="hover:bg-[rgba(255,255,255,0.35)] transition-all">
+                      <td className="py-4 px-4 font-mono font-extrabold text-[#1F1610]">
+                        {item.statementNo}
+                      </td>
+                      <td className="py-4 px-4 font-bold text-[#1F1610]">
+                        {item.period}
+                      </td>
+                      <td className="py-4 px-4 text-[#4A3E34] whitespace-nowrap text-[13px] font-bold">
+                        {item.dateCompiled}
+                      </td>
+                      <td className="py-4 px-4 text-center font-extrabold text-[#4A3E34]">
+                        {item.deliverablesCount} items
+                      </td>
+                      <td className="py-4 px-4 text-right font-black text-[#1F1610]">
+                        {formatEditorCurrency(item.netTotal)}
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                        <div className="inline-flex flex-col items-center gap-1">
+                          {item.status === 'PAID' ? (
+                            <span className="px-3 py-1 rounded-xl text-[11px] font-extrabold uppercase bg-[rgba(16,185,129,0.14)] text-[#10B981] border border-[rgba(16,185,129,0.4)] shadow-[inset_1.5px_1.5px_3px_rgba(16,185,129,0.25)]">
+                              <ShieldCheck className="h-3.5 w-3.5 mr-1 inline" /> PAID
+                            </span>
+                          ) : item.status === 'PROCESSING' ? (
+                            <span className="px-3 py-1 rounded-xl text-[11px] font-extrabold uppercase bg-[rgba(99,102,241,0.14)] text-[#6366F1] border border-[rgba(99,102,241,0.4)] shadow-[inset_1.5px_1.5px_3px_rgba(99,102,241,0.25)]">
+                              <Clock className="h-3.5 w-3.5 mr-1 inline" /> PROCESSING
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 rounded-xl text-[11px] font-extrabold uppercase bg-[rgba(245,158,11,0.14)] text-[#F59E0B] border border-[rgba(245,158,11,0.4)] shadow-[inset_1.5px_1.5px_3px_rgba(245,158,11,0.25)]">
+                              <AlertCircle className="h-3.5 w-3.5 mr-1 inline" /> PENDING
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                        <button
+                          onClick={handleDownloadPdf}
+                          className="px-3 py-1.5 rounded-xl bg-[#D8CFC2] text-[#EA580C] font-extrabold shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_5px_rgba(135,120,108,0.5)] inline-flex items-center gap-1.5 cursor-pointer text-[12px] transition-all"
+                        >
+                          <Download className="h-3.5 w-3.5" /> PDF
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
       {/* 5. PDF Preview Modal */}
       {previewModalOpen && previewPdfUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="flat-card bg-card border border-border rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-border bg-slate-50 dark:bg-slate-900">
-              <h3 className="font-extrabold text-[16px] text-slate-900 dark:text-white flex items-center gap-2">
-                <Eye className="h-5 w-5 text-accent" />
+          <div className="bg-[#E2DACC] border-0 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-[-10px_-10px_24px_rgba(255,255,255,0.9),10px_10px_24px_rgba(0,0,0,0.4)] overflow-hidden">
+            <div className="flex items-center justify-between p-5 border-b border-[rgba(135,120,108,0.3)] bg-[#D8CFC2]">
+              <h3 className="font-extrabold text-[17px] text-[#1F1610] flex items-center gap-2">
+                <Eye className="h-5 w-5 text-[#EA580C]" />
                 Live PDF Payout Statement Preview
               </h3>
-              <div className="flex items-center gap-2">
-                <Button onClick={handleDownloadPdf} className="bg-accent text-white font-bold text-[13px] px-3 py-1.5">
-                  <Download className="h-4 w-4 mr-1" /> Download
+              <div className="flex items-center gap-3">
+                <Button onClick={handleDownloadPdf} className="bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white font-extrabold text-[13px] px-4 py-2 rounded-xl border-none cursor-pointer">
+                  <Download className="h-4 w-4 mr-1.5" /> Download
                 </Button>
                 <button
                   onClick={() => setPreviewModalOpen(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
+                  className="p-2 text-[#4A3E34] hover:text-[#1F1610] rounded-xl cursor-pointer"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
             </div>
 
-            <div className="flex-1 p-2 bg-slate-800 min-h-[500px]">
+            <div className="flex-1 p-3 bg-[#1F1610] min-h-[500px]">
               <iframe
                 src={previewPdfUrl}
-                className="w-full h-full min-h-[500px] rounded-lg border-0"
+                className="w-full h-full min-h-[500px] rounded-2xl border-0"
                 title="PDF Preview"
               />
             </div>
@@ -829,30 +833,30 @@ export default function EditorInvoicesPage() {
       {/* 6. Raise Item Dispute Modal */}
       {disputeModalItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="flat-card bg-card border border-border rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <h3 className="font-extrabold text-[16px] text-amber-600 dark:text-amber-400 flex items-center gap-2">
+          <div className="bg-[#E2DACC] border-0 rounded-3xl w-full max-w-md p-6 space-y-5 shadow-[-10px_-10px_24px_rgba(255,255,255,0.9),10px_10px_24px_rgba(0,0,0,0.4)]">
+            <div className="flex items-center justify-between border-b border-[rgba(135,120,108,0.3)] pb-3">
+              <h3 className="font-extrabold text-[17px] text-[#F59E0B] flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5" />
                 Raise Deliverable Dispute
               </h3>
               <button
                 onClick={() => setDisputeModalItem(null)}
-                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="p-1 text-[#4A3E34] hover:text-[#1F1610] cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="space-y-1 bg-amber-500/10 p-3 rounded-xl border border-amber-500/20">
-              <p className="text-[12px] font-bold text-amber-700 dark:text-amber-300">Target Item:</p>
-              <p className="text-[14px] font-extrabold text-slate-900 dark:text-white">
+            <div className="space-y-1 bg-[#D8CFC2] p-3.5 rounded-2xl shadow-[inset_2px_2px_4px_rgba(135,120,108,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]">
+              <p className="text-[12px] font-extrabold text-[#F59E0B]">Target Item:</p>
+              <p className="text-[14px] font-extrabold text-[#1F1610]">
                 {disputeModalItem.title}
               </p>
             </div>
 
             <form onSubmit={handleSubmitDispute} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[12px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+                <label className="text-[12px] font-extrabold text-[#4A3E34] uppercase tracking-wider block">
                   Dispute Reason / Notes
                 </label>
                 <textarea
@@ -861,36 +865,44 @@ export default function EditorInvoicesPage() {
                   value={disputeReason}
                   onChange={(e) => setDisputeReason(e.target.value)}
                   placeholder="Describe rate discrepancy, missing revision pay, or issue..."
-                  className="w-full text-[13px] border border-slate-300 dark:border-slate-700 rounded-xl p-3 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full text-[13px] border-0 rounded-2xl p-3 bg-[#D8CFC2] text-[#1F1610] font-extrabold shadow-[inset_3px_3px_6px_rgba(135,120,108,0.5),inset_-3px_-3px_6px_rgba(255,255,255,0.85)] focus:outline-none placeholder-[#4A3E34]"
                 />
               </div>
 
               {disputeSuccessMsg && (
-                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-[13px] font-bold text-emerald-600 dark:text-emerald-400">
+                <div className="p-3 bg-[rgba(16,185,129,0.14)] border border-[rgba(16,185,129,0.4)] rounded-2xl text-[13px] font-extrabold text-[#10B981]">
                   {disputeSuccessMsg}
                 </div>
               )}
 
               <div className="flex items-center justify-end gap-3 pt-2">
-                <Button
+                <button
                   type="button"
-                  variant="outline"
                   onClick={() => setDisputeModalItem(null)}
-                  className="font-bold text-[13px]"
+                  className="px-4 py-2.5 rounded-2xl bg-[#D8CFC2] text-[#1F1610] font-extrabold text-[13px] shadow-[-3px_-3px_6px_rgba(255,255,255,0.8),3px_3px_6px_rgba(135,120,108,0.5)] cursor-pointer"
                 >
                   Cancel
-                </Button>
-                <Button
+                </button>
+                <button
                   type="submit"
                   disabled={disputeSubmitting}
-                  className="bg-amber-600 text-white font-bold text-[13px] hover:bg-amber-700"
+                  className="px-5 py-2.5 rounded-2xl bg-gradient-to-br from-[#FF8A3D] to-[#EA580C] text-white font-extrabold text-[13px] shadow-[-3px_-3px_8px_rgba(255,255,255,0.7),3px_3px_10px_rgba(234,88,12,0.35)] cursor-pointer border-none"
                 >
                   {disputeSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Submit Dispute'}
-                </Button>
+                </button>
               </div>
             </form>
           </div>
         </div>
+      )}
+
+      {/* Render Toast notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onDismiss={() => setToast(null)}
+        />
       )}
     </div>
   );
