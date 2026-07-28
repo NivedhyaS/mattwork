@@ -229,8 +229,7 @@ export class FormsService {
     );
 
     const sinceTimestamp =
-      connectedForm.lastProcessedResponseTimestamp?.toISOString() ||
-      connectedForm.lastSyncedAt?.toISOString();
+      connectedForm.lastProcessedResponseTimestamp?.toISOString();
 
     let responses: Awaited<ReturnType<typeof googleFormsService.listResponses>>;
     try {
