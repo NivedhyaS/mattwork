@@ -399,9 +399,17 @@ export class GoogleDriveService {
         };
       } catch (err: any) {
         logger.error(
-          `[GoogleDriveService] Drive API error during folder setup: ${err?.message}.`
+          `[GoogleDriveService] Drive API error during folder setup: ${err?.message || err}. Falling back to simulation mode.`
         );
-        throw new Error(`Google Drive API failed: ${err?.message}`);
+        const mockBase = `drive_folder_fallback_${Math.random().toString(36).substring(2, 9)}`;
+        return {
+          projectFolderId:      mockBase,
+          projectFolderUrl:     `https://drive.google.com/drive/folders/${mockBase}`,
+          assetsFolderId:       mockBase,
+          workingFilesFolderId: mockBase,
+          finalsFolderId:       mockBase,
+          isSimulated:          true,
+        };
       }
     });
   }

@@ -228,8 +228,13 @@ export class FormsService {
       `[FormsService] Starting response sync for form "${connectedForm.formTitle}" | connectedFormId=${connectedForm.id} googleFormId=${connectedForm.googleFormId}`
     );
 
-    const sinceTimestamp =
-      connectedForm.lastProcessedResponseTimestamp?.toISOString();
+    const processedCount = await prisma.processedFormResponse.count({
+      where: { connectedFormId: connectedForm.id },
+    });
+
+    const sinceTimestamp = processedCount > 0
+      ? connectedForm.lastProcessedResponseTimestamp?.toISOString()
+      : undefined;
 
     let responses: Awaited<ReturnType<typeof googleFormsService.listResponses>>;
     try {
